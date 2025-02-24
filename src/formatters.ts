@@ -46,24 +46,23 @@ export type HoneyFormNumberFormatterOptions = {
  * Creates a number formatter function to format numeric values based on provided options.
  *
  * @param {HoneyFormNumberFormatterOptions} options - Options for the number formatter.
+ *
  * @returns {function(string): string} - The number formatter function.
  *
  * @remarks
  * This function formats numeric input strings according to the specified options.
- *
- * @returns {string} - The formatted numeric string.
  */
 export const createHoneyFormNumberFormatter =
-  <FieldValue extends string | undefined, FormContext = undefined>({
+  <FieldValue extends string | number | undefined, FormContext = undefined>({
     decimal = true,
     maxLengthAfterDecimal = 2,
   }: HoneyFormNumberFormatterOptions = {}): HoneyFormFieldFormatter<FieldValue, FormContext> =>
   value => {
-    if (!value || !decimal) {
+    if ((value !== 0 && !value) || !decimal) {
       return value;
     }
 
-    const parts = value.split('.');
+    const parts = String(value).split('.');
 
     const limitedAfterDecimal = parts[1]?.slice(0, maxLengthAfterDecimal) ?? '';
 

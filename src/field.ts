@@ -161,7 +161,7 @@ type InteractiveFieldPropsOptions<
  * @param {FieldValue} fieldValue - The current value of the field.
  * @param {InteractiveFieldPropsOptions<Form, FieldName, FormContext>} options - Options for interactive field properties.
  *
- * @returns {HoneyFormInteractiveFieldProps<Form, FieldName, FieldValue>} - The interactive field properties.
+ * @returns {HoneyFormInteractiveFieldProps} - The interactive field properties.
  */
 const getInteractiveFieldProps = <
   Form extends HoneyFormBaseForm,
@@ -176,14 +176,13 @@ const getInteractiveFieldProps = <
     fieldConfig,
     setFieldValue,
   }: InteractiveFieldPropsOptions<Form, FieldName, FormContext>,
-): HoneyFormInteractiveFieldProps<Form, FieldName, FieldValue> => {
+): HoneyFormInteractiveFieldProps => {
   const baseFieldProps = getBaseFieldProps(fieldName, formFieldRef, fieldConfig);
 
   return {
     ...baseFieldProps,
-    value: fieldValue ?? ('' as FieldValue),
+    value: fieldValue ? String(fieldValue) : '',
     inputMode: getInteractiveFieldInputMode(fieldConfig),
-    //
     onChange: e => {
       setFieldValue(fieldName, e.target.value, {
         isValidate: fieldConfig.mode === 'change',
@@ -684,7 +683,7 @@ export const getNextResetField = <
   const props = isFieldInteractive
     ? {
         ...errorsFreeField.props,
-        value: newFieldValue ?? ('' as Form[FieldName]),
+        value: newFieldValue ? String(newFieldValue) : '',
       }
     : undefined;
 
@@ -1603,7 +1602,7 @@ export const getNextSingleFieldState = <
   const props = isFieldInteractive
     ? {
         ...formField.props,
-        value: formattedValue,
+        value: formattedValue ? String(formattedValue) : '',
       }
     : undefined;
 

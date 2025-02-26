@@ -127,13 +127,11 @@ describe('Hook [use-honey-form]: General', () => {
     act(() => result.current.formFields.name.setValue('a'));
 
     await waitFor(() =>
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       expect(onChange.mock.calls[0][0]).toStrictEqual({ name: 'a', kind: undefined }),
     );
 
     act(() => result.current.formFields.kind.setValue('f'));
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     await waitFor(() => expect(onChange.mock.calls[1][0]).toStrictEqual({ name: 'a', kind: 'f' }));
   });
 
@@ -1340,9 +1338,7 @@ describe('Hook [use-honey-form]: Dependent fields', () => {
 
     expect(result.current.formFields.address2.value).toBe('71st Queens');
 
-    act(() => {
-      result.current.formFields.address1.setValue('132st Rich-Port');
-    });
+    act(() => result.current.formFields.address1.setValue('132st Rich-Port'));
 
     expect(result.current.formFields.address1.value).toBe('132st Rich-Port');
 
@@ -1377,9 +1373,7 @@ describe('Hook [use-honey-form]: Dependent fields', () => {
     expect(result.current.formFields.name.value).toBe('apple');
     expect(result.current.formFields.category.value).toBe('fruits');
 
-    act(() => {
-      result.current.formFields.customCategory.setValue('my-fruits');
-    });
+    act(() => result.current.formFields.customCategory.setValue('my-fruits'));
 
     expect(result.current.formFields.name.value).toBe('apple');
     expect(result.current.formFields.category.value).toBeUndefined();
@@ -1445,9 +1439,7 @@ describe('Hook [use-honey-form]: Work with dynamic fields', () => {
     );
     expect(result.current.formFields.age?.value).toBe(10);
 
-    act(() => {
-      result.current.removeFormField('age');
-    });
+    act(() => result.current.removeFormField('age'));
 
     expect(result.current.formFields.age?.value).toBeUndefined();
   });

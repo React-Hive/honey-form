@@ -877,19 +877,11 @@ export type BaseHoneyFormFieldHTMLAttributes<T> = Omit<InputHTMLAttributes<T>, '
  * Represents the props for a form field component.
  * These props are typically used for input elements.
  *
- * @remarks
- * When the `onBlur` event is triggered, and the field's mode is set to 'blur', the validation process
- *  will not be run if the field has the `readonly` property set to `true`.
- *
  * @template BaseHoneyFormFieldHTMLAttributes - Base HTML attributes for a form field.
  */
-export type HoneyFormInteractiveFieldProps<
-  Form extends HoneyFormBaseForm,
-  FieldName extends keyof Form,
-  FieldValue extends Form[FieldName] = Form[FieldName],
-> = Readonly<
+export type HoneyFormInteractiveFieldProps = Readonly<
   Omit<BaseHoneyFormFieldHTMLAttributes<any>, 'value'> & {
-    value: FieldValue | undefined;
+    value: string | undefined;
   }
 >;
 
@@ -1087,7 +1079,7 @@ export type HoneyFormFieldProps<
   /**
    * An object with the necessary props to bind to the corresponding input element in the form.
    */
-  props: HoneyFormInteractiveFieldProps<Form, FieldName, FieldValue> | undefined;
+  props: HoneyFormInteractiveFieldProps | undefined;
   /**
    * Properties for non-interactive fields (e.g., checkbox, radio, file).
    */

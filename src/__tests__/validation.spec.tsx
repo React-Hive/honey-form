@@ -523,7 +523,7 @@ describe('Hook [use-honey-form]: Validation', () => {
 
 describe('Hook [use-honey-form]: `onAfterValidate` callback function', () => {
   it('should invoke `onAfterValidate` callback when form validation passes without errors', async () => {
-    const onAfterValidate = jest.fn();
+    const onAfterValidate = jest.fn().mockResolvedValue(null);
 
     const { result } = renderHook(() =>
       useHoneyForm<{ name: string }>({
@@ -544,7 +544,7 @@ describe('Hook [use-honey-form]: `onAfterValidate` callback function', () => {
   });
 
   it('should invoke `onAfterValidate` callback when form validation fails with errors', async () => {
-    const onAfterValidate = jest.fn();
+    const onAfterValidate = jest.fn().mockResolvedValue(null);
 
     const { result } = renderHook(() =>
       useHoneyForm<{ name: string }>({

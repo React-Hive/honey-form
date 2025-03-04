@@ -1267,7 +1267,7 @@ type HoneyFormAfterValidateContext<Form extends HoneyFormBaseForm, FormContext> 
  * @param {HoneyFormAfterValidateContext<Form, FormContext>} validateContext - The context object containing
  * the validated form fields and form context.
  *
- * @returns {void} - The function does not return any value.
+ * @returns {Promise<void>} - The Promise function does not return any value.
  *
  * @remarks
  * - This function is intended for post-validation actions, such as updating the UI or triggering
@@ -1276,7 +1276,7 @@ type HoneyFormAfterValidateContext<Form extends HoneyFormBaseForm, FormContext> 
  */
 export type HoneyFormOnAfterValidate<Form extends HoneyFormBaseForm, FormContext = undefined> = (
   validateContext: HoneyFormAfterValidateContext<Form, FormContext>,
-) => void;
+) => Promise<void>;
 
 /**
  * Represents server-side validation errors for each field in the form.
@@ -1491,7 +1491,7 @@ export type FormOptions<
    */
   context?: FormContext;
   /**
-   * A callback function triggered after form validation is complete.
+   * A Promise callback function triggered after form validation is complete.
    * It can be used for additional actions or processing after validation.
    *
    * @remarks

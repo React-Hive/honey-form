@@ -605,7 +605,7 @@ export const useBaseHoneyForm = <
       }
 
       // Variable to track if any errors are found during validation
-      let hasErrors = false;
+      let isFormErred = false;
 
       const nextFormFields = {} as HoneyFormFields<Form, FormContext>;
 
@@ -640,7 +640,7 @@ export const useBaseHoneyForm = <
 
           const hasChildFormsErrors = await runChildFormsValidation(formField);
           if (hasChildFormsErrors) {
-            hasErrors = true;
+            isFormErred = true;
           }
 
           const nextField = await executeFieldValidatorAsync({
@@ -650,27 +650,27 @@ export const useBaseHoneyForm = <
             formContext,
           });
 
-          hasErrors ||= nextField.errors.some(fieldError => fieldError.type !== 'server');
+          isFormErred ||= nextField.errors.some(fieldError => fieldError.type !== 'server');
 
           nextFormFields[fieldName] = nextField;
         }),
       );
 
-      isFormValidRef.current = !hasErrors;
+      isFormValidRef.current = !isFormErred;
 
       // Set the new `nextFormFields` value to the ref to access it at getting clean values at submitting
       formFieldsRef.current = nextFormFields;
 
       setFormFields(nextFormFields);
 
-      onAfterValidate?.({
+      await onAfterValidate?.({
+        isFormErred,
         formContext,
         formFields: nextFormFields,
         formErrors: getFormErrors(nextFormFields),
-        isFormErred: hasErrors,
       });
 
-      return !hasErrors;
+      return !isFormErred;
     },
     [formContext, onAfterValidate],
   );

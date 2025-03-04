@@ -1493,6 +1493,9 @@ export type FormOptions<
   /**
    * A callback function triggered after form validation is complete.
    * It can be used for additional actions or processing after validation.
+   *
+   * @remarks
+   * The passed function should be wrapped in `useCallback` to prevent unnecessary re-renders.
    */
   onAfterValidate?: HoneyFormOnAfterValidate<Form, FormContext>;
   /**

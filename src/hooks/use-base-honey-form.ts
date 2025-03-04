@@ -672,7 +672,7 @@ export const useBaseHoneyForm = <
 
       return !hasErrors;
     },
-    [formContext],
+    [formContext, onAfterValidate],
   );
 
   /**

@@ -1,4 +1,4 @@
-import type { HTMLAttributes, HTMLInputTypeAttribute, RefObject } from 'react';
+import type { HTMLAttributes, HTMLInputTypeAttribute, MutableRefObject, RefObject } from 'react';
 import { createRef } from 'react';
 
 import type {
@@ -32,6 +32,7 @@ import type {
   HoneyFormParentField,
   KeysWithArrayValues,
   HoneyFormValues,
+  HoneyFormValidationController,
 } from './types';
 import {
   INTERACTIVE_FIELD_TYPE_VALIDATORS_MAP,
@@ -49,6 +50,7 @@ import {
   checkIsSkipField,
   scheduleFieldValidation,
   noop,
+  isPromise,
 } from './helpers';
 import { HONEY_FORM_ERRORS } from './constants';
 
@@ -890,6 +892,7 @@ const executeFieldTypeValidator = <
       formFields,
       formValues,
       fieldConfig: formField.config,
+      signal: undefined,
       scheduleValidation: fieldName => scheduleFieldValidation(formFields[fieldName]),
     });
   } else if (checkIfFieldIsPassive(formField.config)) {
@@ -900,6 +903,7 @@ const executeFieldTypeValidator = <
       formFields,
       formValues,
       fieldConfig: formField.config,
+      signal: undefined,
       scheduleValidation: fieldName => scheduleFieldValidation(formFields[fieldName]),
     });
   }
@@ -1009,10 +1013,14 @@ const handleFieldAsyncValidationResult = <
       }
     })
     .catch((validationResult: Error) => {
-      formField.addError({
-        type: 'invalid',
-        message: formField.config.errorMessages?.invalid ?? validationResult.message,
-      });
+      if (validationResult.name === 'CanceledError') {
+        // Throws from axios when HTTP request is aborted using signal (AbortController)
+      } else {
+        formField.addError({
+          type: 'invalid',
+          message: formField.config.errorMessages?.invalid ?? validationResult.message,
+        });
+      }
     });
 
 /**
@@ -1036,6 +1044,30 @@ const sanitizeFieldValue = <
 };
 
 /**
+ * Updates the validation controller for a specific form field, ensuring that any
+ * ongoing asynchronous validation is aborted before assigning a new controller.
+ *
+ * @template Form - The type representing the structure of the entire form.
+ *
+ * @param formFieldsValidationControllerRef - A reference to the validation controllers for each field in the form.
+ * @param fieldName - The name of the field whose validation controller should be updated.
+ *
+ * @returns The newly created `AbortController` instance for the field.
+ */
+const updateFieldValidationController = <Form extends HoneyFormBaseForm>(
+  formFieldsValidationControllerRef: MutableRefObject<HoneyFormValidationController<Form>>,
+  fieldName: keyof Form,
+): AbortController => {
+  // Abort the existing validation controller for the field, if any
+  formFieldsValidationControllerRef.current[fieldName]?.abort();
+
+  const fieldValidationController = new AbortController();
+  formFieldsValidationControllerRef.current[fieldName] = fieldValidationController;
+
+  return fieldValidationController;
+};
+
+/**
  * Options for executing the validator for a specific form field.
  *
  * @template Form - The type representing the structure of the entire form.
@@ -1049,6 +1081,11 @@ type ExecuteFieldValidatorOptions<
   FormContext,
   FieldValue extends Form[FieldName],
 > = {
+  /**
+   * A reference to the validation controllers for each field in the form,
+   * enabling management and cancellation of ongoing asynchronous validations.
+   */
+  formFieldsValidationControllerRef: MutableRefObject<HoneyFormValidationController<Form>>;
   /**
    * The contextual information for the form.
    */
@@ -1092,6 +1129,7 @@ export const executeFieldValidator = <
   FormContext,
   FieldValue extends Form[FieldName],
 >({
+  formFieldsValidationControllerRef,
   formContext,
   formFields,
   fieldName,
@@ -1130,16 +1168,22 @@ export const executeFieldValidator = <
 
     // Execute custom validator. Can only run when the default validator returns true
     if (formField.config.validator) {
+      const fieldValidationController = updateFieldValidationController(
+        formFieldsValidationControllerRef,
+        fieldName,
+      );
+
       const validationResponse = formField.config.validator(sanitizedValue, {
         formContext,
         formFields,
         formValues,
         // @ts-expect-error
         fieldConfig: formField.config,
+        signal: fieldValidationController.signal,
         scheduleValidation: fieldName => scheduleFieldValidation(formFields[fieldName]),
       });
 
-      if (validationResponse instanceof Promise) {
+      if (isPromise(validationResponse)) {
         formField = getNextAsyncValidatingField(formField);
 
         handleFieldAsyncValidationResult(formField, validationResponse)
@@ -1171,6 +1215,11 @@ type ExecuteFieldValidatorAsyncOptions<
   FormContext,
 > = {
   /**
+   * A reference to the validation controllers for each field in the form,
+   * enabling management and cancellation of ongoing asynchronous validations.
+   */
+  formFieldsValidationControllerRef: MutableRefObject<HoneyFormValidationController<Form>>;
+  /**
    * The parent field of the current field, if any.
    */
   parentField: HoneyFormParentField<ParentForm, ParentFieldName> | undefined;
@@ -1197,9 +1246,9 @@ type ExecuteFieldValidatorAsyncOptions<
  * @template FieldName - The name of the field to validate.
  * @template FormContext - The type representing the context associated with the form.
  *
- * @param {ExecuteFieldValidatorAsyncOptions<ParentForm, Form, FieldName, FormContext>} options - The options for executing the field validator.
+ * @param options - The options for executing the field validator.
  *
- * @returns {Promise<HoneyFormField<Form, FieldName, FormContext>>} - The next state of the validated field.
+ * @returns The next state of the validated field.
  */
 export const executeFieldValidatorAsync = async <
   ParentForm extends HoneyFormBaseForm,
@@ -1208,6 +1257,7 @@ export const executeFieldValidatorAsync = async <
   FieldName extends keyof Form,
   FormContext,
 >({
+  formFieldsValidationControllerRef,
   parentField,
   fieldName,
   formFields,
@@ -1264,17 +1314,23 @@ export const executeFieldValidatorAsync = async <
     });
 
     if (formField.config.validator) {
+      const fieldValidationController = updateFieldValidationController(
+        formFieldsValidationControllerRef,
+        fieldName,
+      );
+
       const validationResponse = formField.config.validator(sanitizedValue, {
         formContext,
         formFields,
         formValues,
         // @ts-expect-error
         fieldConfig: formField.config,
+        signal: fieldValidationController.signal,
         scheduleValidation: fieldName => scheduleFieldValidation(formFields[fieldName]),
       });
 
-      // If the validation response is a Promise, handle it asynchronously
-      if (validationResponse instanceof Promise) {
+      // If the validation response is a Promise, so handle it asynchronously
+      if (isPromise(validationResponse)) {
         try {
           validationResult = await validationResponse;
         } catch (e) {
@@ -1451,6 +1507,11 @@ type TriggerScheduledFieldsValidationsOptions<
   FormContext,
 > = {
   /**
+   * A reference to the validation controllers for each field in the form,
+   * enabling management and cancellation of ongoing asynchronous validations.
+   */
+  formFieldsValidationControllerRef: MutableRefObject<HoneyFormValidationController<Form>>;
+  /**
    * The parent form field, if any.
    */
   parentField: HoneyFormParentField<ParentForm, ParentFieldName> | undefined;
@@ -1493,6 +1554,7 @@ const triggerScheduledFieldsValidations = <
   FieldName extends keyof Form,
   FormContext,
 >({
+  formFieldsValidationControllerRef,
   parentField,
   fieldName,
   nextFormFields,
@@ -1542,6 +1604,7 @@ const triggerScheduledFieldsValidations = <
         }
 
         nextFormFields[otherFieldName] = executeFieldValidator({
+          formFieldsValidationControllerRef,
           formContext,
           finishFieldAsyncValidation,
           formFields: nextFormFields,
@@ -1647,6 +1710,11 @@ type NextFieldsStateOptions<
   FormContext,
 > = {
   /**
+   * A reference to the validation controllers for each field in the form,
+   * enabling management and cancellation of ongoing asynchronous validations.
+   */
+  formFieldsValidationControllerRef: MutableRefObject<HoneyFormValidationController<Form>>;
+  /**
    * The parent form field, if any.
    */
   parentField: HoneyFormParentField<ParentForm, ParentFieldName> | undefined;
@@ -1702,6 +1770,7 @@ export const getNextFieldsState = <
   fieldName: FieldName,
   fieldValue: FieldValue | undefined,
   {
+    formFieldsValidationControllerRef,
     parentField,
     formContext,
     formFields,
@@ -1732,6 +1801,7 @@ export const getNextFieldsState = <
     resetDependentFields(formContext, nextFormFields, fieldName);
 
     nextFormField = executeFieldValidator({
+      formFieldsValidationControllerRef,
       formContext,
       fieldName,
       finishFieldAsyncValidation,
@@ -1750,6 +1820,7 @@ export const getNextFieldsState = <
   processSkippableFields({ parentField, nextFormFields, formContext });
 
   triggerScheduledFieldsValidations({
+    formFieldsValidationControllerRef,
     parentField,
     fieldName,
     nextFormFields,

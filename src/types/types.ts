@@ -85,6 +85,16 @@ export type HoneyFormErrors<Form extends HoneyFormBaseForm> = {
 };
 
 /**
+ * A mapping of form field names to their respective `AbortController` instances,
+ * allowing control over the cancellation of asynchronous validation processes.
+ *
+ * @template Form - The type representing the structure of the entire form.
+ */
+export type HoneyFormValidationController<Form extends HoneyFormBaseForm> = {
+  [FieldName in keyof Form]?: AbortController;
+};
+
+/**
  * Context object passed to the field change handler.
  *
  * @template Form - The type representing the structure of the entire form.
@@ -128,14 +138,15 @@ export type HoneyFormFieldOnChange<
 ) => void;
 
 /**
- * The base context object used within field validators, providing access to form-related information.
- * This context includes details about the entire form, the specific field being validated, and any
- * additional form-level context. It also allows scheduling validation for other fields.
+ * Provides contextual information to field validators, including access to form-wide data,
+ * the specific field being validated, and additional form-level context.
+ * This context allows validators to manage asynchronous validation, track cancellation signals,
+ * and schedule validation for other fields when necessary.
  *
  * @template T - Additional properties that can be provided by specific field validators.
  * @template Form - The type representing the structure of the entire form.
- * @template FieldName - The name of the field being validated within the form.
- * @template FormContext - The type representing the context associated with the form.
+ * @template FieldName - The name of the field currently being validated within the form.
+ * @template FormContext - The type representing any additional context associated with the form.
  */
 type BaseHoneyFormFieldValidatorContext<
   T,
@@ -145,8 +156,15 @@ type BaseHoneyFormFieldValidatorContext<
 > = BaseHoneyFormFieldExecutionContext<
   {
     /**
-     * Function to schedule validation for a different field within the form.
-     * It allows the validator to trigger validation for fields other than the current one.
+     * The `AbortSignal` associated with the field's validation process.
+     * This signal can be used to handle cancellation of asynchronous validation tasks
+     * when the field value changes or the form is reset.
+     */
+    signal: AbortSignal | undefined;
+    /**
+     * A function that allows scheduling validation for another field within the form.
+     * This is useful when a field's validation depends on the value of another field,
+     * ensuring that dependent validations are executed accordingly.
      */
     scheduleValidation: HoneyFormFieldScheduleValidation<Form, FieldName>;
   },

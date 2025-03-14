@@ -2,7 +2,7 @@ import type { ChangeEvent } from 'react';
 import { StrictMode } from 'react';
 import { act, renderHook, waitFor } from '@testing-library/react';
 
-import type { CustomDateRangeForm } from '../types';
+import type { CustomDateRangeForm, Nullable } from '../types';
 
 import { useHoneyForm } from '../hooks';
 import { createHoneyFormDateFromValidator, createHoneyFormDateToValidator } from '../validators';
@@ -777,6 +777,40 @@ describe('Hook [use-honey-form]: Validator as the promise function', () => {
     );
   });
 
+  it('should handle promise-based validator function and abort correctly', async () => {
+    const { result } = renderHook(() =>
+      useHoneyForm<{ name: string }>({
+        fields: {
+          name: {
+            type: 'string',
+            validator: (value, { signal }) =>
+              new Promise(resolve => {
+                setTimeout(() => {
+                  resolve(signal.aborted ? 'Aborted' : true);
+                }, 0);
+              }),
+          },
+        },
+      }),
+    );
+
+    act(() => result.current.formFields.name.setValue('Apple'));
+    act(() => result.current.formFields.name.setValue('Apple'));
+
+    await waitFor(() =>
+      expect(result.current.formFields.name.errors).toStrictEqual([
+        {
+          type: 'invalid',
+          message: 'Aborted',
+        },
+      ]),
+    );
+
+    act(() => result.current.formFields.name.setValue('Apple'));
+
+    await waitFor(() => expect(result.current.formFields.name.errors).toStrictEqual([]));
+  });
+
   it('should execute promise-based validator functions when submitting', async () => {
     const onSubmit = jest.fn();
 
@@ -851,7 +885,7 @@ describe('Hook [use-honey-form]: Validator as the promise function', () => {
   });
 });
 
-describe('Hook [use-honey-form]: Scheduled fields validation', () => {
+describe('Hook [use-honey-form]: Schedule field validation', () => {
   it('should schedule validation for another field inside field validator', () => {
     const { result } = renderHook(() =>
       useHoneyForm<{ amountFrom: number; amountTo: number }>({

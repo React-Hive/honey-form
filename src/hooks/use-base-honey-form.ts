@@ -23,8 +23,9 @@ import type {
   HoneyFormSubmit,
   HoneyFormValidate,
   HoneyFormErrors,
-  KeysWithArrayValues,
   HoneyFormRestoreUnfinishedForm,
+  HoneyFormValidationController,
+  KeysWithArrayValues,
 } from '../types';
 import {
   resetAllFields,
@@ -46,13 +47,14 @@ import {
   getFormValues,
   getSubmitFormValues,
   checkIsSkipField,
-  mapFormFields,
-  mapServerErrors,
+  iterateFormFields,
+  convertServerErrors,
   runChildFormsValidation,
   warningMessage,
   errorMessage,
   deserializeFormFromQueryString,
   serializeFormToQueryString,
+  mapFormFieldsAsync,
 } from '../helpers';
 import { HONEY_FORM_ERRORS } from '../constants';
 
@@ -111,6 +113,7 @@ export const useBaseHoneyForm = <
   const formFieldsRef = useRef<Nullable<HoneyFormFields<Form, FormContext>>>(null);
   const formValuesRef = useRef<Nullable<Form>>(null);
   const formErrorsRef = useRef<Nullable<HoneyFormErrors<Form>>>(null);
+  const formFieldsValidationControllerRef = useRef<HoneyFormValidationController<Form>>({});
   const isFormDirtyRef = useRef(false);
   const isFormValidRef = useRef(false);
   const isUnfinishedFormDetected = useRef(false);
@@ -269,6 +272,7 @@ export const useBaseHoneyForm = <
 
             const nextFormField = isValidate
               ? executeFieldValidator({
+                  formFieldsValidationControllerRef,
                   formContext,
                   fieldName,
                   formFields: nextFormFields,
@@ -317,7 +321,7 @@ export const useBaseHoneyForm = <
 
   const clearFormErrors = useCallback<HoneyFormClearErrors>(() => {
     setFormFields(formFields => {
-      const nextFormFields = mapFormFields(formFields, (_, formField) =>
+      const nextFormFields = iterateFormFields(formFields, (_, formField) =>
         getNextErrorsFreeField(formField),
       ) as unknown as HoneyFormFields<Form, FormContext>;
 
@@ -360,6 +364,7 @@ export const useBaseHoneyForm = <
 
       return formFieldChangeProcessor(fieldName, () => {
         const nextFormFields = getNextFieldsState(fieldName, fieldValue, {
+          formFieldsValidationControllerRef,
           parentField,
           formContext,
           formFields,
@@ -481,6 +486,7 @@ export const useBaseHoneyForm = <
     }
 
     const nextFormField = executeFieldValidator({
+      formFieldsValidationControllerRef,
       formContext,
       formFields,
       fieldName,
@@ -607,54 +613,48 @@ export const useBaseHoneyForm = <
       // Variable to track if any errors are found during validation
       let isFormErred = false;
 
-      const nextFormFields = {} as HoneyFormFields<Form, FormContext>;
-
       const formValues = getFormValues(formFields);
 
-      await Promise.all(
-        Object.keys(formFields).map(async (fieldName: keyof Form) => {
-          const formField = formFields[fieldName];
+      const nextFormFields = await mapFormFieldsAsync(formFields, async (fieldName, formField) => {
+        const isTargetFieldValidation = targetFields?.length
+          ? targetFields.includes(fieldName)
+          : true;
 
-          const isTargetFieldValidation = targetFields?.length
-            ? targetFields.includes(fieldName)
-            : true;
+        const isExcludeFieldFromValidation = excludeFields
+          ? excludeFields.includes(fieldName)
+          : false;
 
-          const isExcludeFieldFromValidation = excludeFields
-            ? excludeFields.includes(fieldName)
-            : false;
-
-          if (
-            isExcludeFieldFromValidation ||
-            !isTargetFieldValidation ||
-            checkIsSkipField({
-              parentField,
-              fieldName,
-              formContext,
-              formFields,
-              formValues,
-            })
-          ) {
-            nextFormFields[fieldName] = getNextErrorsFreeField(formField);
-            return;
-          }
-
-          const hasChildFormsErrors = await runChildFormsValidation(formField);
-          if (hasChildFormsErrors) {
-            isFormErred = true;
-          }
-
-          const nextField = await executeFieldValidatorAsync({
+        if (
+          isExcludeFieldFromValidation ||
+          !isTargetFieldValidation ||
+          checkIsSkipField({
             parentField,
             fieldName,
-            formFields,
             formContext,
-          });
+            formFields,
+            formValues,
+          })
+        ) {
+          return getNextErrorsFreeField(formField);
+        }
 
-          isFormErred ||= nextField.errors.some(fieldError => fieldError.type !== 'server');
+        const hasChildFormsErrors = await runChildFormsValidation(formField);
+        if (hasChildFormsErrors) {
+          isFormErred = true;
+        }
 
-          nextFormFields[fieldName] = nextField;
-        }),
-      );
+        const nextField = await executeFieldValidatorAsync({
+          parentField,
+          fieldName,
+          formFields,
+          formContext,
+          formFieldsValidationControllerRef,
+        });
+
+        isFormErred ||= nextField.errors.some(fieldError => fieldError.type !== 'server');
+
+        return nextField;
+      });
 
       isFormValidRef.current = !isFormErred;
 
@@ -729,6 +729,13 @@ export const useBaseHoneyForm = <
     isFormValidRef.current = false;
     isFormSubmittedRef.current = false;
 
+    // Abort all ongoing validation requests
+    Object.values(formFieldsValidationControllerRef.current).forEach(controller =>
+      controller.abort(),
+    );
+
+    formFieldsValidationControllerRef.current = {};
+
     if (newFormDefaults) {
       formDefaultsRef.current = { ...formDefaultsRef.current, ...newFormDefaults };
     }
@@ -762,6 +769,7 @@ export const useBaseHoneyForm = <
         });
 
         const isFormValid = await validateForm();
+
         if (isFormValid) {
           // Only submitting the form can clear the dirty state
           updateFormState({
@@ -776,7 +784,7 @@ export const useBaseHoneyForm = <
 
           if (serverErrors && Object.keys(serverErrors).length) {
             setFormErrors(
-              mapServerErrors(serverErrors, (_, fieldErrors) =>
+              convertServerErrors(serverErrors, (_, fieldErrors) =>
                 fieldErrors.map(errorMsg => ({
                   type: 'server',
                   message: errorMsg,

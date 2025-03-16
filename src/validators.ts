@@ -321,18 +321,18 @@ export const minMaxLengthBuiltInFieldValidator: HoneyFormInteractiveFieldBuiltIn
 
 type DatePropertyKey<Form> = string & keyof Form;
 
-type CreateHoneyFormDateFromValidatorOptions<
+interface CreateHoneyFormDateFromValidatorOptions<
   Form extends CustomDateRangeForm<DateFromKey, DateToKey>,
   DateFromKey extends DatePropertyKey<Form>,
   DateToKey extends Exclude<DatePropertyKey<Form>, DateFromKey>,
-> = {
+> {
   dateToKey: DateToKey;
   minDate?: Date;
   maxDate?: Date;
   errorMsg?: string;
   ignoreTime?: boolean;
   inclusiveRange?: boolean;
-};
+}
 
 /**
  * Creates a validator function to ensure the validity of a "Date From" field within the context of a date range.
@@ -402,18 +402,18 @@ export const createHoneyFormDateFromValidator =
     return errorMsg;
   };
 
-type CreateHoneyFormDateToValidatorOptions<
+interface CreateHoneyFormDateToValidatorOptions<
   Form extends CustomDateRangeForm<DateFromKey, DateToKey>,
   DateToKey extends DatePropertyKey<Form>,
   DateFromKey extends Exclude<DatePropertyKey<Form>, DateToKey>,
-> = {
+> {
   dateFromKey: DateFromKey;
   minDate?: Date;
   maxDate?: Date;
   errorMsg?: string;
   ignoreTime?: boolean;
   inclusiveRange?: boolean;
-};
+}
 
 /**
  * Creates a validator function to ensure the validity of a "Date To" field within the context of a date range.

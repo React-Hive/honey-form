@@ -9,9 +9,9 @@ import type {
 } from '../types';
 import type { MultiHoneyFormsContextValue } from '../components/multi-honey-forms';
 
-import { createField } from '../field';
+import { createFormField } from '../field';
 import { useBaseHoneyForm } from './use-base-honey-form';
-import { mapFieldsConfig, noop } from '../helpers';
+import { getFormValues, mapFieldsConfig, noop } from '../helpers';
 import { MultiHoneyFormsContext } from '../components/multi-honey-forms';
 
 type CreateInitialFormFieldsOptions<
@@ -34,14 +34,13 @@ const createInitialFormFields = <Form extends HoneyFormBaseForm, FormContext>({
   addFormFieldErrors,
 }: CreateInitialFormFieldsOptions<Form, FormContext>) => {
   const formFields = mapFieldsConfig(fieldsConfig, (fieldName, fieldConfig) =>
-    createField(
+    createFormField(
       fieldName,
       {
         ...fieldConfig,
         defaultValue: formDefaultsRef.current[fieldName] ?? fieldConfig.defaultValue,
       },
       {
-        formContext,
         formFieldsRef,
         formDefaultsRef,
         setFieldValue,
@@ -50,6 +49,11 @@ const createInitialFormFields = <Form extends HoneyFormBaseForm, FormContext>({
         pushFieldValue,
         removeFieldValue,
         addFormFieldErrors,
+        executionContext: {
+          formContext,
+          formFields: formFieldsRef.current,
+          formValues: getFormValues(formFieldsRef.current),
+        },
       },
     ),
   );

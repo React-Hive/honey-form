@@ -1,7 +1,8 @@
-import type { ReactElement } from 'react';
+import type { InputHTMLAttributes, ReactElement, RefObject } from 'react';
 
 import type { HoneyFormBaseForm } from './common.types';
 import type { JSONValue } from './generic.types';
+import type { HoneyFormExtractChildForm } from './utility.types';
 
 /**
  * Describes the types of interactive form fields that allow dynamic user input.
@@ -68,13 +69,72 @@ export type HoneyFormFieldErrorMessages = Partial<
   Record<HoneyFormFieldErrorType, HoneyFormFieldErrorMessage>
 >;
 
+export interface HoneyFormFieldBaseHTMLAttributes<T>
+  extends Omit<InputHTMLAttributes<T>, 'children'> {
+  ref: RefObject<T>;
+}
+
+/**
+ * Represents the props for a form field component.
+ * These props are typically used for input elements.
+ */
+export interface HoneyFormInteractiveFieldProps
+  extends Omit<HoneyFormFieldBaseHTMLAttributes<any>, 'value'> {
+  value: string | undefined;
+}
+
+/**
+ * Represents the props for a passive form field, such as checkbox or radio.
+ *
+ * @remarks
+ * These props include the base HTML attributes, checked state, and `onChange` handler.
+ */
+export type HoneyFormPassiveFieldProps = Readonly<HoneyFormFieldBaseHTMLAttributes<any>>;
+
+/**
+ * Represents the props for an object form field.
+ *
+ * @remarks
+ * These props include the base HTML attributes, a ref, the field value, and the `onChange` handler.
+ */
+export interface HoneyFormObjectFieldProps<
+  Form extends HoneyFormBaseForm,
+  FieldName extends keyof Form,
+  FieldValue extends Form[FieldName] = Form[FieldName],
+> extends Omit<HoneyFormFieldBaseHTMLAttributes<any>, 'value' | 'onChange'> {
+  value: FieldValue | undefined;
+  onChange: (value: FieldValue | undefined) => void;
+}
+
+/**
+ * Represents the properties for a specific form field within a form.
+ */
+export interface HoneyFormFieldProps<
+  Form extends HoneyFormBaseForm,
+  FieldName extends keyof Form,
+  FieldValue extends Form[FieldName] = Form[FieldName],
+> {
+  /**
+   * An object with the necessary props to bind to the corresponding input element in the form.
+   */
+  props: HoneyFormInteractiveFieldProps | undefined;
+  /**
+   * Properties for non-interactive fields (e.g., checkbox, radio, file).
+   */
+  passiveProps: HoneyFormPassiveFieldProps | undefined;
+  /**
+   * An object containing the properties needed for object fields, which handle complex data structures.
+   */
+  objectProps: HoneyFormObjectFieldProps<Form, FieldName, FieldValue> | undefined;
+}
+
 /**
  * Represents an error for a specific form field.
  *
  * Each error includes a type, which categorizes the nature of the error,
  * and a message providing further details or context about the issue.
  */
-export type HoneyFormFieldError = {
+export interface HoneyFormFieldError {
   /**
    * The type of the error (e.g., 'required', 'invalid').
    */
@@ -83,7 +143,7 @@ export type HoneyFormFieldError = {
    * The detailed message associated with the error.
    */
   message: HoneyFormFieldErrorMessage;
-};
+}
 
 /**
  * Represents the possible outcomes of a field validation process.
@@ -100,9 +160,19 @@ export type HoneyFormFieldValidationResult =
   | HoneyFormFieldError[];
 
 /**
+ * A type representing a function that completes the asynchronous validation for a specific form field.
+ *
+ * @param fieldName - The name of the field whose asynchronous validation is being completed.
+ */
+export type HoneyFormFieldFinishAsyncValidation<
+  Form extends HoneyFormBaseForm,
+  FieldName extends keyof Form = keyof Form,
+> = (fieldName: FieldName) => void;
+
+/**
  * Configuration options for setting a new value for a form field.
  */
-export type HoneyFormFieldSetValueOptions = {
+interface HoneyFormFieldSetValueOptions {
   /**
    * Specifies whether setting a new value should mark the form as "dirty", indicating that
    * the user has modified the form.
@@ -128,12 +198,17 @@ export type HoneyFormFieldSetValueOptions = {
    * @default true
    */
   isValidate?: boolean;
-};
+}
+
+export type HoneyFormFieldSetValue<FieldValue> = (
+  value: FieldValue,
+  options?: HoneyFormFieldSetValueOptions,
+) => void;
 
 /**
  * Internal configuration options for setting a form field value.
  */
-type HoneyFormFieldSetValueOptionsInternal = HoneyFormFieldSetValueOptions & {
+interface HoneyFormFieldSetValueOptionsInternal extends HoneyFormFieldSetValueOptions {
   /**
    * Indicates whether the values for nested child forms should be set when setting the value for a parent form field.
    *
@@ -145,7 +220,7 @@ type HoneyFormFieldSetValueOptionsInternal = HoneyFormFieldSetValueOptions & {
    * @default true
    */
   isSetChildFormsValues?: boolean;
-};
+}
 
 /**
  * A function type for setting a form field's value while updating the form's internal state.
@@ -153,14 +228,10 @@ type HoneyFormFieldSetValueOptionsInternal = HoneyFormFieldSetValueOptions & {
  * This function not only sets the value of a specified field but can also trigger validation, formatting,
  * and mark the form or field as "dirty" based on the provided options.
  *
- * @template Form - The type representing the structure of the entire form.
- * @template FieldName - The specific field within the form whose value is being set.
- * @template FieldValue - The type of the value being set for the specified field.
- *
- * @param {FieldName} fieldName - The name of the field whose value is being set.
- * @param {FieldValue} value - The value to set for the specified field.
- * @param {HoneyFormFieldSetValueOptionsInternal} [options] - Configuration options to customize the behavior when setting the value,
- *                                                            such as whether to trigger validation, mark the field as dirty, and format the value.
+ * @param fieldName - The name of the field whose value is being set.
+ * @param value - The value to set for the specified field.
+ * @param [options] - Configuration options to customize the behavior when setting the value,
+ *  such as whether to trigger validation, mark the field as dirty, and format the value.
  */
 export type HoneyFormFieldSetValueInternal<Form extends HoneyFormBaseForm> = <
   FieldName extends keyof Form,
@@ -171,11 +242,20 @@ export type HoneyFormFieldSetValueInternal<Form extends HoneyFormBaseForm> = <
   options?: HoneyFormFieldSetValueOptionsInternal,
 ) => void;
 
+export type HoneyFormFieldPushValue<Form extends HoneyFormBaseForm> = <
+  FieldName extends keyof { [F in keyof Form]: Form[F] extends unknown[] ? F : never },
+  FieldValue extends Form[FieldName] = Form[FieldName],
+>(
+  fieldName: FieldName,
+  value: HoneyFormExtractChildForm<FieldValue>,
+) => void;
+
+export type HoneyFormValidateField<Form extends HoneyFormBaseForm> = <FieldName extends keyof Form>(
+  fieldName: FieldName,
+) => void;
+
 /**
  * Represents a function that adds a validation error to a specific form field.
- *
- * @template Form - The type representing the structure of the entire form.
- * @template FieldName - The name of the field within the form.
  *
  * @param fieldName - The name of the field to which the error should be associated.
  * @param error - The error object that contains the error type and corresponding message.
@@ -192,11 +272,8 @@ export type HoneyFormFieldAddError<Form extends HoneyFormBaseForm> = <FieldName 
  * It is useful in scenarios where a field can have multiple validation errors, allowing the application
  * to display or handle all errors associated with the field.
  *
- * @template Form - The type representing the structure of the entire form.
- * @template FieldName - The specific field name within the form where the errors will be added.
- *
- * @param {FieldName} fieldName - The name of the form field to which the errors will be added.
- * @param {HoneyFormFieldError[]} errors - An array of validation errors to be added to the specified form field.
+ * @param fieldName - The name of the form field to which the errors will be added.
+ * @param errors - An array of validation errors to be added to the specified form field.
  */
 export type HoneyFormFieldAddErrors<Form extends HoneyFormBaseForm> = <
   FieldName extends keyof Form,
@@ -207,9 +284,6 @@ export type HoneyFormFieldAddErrors<Form extends HoneyFormBaseForm> = <
 
 /**
  * Represents a function that clears all validation errors for a specific form field.
- *
- * @template Form - The type representing the structure of the entire form.
- * @template FieldName - The specific field within the form for which errors will be cleared.
  *
  * @param fieldName - The name of the field whose errors should be cleared.
  */
@@ -226,11 +300,8 @@ export type HoneyFormFieldClearErrors<Form extends HoneyFormBaseForm> = <
  * at a specific index within the array. It is particularly useful in cases where a field represents
  * a list or collection of inputs that the user can dynamically add to or remove from.
  *
- * @template Form - The type representing the structure of the entire form.
- * @template FieldName - The name of the field within the form that holds an array of values.
- *
- * @param {FieldName} fieldName - The name of the form field that contains an array of values.
- * @param {number} formIndex - The index of the value to remove from the array.
+ * @param fieldName - The name of the form field that contains an array of values.
+ * @param formIndex - The index of the value to remove from the array.
  */
 export type HoneyFormFieldRemoveValue<Form extends HoneyFormBaseForm> = <
   FieldName extends keyof { [F in keyof Form]: Form[F] extends unknown[] ? F : never },
@@ -243,10 +314,7 @@ export type HoneyFormFieldRemoveValue<Form extends HoneyFormBaseForm> = <
  * A function type used to schedule validation for a different field in the form.
  * It triggers the validation process for the specified field, excluding the current one.
  *
- * @template Form - The type representing the structure of the entire form.
- * @template FieldName - The name of the current field for which validation is not scheduled.
- *
- * @param {Exclude<keyof Form, FieldName>} fieldName - The name of the field (other than the current one) to validate.
+ * @param fieldName - The name of the field (other than the current one) to validate.
  */
 export type HoneyFormFieldScheduleValidation<
   Form extends HoneyFormBaseForm,
@@ -259,13 +327,10 @@ export type HoneyFormFieldScheduleValidation<
  * This function takes a form field's name and its value and returns a JSON-compatible representation
  * of that value. It is useful for preparing form data for storage or transmission.
  *
- * @template Form - The type representing the structure of the entire form.
- * @template FieldName - The name of the specific field within the form being serialized.
+ * @param fieldName - The name of the field being serialized.
+ * @param fieldValue - The value of the field to be serialized.
  *
- * @param {FieldName} fieldName - The name of the field being serialized.
- * @param {Form[FieldName]} fieldValue - The value of the field to be serialized.
- *
- * @returns {JSONValue} - The serialized JSON-compatible value for the field.
+ * @returns The serialized JSON-compatible value for the field.
  */
 export type HoneyFormFieldSerializer<Form extends HoneyFormBaseForm> = <
   FieldName extends keyof Form,
@@ -280,13 +345,10 @@ export type HoneyFormFieldSerializer<Form extends HoneyFormBaseForm> = <
  * This function converts a raw value obtained from JSON into the appropriate form field value. It is
  * used to reconstruct the form state from stored or transmitted JSON data.
  *
- * @template Form - The type representing the structure of the entire form.
- * @template FieldName - The name of the specific field within the form being deserialized.
+ * @param fieldName - The name of the field for which the raw JSON value is being deserialized.
+ * @param rawValue - The raw JSON value to be deserialized.
  *
- * @param {FieldName} fieldName - The name of the field for which the raw JSON value is being deserialized.
- * @param {JSONValue} rawValue - The raw JSON value to be deserialized.
- *
- * @returns {Form[FieldName]} - The deserialized value suitable for the form field.
+ * @returns - The deserialized value suitable for the form field.
  */
 export type HoneyFormFieldDeserializer<Form extends HoneyFormBaseForm> = <
   FieldName extends keyof Form,

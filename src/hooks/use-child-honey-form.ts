@@ -10,21 +10,21 @@ import type {
   InitialFormFieldsStateResolverOptions,
   KeysWithArrayValues,
 } from '../types';
-import { registerChildForm, mapFieldsConfig, unregisterChildForm } from '../helpers';
+import { registerChildForm, mapFieldsConfig, unregisterChildForm, getFormValues } from '../helpers';
 
 import { useBaseHoneyForm } from './use-base-honey-form';
-import { createField } from '../field';
+import { createFormField } from '../field';
 
-type CreateInitialFormFieldsOptions<
+interface CreateInitialFormFieldsOptions<
   ParentForm extends HoneyFormBaseForm,
   ParentFieldName extends KeysWithArrayValues<ParentForm>,
   FormContext,
   ChildForm extends HoneyFormExtractChildForm<ParentForm[ParentFieldName]>,
-> = InitialFormFieldsStateResolverOptions<ChildForm, FormContext> & {
+> extends InitialFormFieldsStateResolverOptions<ChildForm, FormContext> {
   formIndex: number | undefined;
   parentField: HoneyFormParentField<ParentForm, ParentFieldName> | undefined;
   fieldsConfig: HoneyFormFieldsConfig<ChildForm, FormContext>;
-};
+}
 
 const createInitialFormFields = <
   ParentForm extends HoneyFormBaseForm,
@@ -57,7 +57,7 @@ const createInitialFormFields = <
       childFormFieldValue = childForm?.[fieldName];
     }
 
-    return createField(
+    return createFormField(
       fieldName,
       {
         ...fieldConfig,
@@ -65,7 +65,6 @@ const createInitialFormFields = <
           childFormFieldValue ?? formDefaultsRef.current[fieldName] ?? fieldConfig.defaultValue,
       },
       {
-        formContext,
         formFieldsRef,
         formDefaultsRef,
         setFieldValue,
@@ -74,6 +73,11 @@ const createInitialFormFields = <
         pushFieldValue,
         removeFieldValue,
         addFormFieldErrors,
+        executionContext: {
+          formContext,
+          formFields: formFieldsRef.current,
+          formValues: getFormValues(formFieldsRef.current),
+        },
       },
     );
   });
@@ -85,14 +89,9 @@ const createInitialFormFields = <
  * Hook for managing a child form within a parent form. This hook integrates with the parent form and allows for the
  * creation and validation of nested forms.
  *
- * @template ParentForm - The type representing the parent form structure.
- * @template ParentFieldName - The field name type for the parent form that will contain the array of child forms.
- * @template FormContext - The type representing the context associated with the form.
- * @template ChildForm - The type representing the child form structure.
+ * @param options - Options for the child form hook.
  *
- * @param {Object} options - Options for the child form hook.
- *
- * @returns {HoneyFormApi<ChildForm, FormContext>} - The API for interacting with the child form.
+ * @returns The API for interacting with the child form.
  */
 export const useChildHoneyForm = <
   ParentForm extends HoneyFormBaseForm,

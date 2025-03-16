@@ -2,7 +2,7 @@ import type { ChangeEvent } from 'react';
 import { StrictMode } from 'react';
 import { act, renderHook, waitFor } from '@testing-library/react';
 
-import type { CustomDateRangeForm, Nullable } from '../types';
+import type { CustomDateRangeForm } from '../types';
 
 import { useHoneyForm } from '../hooks';
 import { createHoneyFormDateFromValidator, createHoneyFormDateToValidator } from '../validators';
@@ -794,6 +794,8 @@ describe('Hook [use-honey-form]: Validator as the promise function', () => {
       }),
     );
 
+    expect(result.current.formFields.name.errors).toStrictEqual([]);
+
     act(() => result.current.formFields.name.setValue('Apple'));
     act(() => result.current.formFields.name.setValue('Apple'));
 
@@ -809,6 +811,38 @@ describe('Hook [use-honey-form]: Validator as the promise function', () => {
     act(() => result.current.formFields.name.setValue('Apple'));
 
     await waitFor(() => expect(result.current.formFields.name.errors).toStrictEqual([]));
+  });
+
+  it('should abort promise-based validator function when form is reset', async () => {
+    const { result } = renderHook(() =>
+      useHoneyForm<{ name: string }>({
+        fields: {
+          name: {
+            type: 'string',
+            validator: (value, { signal }) =>
+              new Promise(resolve => {
+                setTimeout(() => {
+                  resolve(signal.aborted ? 'Aborted' : true);
+                }, 0);
+              }),
+          },
+        },
+      }),
+    );
+
+    expect(result.current.formFields.name.errors).toStrictEqual([]);
+
+    act(() => result.current.formFields.name.setValue('Apple'));
+    act(() => result.current.resetForm());
+
+    await waitFor(() =>
+      expect(result.current.formFields.name.errors).toStrictEqual([
+        {
+          type: 'invalid',
+          message: 'Aborted',
+        },
+      ]),
+    );
   });
 
   it('should execute promise-based validator functions when submitting', async () => {

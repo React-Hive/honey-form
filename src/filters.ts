@@ -1,6 +1,6 @@
-import type { HoneyFormFieldFilter } from './types';
+import type { HoneyFormBaseForm, HoneyFormFieldFilter } from './types';
 
-type NumericFilterOptions = {
+interface NumericFilterOptions {
   /**
    * The maximum total length of the resulting numeric string.
    */
@@ -11,14 +11,14 @@ type NumericFilterOptions = {
    * @default true
    */
   allowLeadingZeros?: boolean;
-};
+}
 
 /**
  * Creates a filter function to allow only numeric input with optional length constraints.
  *
- * @param {NumericFilterOptions} options - Options for the numeric filter.
+ * @param options - Options for the numeric filter.
  *
- * @returns {function(string): string} - The filter function.
+ * @returns The filter function.
  *
  * @remarks
  * This function filters out any non-numeric characters and limits the length of the numeric input.
@@ -26,10 +26,15 @@ type NumericFilterOptions = {
  * If `allowLeadingZeros` is true, it preserves leading zeros.
  */
 export const createHoneyFormNumericFilter =
-  <FieldValue extends string | number | undefined, FormContext = undefined>({
-    maxLength,
-    allowLeadingZeros = true,
-  }: NumericFilterOptions = {}): HoneyFormFieldFilter<FieldValue, FormContext> =>
+  <
+    Form extends HoneyFormBaseForm,
+    FieldValue extends string | number | undefined,
+    FormContext = undefined,
+  >({ maxLength, allowLeadingZeros = true }: NumericFilterOptions = {}): HoneyFormFieldFilter<
+    Form,
+    FieldValue,
+    FormContext
+  > =>
   value => {
     if (!value) {
       return value;
@@ -49,7 +54,7 @@ export const createHoneyFormNumericFilter =
 /**
  * Options for configuring the number filter function.
  */
-export type HoneyFormNumberFilterOptions = {
+export interface HoneyFormNumberFilterOptions {
   /**
    * Whether to allow decimal numbers (e.g., allow a decimal point '.').
    *
@@ -80,14 +85,14 @@ export type HoneyFormNumberFilterOptions = {
    * @default 2
    */
   maxLengthAfterDecimal?: number;
-};
+}
 
 /**
  * Creates a filter function to allow numbers and format them based on provided options.
  *
- * @param {HoneyFormNumberFilterOptions} options - Options for configuring the number filter.
+ * @param options - Options for configuring the number filter.
  *
- * @returns {function(string): string} - The filter function that formats and filters the numeric string.
+ * @returns The filter function that formats and filters the numeric string.
  *
  * @remarks
  * The filter function performs the following operations:
@@ -97,13 +102,17 @@ export type HoneyFormNumberFilterOptions = {
  * 4. Ensures proper filtering with optional negative sign and decimal point.
  */
 export const createHoneyFormNumberFilter =
-  <FieldValue extends string | number | undefined, FormContext = undefined>({
+  <
+    Form extends HoneyFormBaseForm,
+    FieldValue extends string | number | undefined,
+    FormContext = undefined,
+  >({
     maxLengthBeforeDecimal = 9,
     maxLengthAfterDecimal = 2,
     decimal = true,
     negative = true,
     splitThousands = false,
-  }: HoneyFormNumberFilterOptions = {}): HoneyFormFieldFilter<FieldValue, FormContext> =>
+  }: HoneyFormNumberFilterOptions = {}): HoneyFormFieldFilter<Form, FieldValue, FormContext> =>
   value => {
     if (!value) {
       return value;

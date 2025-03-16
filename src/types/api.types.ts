@@ -17,7 +17,7 @@ import type {
 import type { HoneyFormFieldAddError, HoneyFormFieldAddErrors } from './field.types';
 import type { HoneyFormBaseForm, HoneyFormId, HoneyFormValues } from './common.types';
 
-export type HoneyFormApi<Form extends HoneyFormBaseForm, FormContext = undefined> = {
+export interface HoneyFormApi<Form extends HoneyFormBaseForm, FormContext = undefined> {
   /**
    * Form ID.
    */
@@ -168,15 +168,12 @@ export type HoneyFormApi<Form extends HoneyFormBaseForm, FormContext = undefined
    * Restores the form to an unfinished state.
    */
   restoreUnfinishedForm: HoneyFormRestoreUnfinishedForm;
-};
+}
 
 /**
  * Represents an API for managing multiple form instances.
- *
- * @template Form - The type representing the structure of the entire form.
- * @template FormContext - The type representing the context associated with the form.
  */
-export type MultiHoneyFormsApi<Form extends HoneyFormBaseForm, FormContext = undefined> = {
+export interface MultiHoneyFormsApi<Form extends HoneyFormBaseForm, FormContext = undefined> {
   /**
    * An array of form instances.
    *
@@ -192,7 +189,7 @@ export type MultiHoneyFormsApi<Form extends HoneyFormBaseForm, FormContext = und
   /**
    * Adds a new form instance to the list of managed forms.
    *
-   * @param {HoneyFormApi<Form, FormContext>} form - The form instance to add.
+   * @param form - The form instance to add.
    *
    * @returns {Function} - A function that, when called, will remove the added form from the list of managed forms.
    */
@@ -200,8 +197,8 @@ export type MultiHoneyFormsApi<Form extends HoneyFormBaseForm, FormContext = und
   /**
    * Replaces a form instance with a new form in the list of managed forms.
    *
-   * @param {HoneyFormApi<Form, FormContext>} targetForm - The form instance to be replaced.
-   * @param {HoneyFormApi<Form, FormContext>} newForm - The new form instance to replace the old one.
+   * @param targetForm - The form instance to be replaced.
+   * @param newForm - The new form instance to replace the old one.
    */
   replaceForm: (
     targetForm: HoneyFormApi<Form, FormContext>,
@@ -210,14 +207,14 @@ export type MultiHoneyFormsApi<Form extends HoneyFormBaseForm, FormContext = und
   /**
    * Inserts a new form instance at the specified index in the list of managed forms.
    *
-   * @param {number} index - The index at which to insert the form.
-   * @param {HoneyFormApi<Form, FormContext>} form - The form instance to insert.
+   * @param index - The index at which to insert the form.
+   * @param form - The form instance to insert.
    */
   insertForm: (index: number, form: HoneyFormApi<Form, FormContext>) => void;
   /**
    * Removes a form instance from the list of managed forms.
    *
-   * @param {HoneyFormApi<Form, FormContext>} targetForm - The form instance to remove.
+   * @param targetForm - The form instance to remove.
    */
   removeForm: (targetForm: HoneyFormApi<Form, FormContext>) => void;
   /**
@@ -227,17 +224,17 @@ export type MultiHoneyFormsApi<Form extends HoneyFormBaseForm, FormContext = und
   /**
    * Validates all forms.
    *
-   * @returns {Promise<boolean[]>} - A Promise resolving to an array of boolean values indicating the validation status of each form.
+   * @returns A Promise resolving to an array of boolean values indicating the validation status of each form.
    */
   validateForms: () => Promise<boolean[]>;
   /**
    * Submits all forms.
    *
-   * @returns {Promise<void[]>} - A Promise resolving to an array of values indicating the submission status of each form.
+   * @returns A Promise resolving to an array of values indicating the submission status of each form.
    */
   submitForms: () => Promise<void[]>;
   /**
    * Resets all forms. Reset their values to defaults and clear all errors.
    */
   resetForms: () => void;
-};
+}

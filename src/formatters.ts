@@ -1,18 +1,19 @@
-import type { HoneyFormFieldFormatter } from './types';
+import type { HoneyFormBaseForm, HoneyFormFieldFormatter } from './types';
 
 /**
  * Creates a string formatter that splits a string into segments of a specified length
  * and joins them using a delimiter.
  *
- * @param {number} segmentLength - The length of each segment.
- * @param {string} delimiter - The delimiter used to join segments. Default: "space".
- * @returns {function(string): string} - The string formatter function.
+ * @param segmentLength - The length of each segment.
+ * @param delimiter - The delimiter used to join segments. Default: "space".
+ *
+ * @returns The string formatter function.
  */
 export const createHoneyFormSplitStringFormatter =
-  <FieldValue extends string | undefined, FormContext = undefined>(
+  <Form extends HoneyFormBaseForm, FieldValue extends string | undefined, FormContext = undefined>(
     segmentLength: number,
     delimiter: string = ' ',
-  ): HoneyFormFieldFormatter<FieldValue, FormContext> =>
+  ): HoneyFormFieldFormatter<Form, FieldValue, FormContext> =>
   value => {
     if (!value) {
       return value;
@@ -27,7 +28,7 @@ export const createHoneyFormSplitStringFormatter =
     return segments.join(delimiter) as FieldValue;
   };
 
-export type HoneyFormNumberFormatterOptions = {
+export interface HoneyFormNumberFormatterOptions {
   /**
    * Whether to format as a decimal number (e.g., add trailing zeros).
    *
@@ -40,23 +41,31 @@ export type HoneyFormNumberFormatterOptions = {
    * @default 2
    */
   maxLengthAfterDecimal?: number;
-};
+}
 
 /**
  * Creates a number formatter function to format numeric values based on provided options.
  *
- * @param {HoneyFormNumberFormatterOptions} options - Options for the number formatter.
+ * @param options - Options for the number formatter.
  *
- * @returns {function(string): string} - The number formatter function.
+ * @returns The number formatter function.
  *
  * @remarks
  * This function formats numeric input strings according to the specified options.
  */
 export const createHoneyFormNumberFormatter =
-  <FieldValue extends string | number | undefined, FormContext = undefined>({
+  <
+    Form extends HoneyFormBaseForm,
+    FieldValue extends string | number | undefined,
+    FormContext = undefined,
+  >({
     decimal = true,
     maxLengthAfterDecimal = 2,
-  }: HoneyFormNumberFormatterOptions = {}): HoneyFormFieldFormatter<FieldValue, FormContext> =>
+  }: HoneyFormNumberFormatterOptions = {}): HoneyFormFieldFormatter<
+    Form,
+    FieldValue,
+    FormContext
+  > =>
   value => {
     if ((value !== 0 && !value) || !decimal) {
       return value;

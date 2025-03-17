@@ -4,4 +4,4 @@ interface JSONObject {
   [key: string]: JSONValue;
 }
 
-export type JSONValue = Nullable<string | number | boolean | JSONObject | JSONValue[]>;
+export type JSONValue = Nullable<string | number | boolean | undefined | JSONObject | JSONValue[]>;

@@ -8,6 +8,7 @@ import type {
   HoneyFormExtractChildForm,
 } from '../types';
 
+import { isFunction } from '../helpers';
 import { useChildHoneyFormProvider } from './child-honey-form.provider';
 import { useHoneyFormProvider } from './honey-form.provider';
 
@@ -47,7 +48,7 @@ export const ChildHoneyFormForm = <
 
   return (
     <div role="form" data-testid="child-honey-form" {...props}>
-      {typeof children === 'function' ? children(childHoneyFormApi, parentHoneyFormApi) : children}
+      {isFunction(children) ? children(childHoneyFormApi, parentHoneyFormApi) : children}
     </div>
   );
 };

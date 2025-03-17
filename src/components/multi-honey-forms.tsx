@@ -1,9 +1,9 @@
+import type { ReactNode } from 'react';
 import React, { createContext, useContext, useMemo } from 'react';
 
-import type { ReactNode } from 'react';
-
-import { useMultiHoneyForms } from '../hooks/use-multi-honey-forms';
 import type { HoneyFormBaseForm, MultiHoneyFormOptions, MultiHoneyFormsApi } from '../types';
+import { isFunction } from '../helpers';
+import { useMultiHoneyForms } from '../hooks/use-multi-honey-forms';
 
 export type MultiHoneyFormsContextValue<
   Form extends HoneyFormBaseForm,
@@ -41,7 +41,7 @@ export const MultiHoneyForms = <Form extends HoneyFormBaseForm, FormContext = un
 
   return (
     <MultiHoneyFormsContext.Provider value={contextValue}>
-      {typeof children === 'function' ? children(multiHoneyFormsApi) : children}
+      {isFunction(children) ? children(multiHoneyFormsApi) : children}
     </MultiHoneyFormsContext.Provider>
   );
 };

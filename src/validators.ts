@@ -8,7 +8,7 @@ import type {
   CustomDateRangeForm,
   HoneyFormObjectFieldValidator,
 } from './types';
-import { isNil } from './helpers';
+import { isFunction, isNil } from './helpers';
 
 export const INTERACTIVE_FIELD_TYPE_VALIDATORS_MAP: Record<
   HoneyFormInteractiveFieldType,
@@ -90,12 +90,10 @@ export const PASSIVE_FIELD_TYPE_VALIDATORS_MAP: Record<
  * Built-in field validator for checking if a field is required.
  */
 export const requiredBuiltInFieldValidator: HoneyFormFieldBuiltInValidator = ({
+  executionContext,
   fieldValue,
   fieldConfig,
   fieldErrors,
-  formContext,
-  formFields,
-  formValues,
 }) => {
   if (!fieldConfig.required) {
     return;
@@ -106,12 +104,8 @@ export const requiredBuiltInFieldValidator: HoneyFormFieldBuiltInValidator = ({
 
   let isErred = isEmpty;
 
-  if (isEmpty && typeof fieldConfig.required === 'function') {
-    isErred = fieldConfig.required({
-      formContext,
-      formFields,
-      formValues,
-    });
+  if (isEmpty && isFunction(fieldConfig.required)) {
+    isErred = fieldConfig.required(executionContext);
   }
 
   if (isErred) {
@@ -125,11 +119,12 @@ export const requiredBuiltInFieldValidator: HoneyFormFieldBuiltInValidator = ({
 /**
  * Built-in field validator for checking if a numeric field meets a minimum value requirement.
  */
-export const minValueBuiltInFieldValidator: HoneyFormInteractiveFieldBuiltInValidator = (
+export const minValueBuiltInFieldValidator: HoneyFormInteractiveFieldBuiltInValidator = ({
+  executionContext,
   fieldValue,
   fieldConfig,
   fieldErrors,
-) => {
+}) => {
   if (
     fieldConfig.type !== 'number' ||
     fieldConfig.min === undefined ||
@@ -138,16 +133,19 @@ export const minValueBuiltInFieldValidator: HoneyFormInteractiveFieldBuiltInVali
     return;
   }
 
+  const minValue = isFunction(fieldConfig.min)
+    ? fieldConfig.min(executionContext)
+    : fieldConfig.min;
+
   if (
     fieldValue === undefined ||
     Number.isNaN(fieldValue) ||
-    (typeof fieldValue === 'number' && fieldValue < fieldConfig.min)
+    (typeof fieldValue === 'number' && fieldValue < minValue)
   ) {
     fieldErrors.push({
       type: 'min',
       message:
-        fieldConfig.errorMessages?.min ??
-        `The value must be greater than or equal to ${fieldConfig.min}`,
+        fieldConfig.errorMessages?.min ?? `The value must be greater than or equal to ${minValue}`,
     });
   }
 };
@@ -155,11 +153,12 @@ export const minValueBuiltInFieldValidator: HoneyFormInteractiveFieldBuiltInVali
 /**
  * Built-in field validator for checking if a numeric field meets a maximum value requirement.
  */
-export const maxValueBuiltInFieldValidator: HoneyFormInteractiveFieldBuiltInValidator = (
+export const maxValueBuiltInFieldValidator: HoneyFormInteractiveFieldBuiltInValidator = ({
+  executionContext,
   fieldValue,
   fieldConfig,
   fieldErrors,
-) => {
+}) => {
   if (
     fieldConfig.type !== 'number' ||
     fieldConfig.max === undefined ||
@@ -168,15 +167,15 @@ export const maxValueBuiltInFieldValidator: HoneyFormInteractiveFieldBuiltInVali
     return;
   }
 
-  if (
-    Number.isNaN(fieldValue) ||
-    (typeof fieldValue === 'number' && fieldValue > fieldConfig.max)
-  ) {
+  const maxValue = isFunction(fieldConfig.max)
+    ? fieldConfig.max(executionContext)
+    : fieldConfig.max;
+
+  if (Number.isNaN(fieldValue) || (typeof fieldValue === 'number' && fieldValue > maxValue)) {
     fieldErrors.push({
       type: 'max',
       message:
-        fieldConfig.errorMessages?.max ??
-        `The value must be less than or equal to ${fieldConfig.max}`,
+        fieldConfig.errorMessages?.max ?? `The value must be less than or equal to ${maxValue}`,
     });
   }
 };
@@ -184,11 +183,12 @@ export const maxValueBuiltInFieldValidator: HoneyFormInteractiveFieldBuiltInVali
 /**
  * Validator for enforcing a numeric field value within a specified range.
  */
-export const minMaxValueBuiltInFieldValidator: HoneyFormInteractiveFieldBuiltInValidator = (
+export const minMaxValueBuiltInFieldValidator: HoneyFormInteractiveFieldBuiltInValidator = ({
+  executionContext,
   fieldValue,
   fieldConfig,
   fieldErrors,
-) => {
+}) => {
   if (
     fieldConfig.type !== 'number' ||
     fieldConfig.min === undefined ||
@@ -197,17 +197,24 @@ export const minMaxValueBuiltInFieldValidator: HoneyFormInteractiveFieldBuiltInV
     return;
   }
 
+  const minValue = isFunction(fieldConfig.min)
+    ? fieldConfig.min(executionContext)
+    : fieldConfig.min;
+
+  const maxValue = isFunction(fieldConfig.max)
+    ? fieldConfig.max(executionContext)
+    : fieldConfig.max;
+
   if (
     fieldValue === undefined ||
     Number.isNaN(fieldValue) ||
-    (typeof fieldValue === 'number' &&
-      (fieldValue < fieldConfig.min || fieldValue > fieldConfig.max))
+    (typeof fieldValue === 'number' && (fieldValue < minValue || fieldValue > maxValue))
   ) {
     fieldErrors.push({
       type: 'minMax',
       message:
         fieldConfig.errorMessages?.minMax ??
-        `The value must be between ${fieldConfig.min} and ${fieldConfig.max}`,
+        `The value must be between ${minValue} and ${maxValue}`,
     });
   }
 };
@@ -215,11 +222,12 @@ export const minMaxValueBuiltInFieldValidator: HoneyFormInteractiveFieldBuiltInV
 /**
  * Built-in field validator for checking if a string field meets minimum length requirements.
  */
-export const minLengthBuiltInFieldValidator: HoneyFormInteractiveFieldBuiltInValidator = (
+export const minLengthBuiltInFieldValidator: HoneyFormInteractiveFieldBuiltInValidator = ({
+  executionContext,
   fieldValue,
   fieldConfig,
   fieldErrors,
-) => {
+}) => {
   if (
     (fieldConfig.type !== 'string' &&
       fieldConfig.type !== 'email' &&
@@ -232,12 +240,16 @@ export const minLengthBuiltInFieldValidator: HoneyFormInteractiveFieldBuiltInVal
     return;
   }
 
-  if (fieldValue.length < fieldConfig.min) {
+  const minLength = isFunction(fieldConfig.min)
+    ? fieldConfig.min(executionContext)
+    : fieldConfig.min;
+
+  if (fieldValue.length < minLength) {
     fieldErrors.push({
       type: 'min',
       message:
         fieldConfig.errorMessages?.min ??
-        `The length must be greater than or equal to ${fieldConfig.min} characters`,
+        `The length must be greater than or equal to ${minLength} characters`,
     });
   }
 };
@@ -245,11 +257,12 @@ export const minLengthBuiltInFieldValidator: HoneyFormInteractiveFieldBuiltInVal
 /**
  * Built-in field validator for checking if a string field meets maximum length requirements.
  */
-export const maxLengthBuiltInFieldValidator: HoneyFormInteractiveFieldBuiltInValidator = (
+export const maxLengthBuiltInFieldValidator: HoneyFormInteractiveFieldBuiltInValidator = ({
+  executionContext,
   fieldValue,
   fieldConfig,
   fieldErrors,
-) => {
+}) => {
   if (
     (fieldConfig.type !== 'string' &&
       fieldConfig.type !== 'email' &&
@@ -262,12 +275,16 @@ export const maxLengthBuiltInFieldValidator: HoneyFormInteractiveFieldBuiltInVal
     return;
   }
 
-  if (fieldValue.length > fieldConfig.max) {
+  const maxLength = isFunction(fieldConfig.max)
+    ? fieldConfig.max(executionContext)
+    : fieldConfig.max;
+
+  if (fieldValue.length > maxLength) {
     fieldErrors.push({
       type: 'max',
       message:
         fieldConfig.errorMessages?.max ??
-        `The length must be less than or equal to ${fieldConfig.max} characters`,
+        `The length must be less than or equal to ${maxLength} characters`,
     });
   }
 };
@@ -275,11 +292,12 @@ export const maxLengthBuiltInFieldValidator: HoneyFormInteractiveFieldBuiltInVal
 /**
  * Built-in field validator for checking if a string field meets minimum and maximum length requirements.
  */
-export const minMaxLengthBuiltInFieldValidator: HoneyFormInteractiveFieldBuiltInValidator = (
+export const minMaxLengthBuiltInFieldValidator: HoneyFormInteractiveFieldBuiltInValidator = ({
+  executionContext,
   fieldValue,
   fieldConfig,
   fieldErrors,
-) => {
+}) => {
   if (
     (fieldConfig.type !== 'string' &&
       fieldConfig.type !== 'email' &&
@@ -292,13 +310,20 @@ export const minMaxLengthBuiltInFieldValidator: HoneyFormInteractiveFieldBuiltIn
     return;
   }
 
-  if (fieldValue.length < fieldConfig.min || fieldValue.length > fieldConfig.max) {
-    if (fieldConfig.min === fieldConfig.max) {
+  const minLength = isFunction(fieldConfig.min)
+    ? fieldConfig.min(executionContext)
+    : fieldConfig.min;
+
+  const maxLength = isFunction(fieldConfig.max)
+    ? fieldConfig.max(executionContext)
+    : fieldConfig.max;
+
+  if (fieldValue.length < minLength || fieldValue.length > maxLength) {
+    if (minLength === maxLength) {
       fieldErrors.push({
         type: 'minMax',
         message:
-          fieldConfig.errorMessages?.minMax ??
-          `The length must be exactly ${fieldConfig.min} characters`,
+          fieldConfig.errorMessages?.minMax ?? `The length must be exactly ${minLength} characters`,
       });
       //
       return;
@@ -308,7 +333,7 @@ export const minMaxLengthBuiltInFieldValidator: HoneyFormInteractiveFieldBuiltIn
       type: 'minMax',
       message:
         fieldConfig.errorMessages?.minMax ??
-        `The length must be between ${fieldConfig.min} and ${fieldConfig.max} characters`,
+        `The length must be between ${minLength} and ${maxLength} characters`,
     });
   }
 };
@@ -485,7 +510,7 @@ export const BUILT_IN_FIELD_VALIDATORS: HoneyFormFieldBuiltInValidator[] = [
   requiredBuiltInFieldValidator,
 ];
 
-export const BUILT_IN_INTERACTIVE_FIELD_VALIDATORS = [
+export const BUILT_IN_INTERACTIVE_FIELD_VALIDATORS: HoneyFormInteractiveFieldBuiltInValidator[] = [
   // number
   minValueBuiltInFieldValidator,
   maxValueBuiltInFieldValidator,

@@ -338,7 +338,8 @@ type HoneyFormFieldConfigProps = Omit<
  * - A `function`: Determines dynamically if the field is required based on the current value
  *   of the field and the execution context of the form.
  *
- * @param executionContext - Additional execution context, which may include form state, validation data, or other relevant information.
+ * @param executionContext - Additional execution context, which may include form state,
+ *                           validation data, or other relevant information.
  *
  * @returns If `true`, the field is considered required; otherwise, `false`.
  */
@@ -452,9 +453,31 @@ interface BaseFieldConfig<
   /**
    * The debounced time in milliseconds for the `onChange` callback.
    * This sets a delay before the callback is invoked after a field value change.
+   *
+   * @default undefined
    */
   onChangeDebounce?: number;
 }
+
+/**
+ * Defines the minimum allowable value for an interactive form field.
+ *
+ * This can either be a fixed number or a function that dynamically determines
+ * the minimum value based on the form's execution context.
+ */
+type HoneyFormInteractiveFieldMin<Form extends HoneyFormBaseForm, FormContext> =
+  | number
+  | ((executionContext: HoneyFormBaseExecutionContext<Form, FormContext>) => number);
+
+/**
+ * Defines the maximum allowable value for an interactive form field.
+ *
+ * This can either be a fixed number or a function that dynamically determines
+ * the maximum value based on the form's execution context.
+ */
+type HoneyFormInteractiveFieldMax<Form extends HoneyFormBaseForm, FormContext> =
+  | number
+  | ((executionContext: HoneyFormBaseExecutionContext<Form, FormContext>) => number);
 
 /**
  * Represents the configuration for an interactive form field within the context of a specific form.
@@ -476,17 +499,27 @@ export interface HoneyFormInteractiveFieldConfig<
    */
   mode?: HoneyFormFieldMode;
   /**
-   * The minimum allowed value for numbers or minimum length for strings.
+   * Specifies the minimum allowable value or length for the field.
+   *
+   * - For `numeric` fields, this defines the minimum value allowed.
+   * - For `string` fields, this represents the minimum required length.
+   * - Can be a fixed number or a function that dynamically determines
+   *  the minimum based on the form's execution context.
    *
    * @default undefined
    */
-  min?: number;
+  min?: HoneyFormInteractiveFieldMin<Form, FormContext>;
   /**
-   * The maximum allowed value for numbers or maximum length for strings.
+   * Specifies the maximum allowable value or length for the field.
+   *
+   * - For `numeric` fields, this defines the maximum value allowed.
+   * - For `string` fields, this represents the maximum permitted length.
+   * - Can be a fixed number or a function that dynamically determines
+   *  the maximum based on the form's execution context.
    *
    * @default undefined
    */
-  max?: number;
+  max?: HoneyFormInteractiveFieldMax<Form, FormContext>;
   /**
    * Indicates if decimal values are allowed.
    *
@@ -494,13 +527,13 @@ export interface HoneyFormInteractiveFieldConfig<
    */
   decimal?: boolean;
   /**
-   * Indicates if negative values for number field type are allowed.
+   * Indicates if negative values for `number` field type are allowed.
    *
    * @default true
    */
   negative?: boolean;
   /**
-   * The maximum number of decimal places allowed for number field type.
+   * The maximum number of decimal places allowed for `number` field type.
    *
    * @default 2
    */
@@ -636,7 +669,8 @@ interface HoneyFormFieldBuiltInValidatorContext<
   FieldName extends keyof Form,
   FormContext = undefined,
   FieldValue extends Form[FieldName] = Form[FieldName],
-> extends HoneyFormBaseExecutionContext<Form, FormContext> {
+> {
+  executionContext: HoneyFormBaseExecutionContext<Form, FormContext>;
   fieldValue: FieldValue | undefined;
   fieldConfig: HoneyFormFieldConfig<Form, FieldName, FormContext, FieldValue>;
   fieldErrors: HoneyFormFieldError[];
@@ -653,17 +687,27 @@ export type HoneyFormFieldBuiltInValidator = <
   validatorContext: HoneyFormFieldBuiltInValidatorContext<Form, FieldName, FormContext>,
 ) => void;
 
+interface HoneyFormInteractiveFieldBuiltInValidatorContext<
+  Form extends HoneyFormBaseForm,
+  FieldName extends keyof Form,
+  FormContext = undefined,
+  FieldValue extends Form[FieldName] = Form[FieldName],
+> {
+  executionContext: HoneyFormBaseExecutionContext<Form, FormContext>;
+  fieldValue: FieldValue | undefined;
+  fieldConfig: HoneyFormInteractiveFieldConfig<Form, FieldName, FormContext, FieldValue>;
+  fieldErrors: HoneyFormFieldError[];
+}
+
 /**
  * Represents a built-in form field validator function specifically for interactive form fields.
  */
 export type HoneyFormInteractiveFieldBuiltInValidator = <
   Form extends HoneyFormBaseForm,
   FieldName extends keyof Form,
-  FieldValue extends Form[FieldName] = Form[FieldName],
+  FormContext = undefined,
 >(
-  fieldValue: FieldValue | undefined,
-  fieldConfig: HoneyFormInteractiveFieldConfig<Form, FieldName, undefined, FieldValue>,
-  fieldErrors: HoneyFormFieldError[],
+  validatorContext: HoneyFormInteractiveFieldBuiltInValidatorContext<Form, FieldName, FormContext>,
 ) => void;
 
 export type HoneyFormFieldValueConvertor<FieldValue> = (value: unknown) => FieldValue;

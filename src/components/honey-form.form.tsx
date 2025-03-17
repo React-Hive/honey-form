@@ -3,8 +3,8 @@ import React, { forwardRef } from 'react';
 import type { Ref, FormEventHandler, FormHTMLAttributes, ReactNode } from 'react';
 import type { HoneyFormBaseForm, HoneyFormApi } from '../types';
 
+import { errorMessage, isFunction } from '../helpers';
 import { useHoneyFormProvider } from './honey-form.provider';
-import { errorMessage } from '../helpers';
 
 export type HoneyFormFormContent<Form extends HoneyFormBaseForm, FormContext = undefined> =
   | ReactNode
@@ -42,7 +42,7 @@ const HoneyFormComponent = <Form extends HoneyFormBaseForm, FormContext = undefi
       noValidate
       {...props}
     >
-      {typeof children === 'function' ? children(honeyFormApi) : children}
+      {isFunction(children) ? children(honeyFormApi) : children}
     </form>
   );
 };

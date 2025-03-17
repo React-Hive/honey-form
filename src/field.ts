@@ -41,6 +41,10 @@ import {
   PASSIVE_FIELD_TYPE_VALIDATORS_MAP,
 } from './validators';
 import {
+  noop,
+  isNil,
+  isFunction,
+  isPromise,
   checkIfHoneyFormFieldIsInteractive,
   checkIfFieldIsNestedForms,
   checkIfFieldIsObject,
@@ -49,10 +53,7 @@ import {
   getFormValues,
   checkIsSkipFormField,
   scheduleFieldValidation,
-  noop,
-  isPromise,
   mapFormFields,
-  isNil,
 } from './helpers';
 import { HONEY_FORM_ERRORS } from './constants';
 
@@ -831,8 +832,7 @@ const executeFieldTypeValidator = <
     });
   }
 
-  // If the validation response is not a Promise, return it
-  if (!(validationResult instanceof Promise)) {
+  if (!isPromise(validationResult)) {
     return validationResult;
   }
 
@@ -845,7 +845,8 @@ interface ExecuteInternalFieldValidatorsOptions<
   FieldName extends keyof Form,
   FormContext,
   FieldValue extends Form[FieldName] = Form[FieldName],
-> extends HoneyFormBaseExecutionContext<Form, FormContext> {
+> {
+  executionContext: HoneyFormBaseExecutionContext<Form, FormContext>;
   fieldValue: FieldValue | undefined;
   fieldConfig: HoneyFormFieldConfig<Form, FieldName, FormContext>;
   fieldErrors: HoneyFormFieldError[];
@@ -872,7 +873,10 @@ const executeInternalFieldValidators = <
 
   if (checkIfHoneyFormFieldIsInteractive(fieldConfig)) {
     BUILT_IN_INTERACTIVE_FIELD_VALIDATORS.forEach(validator => {
-      validator(validatorOptions.fieldValue, fieldConfig, validatorOptions.fieldErrors);
+      validator({
+        ...validatorOptions,
+        fieldConfig,
+      });
     });
   }
 };
@@ -991,12 +995,12 @@ interface ExecuteFieldValidatorOptions<
    */
   fieldValue: FieldValue | undefined;
   /**
-   * Optional callback function to complete asynchronous validation for the field.
+   * Callback function to complete asynchronous validation for the field.
    *
    * This function should be called once the asynchronous validation process is finished to indicate
    * that the field's validation status has been resolved.
    */
-  finishFieldAsyncValidation?: HoneyFormFieldFinishAsyncValidation<Form, FieldName>;
+  finishFieldAsyncValidation: HoneyFormFieldFinishAsyncValidation<Form, FieldName>;
 }
 
 /**
@@ -1033,7 +1037,7 @@ export const executeFieldValidator = <
   // Do not run additional validators if the default field type validator failed
   if (validationResult === null || validationResult === true) {
     executeInternalFieldValidators({
-      ...executionContext,
+      executionContext,
       fieldErrors,
       fieldValue: sanitizedValue,
       fieldConfig: nextFormField.config,
@@ -1060,7 +1064,7 @@ export const executeFieldValidator = <
 
         handleFieldAsyncValidationResult(nextFormField, validationResponse)
           .catch(noop)
-          .finally(() => finishFieldAsyncValidation?.(fieldName));
+          .finally(() => finishFieldAsyncValidation(fieldName));
 
         return nextFormField;
       } else {
@@ -1152,7 +1156,7 @@ export const executeFieldValidatorAsync = async <
   // Do not run additional validators if the default field type validator failed
   if (validationResult === null || validationResult === true) {
     executeInternalFieldValidators({
-      ...executionContext,
+      executionContext,
       fieldValue: sanitizedValue,
       fieldConfig: formField.config,
       fieldErrors,
@@ -1276,7 +1280,7 @@ const resetDependentFields = <
     if (Array.isArray(dependsOn)) {
       isDependent = dependsOn.includes(fieldName);
       //
-    } else if (typeof dependsOn === 'function') {
+    } else if (isFunction(dependsOn)) {
       const formValues = getFormValues(formFields);
 
       isDependent = dependsOn(initiatorFieldName, formFields[otherFieldName].cleanValue, {

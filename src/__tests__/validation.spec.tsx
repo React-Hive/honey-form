@@ -35,6 +35,42 @@ describe('Hook [use-honey-form]: Validation', () => {
     ]);
   });
 
+  it('should validate text field against dynamic min length constraint', async () => {
+    const { result } = renderHook(() =>
+      useHoneyForm<{ text: string; minLength: number }>({
+        fields: {
+          minLength: {
+            type: 'number',
+            defaultValue: 1,
+            onChange: (_, { formFields }) => formFields.text.validate(),
+          },
+          text: {
+            type: 'string',
+            min: ({ formValues, formFields }) =>
+              formValues.minLength ?? formFields.minLength.defaultValue,
+          },
+        },
+      }),
+    );
+
+    expect(result.current.formFields.text.errors).toStrictEqual([]);
+
+    act(() => result.current.formFields.text.setValue('a'));
+
+    expect(result.current.formFields.text.errors).toStrictEqual([]);
+
+    act(() => result.current.formFields.minLength.setValue(2));
+
+    await waitFor(() =>
+      expect(result.current.formFields.text.errors).toStrictEqual([
+        {
+          type: 'min',
+          message: 'The length must be greater than or equal to 2 characters',
+        },
+      ]),
+    );
+  });
+
   it('should validate field value against maximum value constraint', () => {
     const { result } = renderHook(() =>
       useHoneyForm<{ age: number }>({
@@ -60,6 +96,42 @@ describe('Hook [use-honey-form]: Validation', () => {
         message: 'The value must be less than or equal to 65',
       },
     ]);
+  });
+
+  it('should validate text field against dynamic max length constraint', async () => {
+    const { result } = renderHook(() =>
+      useHoneyForm<{ text: string; maxLength: number }>({
+        fields: {
+          maxLength: {
+            type: 'number',
+            defaultValue: 3,
+            onChange: (_, { formFields }) => formFields.text.validate(),
+          },
+          text: {
+            type: 'string',
+            max: ({ formValues, formFields }) =>
+              formValues.maxLength ?? formFields.maxLength.defaultValue,
+          },
+        },
+      }),
+    );
+
+    expect(result.current.formFields.text.errors).toStrictEqual([]);
+
+    act(() => result.current.formFields.text.setValue('abc'));
+
+    expect(result.current.formFields.text.errors).toStrictEqual([]);
+
+    act(() => result.current.formFields.maxLength.setValue(2));
+
+    await waitFor(() =>
+      expect(result.current.formFields.text.errors).toStrictEqual([
+        {
+          type: 'max',
+          message: 'The length must be less than or equal to 2 characters',
+        },
+      ]),
+    );
   });
 
   it('should submit form when field is optional with set max value', async () => {
@@ -118,13 +190,14 @@ describe('Hook [use-honey-form]: Validation', () => {
         },
       }),
     );
+
     expect(result.current.formFields.age.errors).toStrictEqual([]);
 
-    act(() => {
+    act(() =>
       result.current.formFields.age.props.onChange({
         target: { value: '78' },
-      } as ChangeEvent<HTMLInputElement>);
-    });
+      } as ChangeEvent<HTMLInputElement>),
+    );
 
     expect(result.current.formFields.age.errors).toStrictEqual([
       {
@@ -283,7 +356,7 @@ describe('Hook [use-honey-form]: Validation', () => {
     ]);
   });
 
-  it('should invoke the field validator function once when the field value is set', () => {
+  it('should call the field validator function once when the field value is set', () => {
     const onValidate = jest.fn().mockReturnValue(true);
 
     const { result } = renderHook(() =>
@@ -302,7 +375,7 @@ describe('Hook [use-honey-form]: Validation', () => {
     expect(onValidate.mock.calls.length).toBe(1);
   });
 
-  it('should invoke the field validator function every time the field value changes (with StrictMode)', () => {
+  it('should call the field validator function every time the field value changes (with StrictMode)', () => {
     const onValidate = jest.fn().mockReturnValue(true);
 
     const { result } = renderHook(
@@ -366,7 +439,14 @@ describe('Hook [use-honey-form]: Validation', () => {
 
     await act(() => result.current.submitForm());
 
-    expect(onSubmit).toHaveBeenCalledWith({ age1: 2, age2: 3, age3: 4 }, { context: undefined });
+    expect(onSubmit).toHaveBeenCalledWith(
+      {
+        age1: 2,
+        age2: 3,
+        age3: 4,
+      },
+      { context: undefined },
+    );
   });
 
   it('should check required string field type when submitting', async () => {

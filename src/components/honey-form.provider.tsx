@@ -3,6 +3,7 @@ import React, { createContext, useContext } from 'react';
 
 import type { HoneyFormBaseForm, HoneyFormApi, HoneyFormOptions } from '../types';
 
+import { isFunction } from '../helpers';
 import { useHoneyForm } from '../hooks';
 
 type HoneyFormContextValue<Form extends HoneyFormBaseForm, FormContext = undefined> = HoneyFormApi<
@@ -27,7 +28,7 @@ export const HoneyFormProvider = <Form extends HoneyFormBaseForm, FormContext = 
 
   return (
     <HoneyFormContext.Provider value={honeyFormApi}>
-      {typeof children === 'function' ? children(honeyFormApi) : children}
+      {isFunction(children) ? children(honeyFormApi) : children}
     </HoneyFormContext.Provider>
   );
 };

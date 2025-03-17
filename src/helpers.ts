@@ -34,8 +34,10 @@ export const noop = () => {
 
 export const genericMemo: <T>(component: T) => T = React.memo;
 
+export const isFunction = (value: unknown) => typeof value === 'function';
+
 export const isPromise = <T = unknown>(value: unknown): value is Promise<T> =>
-  typeof (value as Promise<T>)?.then === 'function';
+  isFunction((value as Promise<T>)?.then);
 
 /**
  * Checks if a value is null or undefined.

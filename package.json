@@ -1,6 +1,6 @@
 {
   "name": "@react-hive/honey-form",
-  "version": "3.0.0",
+  "version": "3.1.0",
   "description": "The TS library to build the fully customized forms using React framework",
   "keywords": [
     "react",

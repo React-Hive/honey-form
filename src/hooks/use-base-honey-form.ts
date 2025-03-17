@@ -41,6 +41,9 @@ import {
   processSkippableFields,
 } from '../field';
 import {
+  isFunction,
+  errorMessage,
+  warningMessage,
   checkIfHoneyFormFieldIsInteractive,
   checkIfFieldIsNestedForms,
   forEachFormError,
@@ -51,8 +54,6 @@ import {
   iterateFormFields,
   convertServerErrors,
   runChildFormsValidation,
-  warningMessage,
-  errorMessage,
   deserializeFormFromQueryString,
   serializeFormToQueryString,
   mapFormFieldsAsync,
@@ -104,7 +105,7 @@ export const useBaseHoneyForm = <
       }
     }
 
-    return typeof defaults === 'function' ? {} : { ...defaults };
+    return isFunction(defaults) ? {} : { ...defaults };
   });
 
   const formDefaultsRef = useRef<HoneyFormDefaultValues<Form>>(formDefaults);
@@ -161,6 +162,10 @@ export const useBaseHoneyForm = <
 
     // If `onChange` is provided, set a timeout for debouncing and call `onChange` after the timeout.
     if (onChange) {
+      if (onChangeFormTimeoutIdRef.current) {
+        clearTimeout(onChangeFormTimeoutIdRef.current);
+      }
+
       const initiateOnChange = () => {
         const cleanFormValues = getSubmitFormValues(
           parentField,
@@ -190,10 +195,6 @@ export const useBaseHoneyForm = <
         : onChangeDebounce;
 
       if (debounceTime) {
-        if (onChangeFormTimeoutIdRef.current) {
-          clearTimeout(onChangeFormTimeoutIdRef.current);
-        }
-
         onChangeFormTimeoutIdRef.current = window.setTimeout(() => {
           onChangeFormTimeoutIdRef.current = null;
 
@@ -220,9 +221,7 @@ export const useBaseHoneyForm = <
     const fieldConfig = nextFormFields[fieldName].config;
 
     if (fieldConfig.onChange) {
-      onChangeFieldsTimeoutIdRef.current[fieldName] = window.setTimeout(() => {
-        onChangeFieldsTimeoutIdRef.current[fieldName] = null;
-
+      const initiateOnChange = () => {
         const formValues = getFormValues(nextFormFields);
 
         const cleanValue = checkIfFieldIsNestedForms(fieldConfig)
@@ -230,10 +229,16 @@ export const useBaseHoneyForm = <
           : nextFormFields[fieldName].cleanValue;
 
         fieldConfig.onChange(cleanValue, {
-          formContext,
           formValues,
+          formContext: formContextRef.current,
           formFields: nextFormFields,
         });
+      };
+
+      onChangeFieldsTimeoutIdRef.current[fieldName] = window.setTimeout(() => {
+        onChangeFieldsTimeoutIdRef.current[fieldName] = null;
+
+        initiateOnChange();
       }, fieldConfig.onChangeDebounce ?? 0);
     }
 
@@ -275,8 +280,8 @@ export const useBaseHoneyForm = <
             const fieldConfig = nextFormFields[fieldName].config;
 
             const executionContext: HoneyFormBaseExecutionContext<Form, FormContext> = {
-              formContext,
               formValues,
+              formContext: formContextRef.current,
               formFields: nextFormFields,
             };
 
@@ -290,6 +295,7 @@ export const useBaseHoneyForm = <
                   executionContext,
                   formFieldsValidationControllerRef,
                   fieldName,
+                  finishFieldAsyncValidation,
                   fieldValue: filteredValue,
                 })
               : getNextErrorsFreeField(nextFormFields[fieldName]);
@@ -301,8 +307,8 @@ export const useBaseHoneyForm = <
           });
 
           const executionContext: HoneyFormBaseExecutionContext<Form, FormContext> = {
-            formContext,
             formValues,
+            formContext: formContextRef.current,
             formFields: nextFormFields,
           };
 
@@ -323,7 +329,7 @@ export const useBaseHoneyForm = <
         parentField.validate();
       }
     },
-    [formContext],
+    [],
   );
 
   const setFormErrors = useCallback<HoneyFormSetFormErrors<Form>>(formErrors => {
@@ -390,8 +396,8 @@ export const useBaseHoneyForm = <
     }
 
     const executionContext: HoneyFormBaseExecutionContext<Form, FormContext> = {
-      formContext,
       formFields,
+      formContext: formContextRef.current,
       formValues: getFormValues(formFields),
     };
 
@@ -514,18 +520,20 @@ export const useBaseHoneyForm = <
       throw new Error(HONEY_FORM_ERRORS.emptyFormFieldsRef);
     }
 
+    const formValues = getFormValues(formFields);
+
+    const executionContext: HoneyFormBaseExecutionContext<Form, FormContext> = {
+      formFields,
+      formValues,
+      formContext: formContextRef.current,
+    };
+
     const formField = formFields[fieldName];
 
     let filteredValue: Form[typeof fieldName];
 
     if (checkIfHoneyFormFieldIsInteractive(formField.config) && formField.config.filter) {
-      const formValues = getFormValues(formFields);
-
-      filteredValue = formField.config.filter(formField.rawValue, {
-        formFields,
-        formValues,
-        formContext,
-      });
+      filteredValue = formField.config.filter(formField.rawValue, executionContext);
       //
     } else if (checkIfFieldIsNestedForms(formField.config)) {
       filteredValue = formField.getChildFormsValues() as Form[typeof fieldName];
@@ -534,16 +542,11 @@ export const useBaseHoneyForm = <
       filteredValue = formField.rawValue;
     }
 
-    const executionContext: HoneyFormBaseExecutionContext<Form, FormContext> = {
-      formContext,
-      formValues,
-      formFields,
-    };
-
     const nextFormField = executeFieldValidator({
       executionContext,
       formFieldsValidationControllerRef,
       fieldName,
+      finishFieldAsyncValidation,
       fieldValue: filteredValue,
     });
 
@@ -605,8 +608,8 @@ export const useBaseHoneyForm = <
           removeFieldValue,
           addFormFieldErrors,
           executionContext: {
-            formContext,
             formFields,
+            formContext: formContextRef.current,
             formValues: getFormValues(formFields),
           },
         }),
@@ -615,7 +618,7 @@ export const useBaseHoneyForm = <
       formFieldsRef.current = nextFormFields;
       setFormFields(nextFormFields);
     },
-    [formContext],
+    [],
   );
 
   /**
@@ -678,9 +681,9 @@ export const useBaseHoneyForm = <
       const formValues = getFormValues(formFields);
 
       const executionContext: HoneyFormBaseExecutionContext<Form, FormContext> = {
-        formContext,
         formFields,
         formValues,
+        formContext: formContextRef.current,
       };
 
       const nextFormFields = await mapFormFieldsAsync(formFields, async (fieldName, formField) => {
@@ -729,7 +732,7 @@ export const useBaseHoneyForm = <
 
       await onAfterValidate?.({
         isFormErred,
-        formContext,
+        formContext: formContextRef.current,
         formFields: nextFormFields,
         formValues: getFormValues(nextFormFields),
         formErrors: getFormErrors(nextFormFields),
@@ -737,7 +740,7 @@ export const useBaseHoneyForm = <
 
       return !isFormErred;
     },
-    [formContext, onAfterValidate],
+    [onAfterValidate],
   );
 
   /**
@@ -772,7 +775,6 @@ export const useBaseHoneyForm = <
 
   const getInitialFormFieldsState = () =>
     initialFormFieldsStateResolver({
-      formContext,
       formFieldsRef,
       formDefaultsRef,
       setFieldValue,
@@ -781,6 +783,7 @@ export const useBaseHoneyForm = <
       pushFieldValue,
       removeFieldValue,
       addFormFieldErrors,
+      formContext: formContextRef.current,
     });
 
   const resetForm = useCallback<HoneyFormReset<Form>>(newFormDefaults => {
@@ -837,7 +840,12 @@ export const useBaseHoneyForm = <
             isSubmitting: true,
           });
 
-          const submitData = getSubmitFormValues(parentField, formContext, formFieldsRef.current);
+          const submitData = getSubmitFormValues(
+            parentField,
+            formContextRef.current,
+            formFieldsRef.current,
+          );
+
           const submitHandler = formSubmitHandler || onSubmit;
 
           const serverErrors = await submitHandler(submitData, { formContext });
@@ -888,7 +896,7 @@ export const useBaseHoneyForm = <
   }, [externalValues, validateExternalValues]);
 
   useEffect(() => {
-    if (typeof defaults === 'function') {
+    if (isFunction(defaults)) {
       setIsFormDefaultsFetching(true);
 
       defaults()

@@ -450,10 +450,8 @@ interface BaseFieldConfig<
    */
   onChange?: HoneyFormFieldOnChange<Form, FieldName, FormContext, FieldValue>;
   /**
-   * The debounce time in milliseconds for the `onChange` callback.
+   * The debounced time in milliseconds for the `onChange` callback.
    * This sets a delay before the callback is invoked after a field value change.
-   *
-   * @default 0
    */
   onChangeDebounce?: number;
 }
@@ -1002,25 +1000,11 @@ interface HoneyFormOnChangeContext<
   ParentFieldName extends KeysWithArrayValues<ParentForm>,
   Form extends HoneyFormBaseForm,
   FormContext,
-> {
-  /**
-   * The contextual information for the form.
-   */
-  formContext: FormContext;
+> extends HoneyFormBaseExecutionContext<Form, FormContext> {
   /**
    * A reference to a parent form field.
    */
   parentField: HoneyFormParentField<ParentForm, ParentFieldName>;
-  /**
-   * An object that contains the state of the form fields.
-   *
-   * @default {}
-   */
-  formFields: HoneyFormFields<Form, FormContext>;
-  /**
-   * The current values of all form fields.
-   */
-  formValues: HoneyFormValues<Form>;
   /**
    * An object that includes all field errors.
    * When a field has any error, the field appears in this object as a key, and the value is an array of field errors.
@@ -1177,7 +1161,7 @@ export interface FormOptions<
    */
   onChange?: HoneyFormOnChange<ParentForm, ParentFieldName, Form, FormContext>;
   /**
-   * The debounce time in milliseconds for the `onChange` callback.
+   * The debounced time in milliseconds for the `onChange` callback.
    * This sets a delay before the callback is invoked after any form field value change.
    *
    * @default undefined

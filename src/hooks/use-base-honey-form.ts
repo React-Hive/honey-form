@@ -133,7 +133,7 @@ export const useBaseHoneyForm = <
    * using a debouncing mechanism. It also handles query string synchronization if `storage` is set to `'qs'`.
    *
    * @param initiatorFieldName - The name of the field that triggered the change. Used to determine
-   *                             a custom debounce delay (`onChangeDebounce`) if configured.
+   *                             a custom-debounced delay `onChangeDebounce` if configured.
    * @param fn - A function that returns the updated form fields after processing the change.
    * @param isSkipOnChange - If `true`, applies the changes immediately without debouncing.
    *
@@ -169,14 +169,19 @@ export const useBaseHoneyForm = <
         );
 
         const formValues = getFormValues(nextFormFields);
+
+        const executionContext: HoneyFormBaseExecutionContext<Form, FormContext> = {
+          formValues,
+          formFields: nextFormFields,
+          formContext: formContextRef.current,
+        };
+
         const formErrors = getFormErrors(nextFormFields);
 
         onChange(cleanFormValues, {
+          ...executionContext,
           parentField,
-          formValues,
           formErrors,
-          formFields: nextFormFields,
-          formContext: formContextRef.current,
         });
       };
 

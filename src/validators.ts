@@ -8,6 +8,7 @@ import type {
   CustomDateRangeForm,
   HoneyFormObjectFieldValidator,
 } from './types';
+import { isNil } from './helpers';
 
 export const INTERACTIVE_FIELD_TYPE_VALIDATORS_MAP: Record<
   HoneyFormInteractiveFieldType,
@@ -101,10 +102,7 @@ export const requiredBuiltInFieldValidator: HoneyFormFieldBuiltInValidator = ({
   }
 
   const isEmpty =
-    fieldValue === undefined ||
-    fieldValue === null ||
-    fieldValue === '' ||
-    (Array.isArray(fieldValue) && !fieldValue.length);
+    isNil(fieldValue) || fieldValue === '' || (Array.isArray(fieldValue) && !fieldValue.length);
 
   let isErred = isEmpty;
 

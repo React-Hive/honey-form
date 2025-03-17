@@ -52,6 +52,7 @@ import {
   noop,
   isPromise,
   mapFormFields,
+  isNil,
 } from './helpers';
 import { HONEY_FORM_ERRORS } from './constants';
 
@@ -619,30 +620,32 @@ export const getNextResetField = <
   formField: HoneyFormField<Form, FieldName, FormContext>,
   isResetToDefault: boolean,
 ): HoneyFormField<Form, FieldName, FormContext> => {
+  const fieldConfig = formField.config;
+
   const errorsFreeField = getNextErrorsFreeField(formField);
 
-  const newFieldValue = isResetToDefault ? errorsFreeField.defaultValue : undefined;
+  const nextFieldValue = isResetToDefault ? errorsFreeField.defaultValue : undefined;
 
-  const props = checkIfHoneyFormFieldIsInteractive(formField.config)
+  const props = checkIfHoneyFormFieldIsInteractive(fieldConfig)
     ? {
         ...errorsFreeField.props,
-        value: newFieldValue ? String(newFieldValue) : '',
+        value: isNil(nextFieldValue) ? '' : String(nextFieldValue),
       }
     : undefined;
 
-  const passiveProps = checkIfFieldIsPassive(formField.config)
+  const passiveProps = checkIfFieldIsPassive(fieldConfig)
     ? {
         ...errorsFreeField.passiveProps,
-        ...(formField.config.type === 'checkbox' && {
+        ...(fieldConfig.type === 'checkbox' && {
           checked: errorsFreeField.defaultValue as boolean,
         }),
       }
     : undefined;
 
-  const objectProps = checkIfFieldIsObject(formField.config)
+  const objectProps = checkIfFieldIsObject(fieldConfig)
     ? {
         ...errorsFreeField.objectProps,
-        value: newFieldValue,
+        value: nextFieldValue,
       }
     : undefined;
 
@@ -651,9 +654,9 @@ export const getNextResetField = <
     props,
     passiveProps,
     objectProps,
-    value: newFieldValue,
-    rawValue: newFieldValue,
-    cleanValue: newFieldValue,
+    value: nextFieldValue,
+    rawValue: nextFieldValue,
+    cleanValue: nextFieldValue,
   };
 };
 

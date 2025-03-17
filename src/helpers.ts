@@ -37,21 +37,22 @@ export const genericMemo: <T>(component: T) => T = React.memo;
 export const isPromise = <T = unknown>(value: unknown): value is Promise<T> =>
   typeof (value as Promise<T>)?.then === 'function';
 
+/**
+ * Checks if a value is null or undefined.
+ *
+ * @param value - The value to check.
+ *
+ * @returns `true` if the value is `null` or `undefined`, otherwise `false`.
+ */
+export const isNil = (value: unknown): value is null | undefined =>
+  value === undefined || value === null;
+
 export const warningMessage = (message: string) => {
   console.warn(`[honey-form]: ${message}`);
 };
 
 export const errorMessage = (message: string) => {
   console.error(`[honey-form]: ${message}`);
-};
-
-export const getHoneyFormUniqueId = () => {
-  const timestamp = Date.now().toString();
-  const randomNum = Math.floor(Math.random() * 10000)
-    .toString()
-    .padStart(4, '0');
-
-  return `${timestamp}${randomNum}`;
 };
 
 /**
@@ -122,8 +123,8 @@ export const forEachFormField = <Form extends HoneyFormBaseForm, FormContext>(
  *
  * @param formFields - An object containing form fields to be processed.
  * @param callback - A function that processes each field.
- *  It receives the field name and its corresponding field configuration
- *  and returns the transformed field.
+ *                   It receives the field name and its corresponding field configuration
+ *                   and returns the transformed field.
  *
  * @returns A new object where each field has been transformed by the callback function.
  */
@@ -148,8 +149,8 @@ export const mapFormFields = <Form extends HoneyFormBaseForm, FormContext>(
  *
  * @param formFields - An object containing form fields to be processed.
  * @param callback - An asynchronous function that processes each field.
- *  It receives the field name and its corresponding field configuration,
- *  then returns a Promise resolving to the transformed field.
+ *                   It receives the field name and its corresponding field configuration,
+ *                   then returns a Promise resolving to the transformed field.
  *
  * @returns A promise that resolves to a new object where each field has been transformed by the callback function.
  */
@@ -178,8 +179,8 @@ export const mapFormFieldsAsync = async <Form extends HoneyFormBaseForm, FormCon
  * @param formFields - An object containing form fields to be processed.
  * @param callback - A function that receives a field name and its configuration,
  *                   returning a transformed value.
- * @param filterCallback - (Optional) A function that receives a field name and its configuration,
- *                         returning `true` to exclude the field from processing.
+ * @param [filterCallback] - A function that receives a field name and its configuration,
+ *                           returning `true` to exclude the field from processing.
  *
  * @returns An object where each field is transformed based on the callback function.
  */
@@ -195,14 +196,14 @@ export const iterateFormFields = <Form extends HoneyFormBaseForm, FormContext, I
   ) => boolean,
 ): Record<keyof Form, Item> =>
   Object.keys(formFields ?? {}).reduce(
-    (result, fieldName: keyof Form) => {
+    (nextFormFields, fieldName: keyof Form) => {
       if (filterCallback?.(fieldName, formFields[fieldName]) === false) {
-        return result;
+        return nextFormFields;
       }
 
-      result[fieldName] = callback(fieldName, formFields[fieldName]);
+      nextFormFields[fieldName] = callback(fieldName, formFields[fieldName]);
 
-      return result;
+      return nextFormFields;
     },
     {} as Record<keyof Form, Item>,
   );
@@ -211,7 +212,8 @@ export const iterateFormFields = <Form extends HoneyFormBaseForm, FormContext, I
  * Iterates over each form field error and invokes the provided callback.
  *
  * @param formErrors - An object containing form field errors.
- * @param callback - A callback function that is invoked for each form field, providing the field name and its associated errors.
+ * @param callback - A callback function that is invoked for each form field,
+ *                   providing the field name and its associated errors.
  */
 export const forEachFormError = <Form extends HoneyFormBaseForm>(
   formErrors: HoneyFormErrors<Form>,

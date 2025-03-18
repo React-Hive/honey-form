@@ -191,8 +191,11 @@ interface HoneyFormFieldSetValueOptions {
    * is set. If `false`, validation will not occur unless there are existing field errors.
    *
    * @remarks
-   * Even if this is set to `false`, validation will still be executed if any validation errors
-   * exist for the field.
+   * - If this is set to `false`, validation will still be executed if any validation errors
+   *   exist for the field.
+   * - If the field's `mode` is set to `'submit'`, the value of `isValidate` will be ignored.
+   *   Validation for the field will only be triggered when the form is submitted, regardless of
+   *   the value of this flag.
    *
    * @default true
    */

@@ -38,14 +38,13 @@ export type HoneyFormFieldType =
   | HoneyFormNestedFormsFieldType;
 
 /**
- * Specifies the modes for form field interactions.
+ * Defines the possible modes for handling form field interactions and validations.
  *
- * - `change`: Actions like validation are triggered whenever the field value changes (e.g., typing in a text input).
- * - `blur`: Actions are triggered when the field loses focus, allowing for deferred validation or processing.
- *
- * This type is commonly used to determine when validation or form updates should occur for a given field.
+ * - `change`: Triggers validation or updates whenever the field value changes (e.g., typing in an input).
+ * - `blur`: Executes validation or processing only when the field loses focus.
+ * - `submit`: Defers validation until the form is submitted, useful for reducing interruptions during user input.
  */
-export type HoneyFormFieldMode = 'change' | 'blur';
+export type HoneyFormFieldMode = 'change' | 'blur' | 'submit';
 
 /**
  * Enumerates the various error types that can occur within a form field.

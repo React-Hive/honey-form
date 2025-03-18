@@ -34,6 +34,10 @@ export const noop = () => {
 
 export const genericMemo: <T>(component: T) => T = React.memo;
 
+export const isString = (value: unknown): value is string => typeof value === 'string';
+
+export const isNumber = (value: unknown): value is number => typeof value === 'number';
+
 export const isFunction = (value: unknown) => typeof value === 'function';
 
 export const isPromise = <T = unknown>(value: unknown): value is Promise<T> =>
@@ -609,7 +613,7 @@ const deserializeForm = <Form extends HoneyFormBaseForm>(
       return value;
     }
 
-    if (typeof value === 'string' && (value[0] === '{' || value[0] === '[')) {
+    if (isString(value) && (value[0] === '{' || value[0] === '[')) {
       value = JSON.parse(value) as JSONValue;
     }
 

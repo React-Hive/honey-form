@@ -43,6 +43,8 @@ import {
 import {
   noop,
   isNil,
+  isString,
+  isNumber,
   isFunction,
   isPromise,
   checkIfHoneyFormFieldIsInteractive,
@@ -76,12 +78,12 @@ const DEFAULT_FIELD_VALUE_CONVERTORS_MAP: Partial<
   Record<HoneyFormFieldType, HoneyFormFieldValueConvertor<any>>
 > = {
   number: (value: number | string | undefined) => {
-    if (typeof value === 'string' && value) {
+    if (isString(value) && value) {
       // Try to replace thousands separators because they can be added by number filter
       return Number(value.replace(/,/g, ''));
     }
 
-    return typeof value === 'number' ? value : undefined;
+    return isNumber(value) ? value : undefined;
   },
 };
 
@@ -156,7 +158,7 @@ interface InteractiveFieldPropsOptions<
  *
  * @returns The interactive field properties.
  */
-const getInteractiveFieldProps = <
+const getInteractiveFormFieldProps = <
   Form extends HoneyFormBaseForm,
   FieldName extends keyof Form,
   FormContext,
@@ -214,7 +216,7 @@ interface PassiveFieldPropsOptions<
  *
  * @returns The passive field properties.
  */
-const getPassiveFieldProps = <
+const getPassiveFormFieldProps = <
   Form extends HoneyFormBaseForm,
   FieldName extends keyof Form,
   FormContext,
@@ -275,7 +277,7 @@ interface ObjectFieldPropsOptions<
  *
  * @returns The object field properties.
  */
-const getObjectFieldProps = <
+const getObjectFormFieldProps = <
   Form extends HoneyFormBaseForm,
   FieldName extends keyof Form,
   FormContext,
@@ -328,7 +330,7 @@ interface FieldPropsOptions<
  *
  * @returns The properties for the form field based on its type.
  */
-const getFieldProps = <
+const getFormFieldProps = <
   Form extends HoneyFormBaseForm,
   FieldName extends keyof Form,
   FormContext,
@@ -342,7 +344,7 @@ const getFieldProps = <
     return {
       passiveProps: undefined,
       objectProps: undefined,
-      props: getInteractiveFieldProps(fieldName, fieldValue, {
+      props: getInteractiveFormFieldProps(fieldName, fieldValue, {
         formFieldRef,
         fieldConfig,
         setFieldValue,
@@ -354,7 +356,7 @@ const getFieldProps = <
     return {
       props: undefined,
       objectProps: undefined,
-      passiveProps: getPassiveFieldProps(fieldName, {
+      passiveProps: getPassiveFormFieldProps(fieldName, {
         formFieldRef,
         fieldConfig,
         setFieldValue,
@@ -366,7 +368,7 @@ const getFieldProps = <
     return {
       props: undefined,
       passiveProps: undefined,
-      objectProps: getObjectFieldProps(fieldName, fieldValue, {
+      objectProps: getObjectFormFieldProps(fieldName, fieldValue, {
         formFieldRef,
         fieldConfig,
         setFieldValue,
@@ -456,7 +458,7 @@ export const createFormField = <
     ...fieldConfig,
   };
 
-  const fieldProps = getFieldProps(fieldName, resultValue, {
+  const fieldProps = getFormFieldProps(fieldName, resultValue, {
     formFieldRef,
     setFieldValue,
     fieldConfig: resultFieldConfig,
@@ -1134,11 +1136,10 @@ export const executeFieldValidatorAsync = async <
   let filteredValue: Form[FieldName] = formField.rawValue;
 
   if (checkIfHoneyFormFieldIsInteractive(formField.config)) {
-    filteredValue =
-      typeof filteredValue === 'string'
-        ? // Use trimStart() to do not allow typing from a space
-          ((filteredValue as string).trimStart() as Form[FieldName])
-        : filteredValue;
+    filteredValue = isString(filteredValue)
+      ? // Use trimStart() to do not allow typing from a space
+        ((filteredValue as string).trimStart() as Form[FieldName])
+      : filteredValue;
 
     if (formField.config.filter) {
       filteredValue = formField.config.filter(filteredValue, executionContext);
@@ -1548,10 +1549,9 @@ export const getNextFieldsState = <
   let filteredValue: Form[FieldName] = fieldValue;
 
   if (checkIfHoneyFormFieldIsInteractive(nextFormField.config)) {
-    filteredValue =
-      typeof fieldValue === 'string'
-        ? ((fieldValue as string).trimStart() as Form[FieldName])
-        : fieldValue;
+    filteredValue = isString(fieldValue)
+      ? ((fieldValue as string).trimStart() as Form[FieldName])
+      : fieldValue;
 
     if (nextFormField.config.filter) {
       filteredValue = nextFormField.config.filter(filteredValue, executionContext);

@@ -4,10 +4,11 @@ import { act, renderHook, waitFor } from '@testing-library/react';
 
 import type { CustomDateRangeForm } from '../types';
 
+import { defer } from '../tests.helpers';
 import { useHoneyForm } from '../hooks';
 import { createHoneyFormDateFromValidator, createHoneyFormDateToValidator } from '../validators';
 
-describe('Hook [use-honey-form]: Validation', () => {
+describe('Hook [use-honey-form]: Min/Max validation', () => {
   it('should validate field value against minimum value constraint', () => {
     const { result } = renderHook(() =>
       useHoneyForm<{ age: number }>({
@@ -19,6 +20,7 @@ describe('Hook [use-honey-form]: Validation', () => {
         },
       }),
     );
+
     expect(result.current.formFields.age.errors).toStrictEqual([]);
 
     act(() => result.current.formFields.age.setValue(5));
@@ -82,6 +84,7 @@ describe('Hook [use-honey-form]: Validation', () => {
         },
       }),
     );
+
     expect(result.current.formFields.age.errors).toStrictEqual([]);
 
     act(() => result.current.formFields.age.setValue(65));
@@ -166,6 +169,7 @@ describe('Hook [use-honey-form]: Validation', () => {
         },
       }),
     );
+
     expect(result.current.formFields.age.errors).toStrictEqual([]);
 
     act(() => result.current.formFields.age.setValue(70));
@@ -218,6 +222,7 @@ describe('Hook [use-honey-form]: Validation', () => {
         },
       }),
     );
+
     expect(result.current.formFields.name.errors).toStrictEqual([]);
 
     act(() => result.current.formFields.name.setValue('12'));
@@ -245,6 +250,7 @@ describe('Hook [use-honey-form]: Validation', () => {
         },
       }),
     );
+
     expect(result.current.formFields.name.errors).toStrictEqual([]);
 
     act(() => result.current.formFields.name.setValue('A'));
@@ -272,6 +278,7 @@ describe('Hook [use-honey-form]: Validation', () => {
         },
       }),
     );
+
     expect(result.current.formFields.email.errors).toStrictEqual([]);
 
     act(() => result.current.formFields.email.setValue('A12@gmail.com'));
@@ -320,6 +327,7 @@ describe('Hook [use-honey-form]: Validation', () => {
         },
       }),
     );
+
     expect(result.current.formFields.name.errors).toStrictEqual([]);
 
     act(() => result.current.formFields.name.setValue('Antonio'));
@@ -344,6 +352,7 @@ describe('Hook [use-honey-form]: Validation', () => {
         },
       }),
     );
+
     expect(result.current.formFields.code.errors).toStrictEqual([]);
 
     act(() => result.current.formFields.code.setValue('A81J'));
@@ -356,99 +365,31 @@ describe('Hook [use-honey-form]: Validation', () => {
     ]);
   });
 
-  it('should call the field validator function once when the field value is set', () => {
-    const onValidate = jest.fn().mockReturnValue(true);
-
+  it('should prioritize numeric-only error over min/max error', async () => {
     const { result } = renderHook(() =>
-      useHoneyForm<{ name: string }>({
+      useHoneyForm<{ age: number }>({
         fields: {
-          name: {
-            type: 'string',
-            validator: onValidate,
+          age: {
+            type: 'number',
+            min: 18,
+            max: 100,
           },
         },
       }),
     );
 
-    act(() => result.current.formFields.name.setValue('Apple'));
+    act(() => result.current.formFields.age.setValue(1.5));
 
-    expect(onValidate.mock.calls.length).toBe(1);
-  });
-
-  it('should call the field validator function every time the field value changes (with StrictMode)', () => {
-    const onValidate = jest.fn().mockReturnValue(true);
-
-    const { result } = renderHook(
-      () =>
-        useHoneyForm<{ name: string }>({
-          fields: {
-            name: {
-              type: 'string',
-              validator: onValidate,
-            },
-          },
-        }),
+    expect(result.current.formFields.age.errors).toStrictEqual([
       {
-        wrapper: StrictMode,
+        message: 'Only numerics are allowed',
+        type: 'invalid',
       },
-    );
-
-    act(() => result.current.formFields.name.setValue('A'));
-    act(() => result.current.formFields.name.setValue('Ap'));
-    act(() => result.current.formFields.name.setValue('App'));
-
-    expect(onValidate.mock.calls.length).toBe(3);
+    ]);
   });
+});
 
-  it('should handle multiple field validators affecting each other', async () => {
-    const onSubmit = jest.fn();
-
-    const { result } = renderHook(() =>
-      useHoneyForm<{ age1: number; age2: number; age3: number }>({
-        fields: {
-          age1: {
-            type: 'number',
-            defaultValue: 1,
-            validator: (value, { formFields }) => value < formFields.age2.value,
-          },
-          age2: {
-            type: 'number',
-            defaultValue: 2,
-            validator: (value, { formFields }) =>
-              value > formFields.age1.value && value < formFields.age3.value,
-          },
-          age3: {
-            type: 'number',
-            defaultValue: 3,
-            validator: (value, { formFields }) => value > formFields.age2.value,
-          },
-        },
-        onSubmit,
-      }),
-    );
-
-    act(() => {
-      result.current.formFields.age1.setValue(2);
-      result.current.formFields.age2.setValue(3);
-      result.current.formFields.age3.setValue(4);
-    });
-
-    expect(result.current.formFields.age1.value).toBe(2);
-    expect(result.current.formFields.age2.value).toBe(3);
-    expect(result.current.formFields.age3.value).toBe(4);
-
-    await act(() => result.current.submitForm());
-
-    expect(onSubmit).toHaveBeenCalledWith(
-      {
-        age1: 2,
-        age2: 3,
-        age3: 4,
-      },
-      { context: undefined },
-    );
-  });
-
+describe('Hook [use-honey-form]: Required field validation', () => {
   it('should check required string field type when submitting', async () => {
     const onSubmit = jest.fn();
 
@@ -601,6 +542,128 @@ describe('Hook [use-honey-form]: Validation', () => {
   });
 });
 
+describe('Hook [use-honey-form]: Validation', () => {
+  it('should call the field validator function once when the field value is set', () => {
+    const validator = jest.fn().mockReturnValue(true);
+
+    const { result } = renderHook(() =>
+      useHoneyForm<{ name: string }>({
+        fields: {
+          name: {
+            type: 'string',
+            validator,
+          },
+        },
+      }),
+    );
+
+    act(() => result.current.formFields.name.setValue('Apple'));
+
+    expect(validator).toHaveBeenCalled();
+  });
+
+  it('should call the field validator function every time the field value changes (with StrictMode)', () => {
+    const onValidate = jest.fn().mockReturnValue(true);
+
+    const { result } = renderHook(
+      () =>
+        useHoneyForm<{ name: string }>({
+          fields: {
+            name: {
+              type: 'string',
+              validator: onValidate,
+            },
+          },
+        }),
+      {
+        wrapper: StrictMode,
+      },
+    );
+
+    act(() => result.current.formFields.name.setValue('A'));
+    act(() => result.current.formFields.name.setValue('Ap'));
+    act(() => result.current.formFields.name.setValue('App'));
+
+    expect(onValidate).toHaveBeenCalledTimes(3);
+  });
+
+  it('should handle multiple field validators affecting each other', async () => {
+    const onSubmit = jest.fn();
+
+    const { result } = renderHook(() =>
+      useHoneyForm<{ age1: number; age2: number; age3: number }>({
+        fields: {
+          age1: {
+            type: 'number',
+            defaultValue: 1,
+            validator: (value, { formFields }) => value < formFields.age2.value,
+          },
+          age2: {
+            type: 'number',
+            defaultValue: 2,
+            validator: (value, { formFields }) =>
+              value > formFields.age1.value && value < formFields.age3.value,
+          },
+          age3: {
+            type: 'number',
+            defaultValue: 3,
+            validator: (value, { formFields }) => value > formFields.age2.value,
+          },
+        },
+        onSubmit,
+      }),
+    );
+
+    act(() => {
+      result.current.formFields.age1.setValue(2);
+      result.current.formFields.age2.setValue(3);
+      result.current.formFields.age3.setValue(4);
+    });
+
+    expect(result.current.formFields.age1.value).toBe(2);
+    expect(result.current.formFields.age2.value).toBe(3);
+    expect(result.current.formFields.age3.value).toBe(4);
+
+    await act(() => result.current.submitForm());
+
+    expect(onSubmit).toHaveBeenCalledWith(
+      {
+        age1: 2,
+        age2: 3,
+        age3: 4,
+      },
+      { context: undefined },
+    );
+  });
+
+  it('should validate the field only on form submission when mode is `submit`', async () => {
+    const onSubmit = jest.fn();
+    const validator = jest.fn().mockReturnValue(true);
+
+    const { result } = renderHook(() =>
+      useHoneyForm<{ name: string }>({
+        fields: {
+          name: {
+            type: 'string',
+            mode: 'submit',
+            validator,
+          },
+        },
+        onSubmit,
+      }),
+    );
+
+    act(() => result.current.formFields.name.setValue('Apple'));
+
+    expect(validator).not.toHaveBeenCalled();
+
+    await act(() => result.current.submitForm());
+
+    expect(validator).toHaveBeenCalledTimes(1);
+    expect(onSubmit).toHaveBeenCalled();
+  });
+});
+
 describe('Hook [use-honey-form]: `onAfterValidate` callback function', () => {
   it('should invoke `onAfterValidate` callback when form validation passes without errors', async () => {
     const onAfterValidate = jest.fn().mockResolvedValue(null);
@@ -647,7 +710,7 @@ describe('Hook [use-honey-form]: `onAfterValidate` callback function', () => {
 });
 
 describe('Hook [use-honey-form]: Direct form fields validation', () => {
-  it('should validate all form fields', async () => {
+  it('should validate the form', async () => {
     const { result } = renderHook(() =>
       useHoneyForm<{ name: string; age: number }>({
         fields: {
@@ -706,7 +769,7 @@ describe('Hook [use-honey-form]: Direct form fields validation', () => {
     expect(Object.keys(result.current.formErrors).length).toBe(2);
   });
 
-  it('should validate specified form fields', async () => {
+  it('should validate target form fields', async () => {
     const { result } = renderHook(() =>
       useHoneyForm<{ name: string; age: number }>({
         fields: {
@@ -790,7 +853,7 @@ describe('Hook [use-honey-form]: Direct form fields validation', () => {
   });
 });
 
-describe('Hook [use-honey-form]: Validator as the promise function', () => {
+describe('Hook [use-honey-form]: Validator as the Promise function', () => {
   it('should handle promise-based validator function (resolve)', async () => {
     const { result } = renderHook(() =>
       useHoneyForm<{ name: string }>({
@@ -798,11 +861,7 @@ describe('Hook [use-honey-form]: Validator as the promise function', () => {
           name: {
             type: 'string',
             validator: value =>
-              new Promise(resolve => {
-                setTimeout(() => {
-                  resolve(value === 'Apple' ? 'Apples are not accepted!' : true);
-                }, 0);
-              }),
+              defer(() => (value === 'Apple' ? 'Apples are not accepted!' : true)),
           },
         },
       }),
@@ -863,12 +922,7 @@ describe('Hook [use-honey-form]: Validator as the promise function', () => {
         fields: {
           name: {
             type: 'string',
-            validator: (value, { signal }) =>
-              new Promise(resolve => {
-                setTimeout(() => {
-                  resolve(signal.aborted ? 'Aborted' : true);
-                }, 0);
-              }),
+            validator: (value, { signal }) => defer(() => (signal.aborted ? 'Aborted' : true)),
           },
         },
       }),
@@ -899,12 +953,7 @@ describe('Hook [use-honey-form]: Validator as the promise function', () => {
         fields: {
           name: {
             type: 'string',
-            validator: (value, { signal }) =>
-              new Promise(resolve => {
-                setTimeout(() => {
-                  resolve(signal.aborted ? 'Aborted' : true);
-                }, 0);
-              }),
+            validator: (value, { signal }) => defer(() => (signal.aborted ? 'Aborted' : true)),
           },
         },
       }),
@@ -934,11 +983,7 @@ describe('Hook [use-honey-form]: Validator as the promise function', () => {
           name: {
             type: 'string',
             validator: value =>
-              new Promise(resolve => {
-                setTimeout(() => {
-                  resolve(value === 'Apple' ? 'Apples are not accepted!' : true);
-                }, 0);
-              }),
+              defer(() => (value === 'Apple' ? 'Apples are not accepted!' : true)),
           },
         },
         onSubmit,
@@ -967,12 +1012,7 @@ describe('Hook [use-honey-form]: Validator as the promise function', () => {
         fields: {
           name: {
             type: 'string',
-            validator: () =>
-              new Promise(resolve => {
-                setTimeout(() => {
-                  resolve(null);
-                }, 0);
-              }),
+            validator: () => defer(() => null),
           },
         },
       }),

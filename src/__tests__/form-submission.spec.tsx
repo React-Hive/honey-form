@@ -2,7 +2,7 @@ import type { ChangeEvent } from 'react';
 import { act, renderHook } from '@testing-library/react';
 import { useHoneyForm } from '../hooks';
 
-describe('Hook [use-honey-form]: Submitting', () => {
+describe('Hook [use-honey-form]: Form submission', () => {
   it('should submit default fields values', async () => {
     const onSubmit = jest.fn();
 
@@ -91,7 +91,7 @@ describe('Hook [use-honey-form]: Submitting', () => {
     expect(result.current.isFormSubmitted).toBeFalsy();
   });
 
-  it('should call custom submit handler function', async () => {
+  it('should call custom submit form handler function', async () => {
     const submitHandler = jest.fn();
 
     const { result } = renderHook(() =>
@@ -118,37 +118,6 @@ describe('Hook [use-honey-form]: Submitting', () => {
       { name: 'Ken', age: undefined },
       { context: undefined },
     );
-  });
-
-  it('should prioritize numeric-only error over min/max error', async () => {
-    const onSubmit = jest.fn();
-
-    const { result } = renderHook(() =>
-      useHoneyForm<{ age: number }>({
-        fields: {
-          age: {
-            type: 'number',
-            min: 18,
-            max: 100,
-          },
-        },
-        onSubmit,
-      }),
-    );
-
-    act(() => result.current.formFields.age.setValue(1.5));
-
-    await act(() => result.current.submitForm());
-
-    expect(onSubmit).not.toHaveBeenCalled();
-    expect(result.current.formErrors).toStrictEqual({
-      age: [
-        {
-          message: 'Only numerics are allowed',
-          type: 'invalid',
-        },
-      ],
-    });
   });
 
   it('should prevent form submission with errors', async () => {
@@ -181,7 +150,7 @@ describe('Hook [use-honey-form]: Submitting', () => {
     expect(onSubmit).not.toHaveBeenCalled();
   });
 
-  it('should reset form after successful submission using `resetAfterSubmit` option', async () => {
+  it('should reset a form after successful submission when `resetAfterSubmit` is `true`', async () => {
     const onSubmit = jest.fn();
 
     const { result } = renderHook(() =>

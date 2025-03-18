@@ -1,7 +1,8 @@
+import type { ChangeEvent } from 'react';
 import React, { useEffect } from 'react';
 import { act, fireEvent, render, renderHook, waitFor } from '@testing-library/react';
 
-import type { ChangeEvent } from 'react';
+import { defer } from '../tests.helpers';
 import { useHoneyForm } from '../hooks';
 
 describe('Hook [use-honey-form]: General', () => {
@@ -521,13 +522,9 @@ describe('Hook [use-honey-form]: Default values', () => {
           },
         },
         defaults: () =>
-          new Promise(resolve => {
-            setTimeout(() => {
-              resolve({
-                name: 'apple',
-              });
-            });
-          }),
+          defer(() => ({
+            name: 'apple',
+          })),
       }),
     );
 

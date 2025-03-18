@@ -8,7 +8,7 @@ import type {
   CustomDateRangeForm,
   HoneyFormObjectFieldValidator,
 } from './types';
-import { isFunction, isNil } from './helpers';
+import { isFunction, isNumber, isString, isNil } from './helpers';
 
 export const INTERACTIVE_FIELD_TYPE_VALIDATORS_MAP: Record<
   HoneyFormInteractiveFieldType,
@@ -140,7 +140,7 @@ export const minValueBuiltInFieldValidator: HoneyFormInteractiveFieldBuiltInVali
   if (
     fieldValue === undefined ||
     Number.isNaN(fieldValue) ||
-    (typeof fieldValue === 'number' && fieldValue < minValue)
+    (isNumber(fieldValue) && fieldValue < minValue)
   ) {
     fieldErrors.push({
       type: 'min',
@@ -171,7 +171,7 @@ export const maxValueBuiltInFieldValidator: HoneyFormInteractiveFieldBuiltInVali
     ? fieldConfig.max(executionContext)
     : fieldConfig.max;
 
-  if (Number.isNaN(fieldValue) || (typeof fieldValue === 'number' && fieldValue > maxValue)) {
+  if (Number.isNaN(fieldValue) || (isNumber(fieldValue) && fieldValue > maxValue)) {
     fieldErrors.push({
       type: 'max',
       message:
@@ -208,7 +208,7 @@ export const minMaxValueBuiltInFieldValidator: HoneyFormInteractiveFieldBuiltInV
   if (
     fieldValue === undefined ||
     Number.isNaN(fieldValue) ||
-    (typeof fieldValue === 'number' && (fieldValue < minValue || fieldValue > maxValue))
+    (isNumber(fieldValue) && (fieldValue < minValue || fieldValue > maxValue))
   ) {
     fieldErrors.push({
       type: 'minMax',
@@ -234,7 +234,7 @@ export const minLengthBuiltInFieldValidator: HoneyFormInteractiveFieldBuiltInVal
       fieldConfig.type !== 'numeric') ||
     fieldConfig.min === undefined ||
     fieldConfig.max !== undefined ||
-    typeof fieldValue !== 'string' ||
+    !isString(fieldValue) ||
     !fieldValue
   ) {
     return;
@@ -269,7 +269,7 @@ export const maxLengthBuiltInFieldValidator: HoneyFormInteractiveFieldBuiltInVal
       fieldConfig.type !== 'numeric') ||
     fieldConfig.max === undefined ||
     fieldConfig.min !== undefined ||
-    typeof fieldValue !== 'string' ||
+    !isString(fieldValue) ||
     !fieldValue
   ) {
     return;
@@ -304,7 +304,7 @@ export const minMaxLengthBuiltInFieldValidator: HoneyFormInteractiveFieldBuiltIn
       fieldConfig.type !== 'numeric') ||
     fieldConfig.min === undefined ||
     fieldConfig.max === undefined ||
-    typeof fieldValue !== 'string' ||
+    !isString(fieldValue) ||
     !fieldValue
   ) {
     return;

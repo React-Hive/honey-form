@@ -406,8 +406,17 @@ export const useBaseHoneyForm = <
         const formField = formFields[fieldName];
 
         const isFieldPreviouslyErred = formField.errors.length > 0;
-        // Validate if the field previously had errors or if forced to validate
-        const isValidateField = isValidate || isFieldPreviouslyErred;
+        const isValidateOnSubmit =
+          checkIfHoneyFormFieldIsInteractive(formField.config) &&
+          formField.config.mode === 'submit';
+
+        /**
+         * Determines whether the field should be validated:
+         *  - Always validate if the field previously had errors (`isFieldPreviouslyErred`).
+         *  - If the field's validation mode is `submit`, defer validation until form submission.
+         *  - Otherwise, validate immediately if `isValidate` is explicitly set.
+         */
+        const isValidateField = isFieldPreviouslyErred || (!isValidateOnSubmit && isValidate);
 
         const nextFormFields = getNextFieldsState(fieldName, fieldValue, {
           executionContext,

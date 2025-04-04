@@ -1,11 +1,12 @@
 import { useContext, useEffect } from 'react';
 
 import type {
+  InitialFormFieldsStateResolverOptions,
+  HoneyFormBaseExecutionContext,
   HoneyFormBaseForm,
   HoneyFormOptions,
   HoneyFormFieldsConfig,
   HoneyFormApi,
-  InitialFormFieldsStateResolverOptions,
 } from '../types';
 import type { MultiHoneyFormsContextValue } from '../components/multi-honey-forms';
 
@@ -33,6 +34,12 @@ const createInitialFormFields = <Form extends HoneyFormBaseForm, FormContext>({
   removeFieldValue,
   addFormFieldErrors,
 }: CreateInitialFormFieldsOptions<Form, FormContext>) => {
+  const executionContext: HoneyFormBaseExecutionContext<Form, FormContext> = {
+    formContext,
+    formFields: formFieldsRef.current,
+    formValues: getFormValues(formFieldsRef.current),
+  };
+
   const formFields = mapFieldsConfig(fieldsConfig, (fieldName, fieldConfig) =>
     createFormField(
       fieldName,
@@ -41,6 +48,7 @@ const createInitialFormFields = <Form extends HoneyFormBaseForm, FormContext>({
         defaultValue: formDefaultsRef.current[fieldName] ?? fieldConfig.defaultValue,
       },
       {
+        executionContext,
         formFieldsRef,
         formDefaultsRef,
         setFieldValue,
@@ -49,11 +57,6 @@ const createInitialFormFields = <Form extends HoneyFormBaseForm, FormContext>({
         pushFieldValue,
         removeFieldValue,
         addFormFieldErrors,
-        executionContext: {
-          formContext,
-          formFields: formFieldsRef.current,
-          formValues: getFormValues(formFieldsRef.current),
-        },
       },
     ),
   );

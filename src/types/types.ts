@@ -1,4 +1,4 @@
-import type { MutableRefObject, RefObject, InputHTMLAttributes } from 'react';
+import type { RefObject, InputHTMLAttributes } from 'react';
 
 import type { JSONValue, Nullable } from './generic.types';
 import type {
@@ -939,7 +939,7 @@ export type HoneyFormDefaultValues<Form extends HoneyFormBaseForm> = Partial<For
 /**
  * A reference object for storing the default values of the form.
  */
-export type HoneyFormDefaultsRef<Form extends HoneyFormBaseForm> = MutableRefObject<
+export type HoneyFormDefaultsRef<Form extends HoneyFormBaseForm> = RefObject<
   HoneyFormDefaultValues<Form>
 >;
 

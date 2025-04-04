@@ -1,4 +1,4 @@
-import type { MutableRefObject } from 'react';
+import type { RefObject } from 'react';
 
 import type {
   HoneyFormAddFormField,
@@ -25,7 +25,7 @@ export interface HoneyFormApi<Form extends HoneyFormBaseForm, FormContext = unde
   /**
    * Reference to form fields.
    */
-  formFieldsRef: MutableRefObject<HoneyFormFields<Form, FormContext>>;
+  formFieldsRef: RefObject<HoneyFormFields<Form, FormContext>>;
   /**
    * Form context.
    *

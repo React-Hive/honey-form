@@ -29,7 +29,6 @@ import type {
   HoneyFormBaseExecutionContext,
 } from '../types';
 import {
-  resetAllFields,
   createFormField,
   executeFieldValidator,
   executeFieldValidatorAsync,
@@ -39,6 +38,7 @@ import {
   getNextFormFieldState,
   getNextAsyncValidatedField,
   processSkippableFields,
+  resetAllFields,
 } from '../field';
 import {
   isFunction,
@@ -600,9 +600,16 @@ export const useBaseHoneyForm = <
         warningMessage(`Form field "${fieldName.toString()}" is already present.`);
       }
 
+      const executionContext: HoneyFormBaseExecutionContext<Form, FormContext> = {
+        formFields,
+        formContext: formContextRef.current,
+        formValues: getFormValues(formFields),
+      };
+
       const nextFormFields: HoneyFormFields<Form, FormContext> = {
         ...formFields,
         [fieldName]: createFormField(fieldName, fieldConfig, {
+          executionContext,
           formFieldsRef,
           formDefaultsRef,
           setFieldValue,
@@ -611,11 +618,6 @@ export const useBaseHoneyForm = <
           pushFieldValue,
           removeFieldValue,
           addFormFieldErrors,
-          executionContext: {
-            formFields,
-            formContext: formContextRef.current,
-            formValues: getFormValues(formFields),
-          },
         }),
       };
 

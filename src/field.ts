@@ -1,4 +1,4 @@
-import type { HTMLAttributes, HTMLInputTypeAttribute, MutableRefObject, RefObject } from 'react';
+import type { HTMLAttributes, HTMLInputTypeAttribute, RefObject } from 'react';
 import { createRef } from 'react';
 
 import type {
@@ -961,7 +961,7 @@ const sanitizeFieldValue = <
  * @returns The newly created `AbortController` instance for the field.
  */
 const updateFormFieldValidationController = <Form extends HoneyFormBaseForm>(
-  formFieldsValidationControllerRef: MutableRefObject<HoneyFormFieldsValidationController<Form>>,
+  formFieldsValidationControllerRef: RefObject<HoneyFormFieldsValidationController<Form>>,
   fieldName: keyof Form,
 ): AbortController => {
   // Abort the existing validation controller for the field, if any
@@ -987,7 +987,7 @@ interface ExecuteFieldValidatorOptions<
    * A reference to the validation controllers for each field in the form,
    * enabling management and cancellation of ongoing asynchronous validations.
    */
-  formFieldsValidationControllerRef: MutableRefObject<HoneyFormFieldsValidationController<Form>>;
+  formFieldsValidationControllerRef: RefObject<HoneyFormFieldsValidationController<Form>>;
   /**
    * The name of the field to validate.
    */
@@ -1093,7 +1093,7 @@ interface ExecuteFieldValidatorAsyncOptions<
    * A reference to the validation controllers for each field in the form,
    * enabling management and cancellation of ongoing asynchronous validations.
    */
-  formFieldsValidationControllerRef: MutableRefObject<HoneyFormFieldsValidationController<Form>>;
+  formFieldsValidationControllerRef: RefObject<HoneyFormFieldsValidationController<Form>>;
   /**
    * The parent field of the current field, if any.
    */
@@ -1320,7 +1320,7 @@ interface TriggerScheduledFieldsValidationsOptions<
    * A reference to the validation controllers for each field in the form,
    * enabling management and cancellation of ongoing asynchronous validations.
    */
-  formFieldsValidationControllerRef: MutableRefObject<HoneyFormFieldsValidationController<Form>>;
+  formFieldsValidationControllerRef: RefObject<HoneyFormFieldsValidationController<Form>>;
   /**
    * The parent form field.
    */
@@ -1493,7 +1493,7 @@ interface NextFieldsStateOptions<
    * A reference to the validation controllers for each field in the form,
    * enabling management and cancellation of ongoing asynchronous validations.
    */
-  formFieldsValidationControllerRef: MutableRefObject<HoneyFormFieldsValidationController<Form>>;
+  formFieldsValidationControllerRef: RefObject<HoneyFormFieldsValidationController<Form>>;
   /**
    * The parent form field.
    */

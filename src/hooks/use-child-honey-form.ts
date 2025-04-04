@@ -6,8 +6,9 @@ import type {
   HoneyFormParentField,
   HoneyFormFieldsConfig,
   HoneyFormExtractChildForm,
-  ChildHoneyFormOptions,
+  HoneyFormBaseExecutionContext,
   InitialFormFieldsStateResolverOptions,
+  ChildHoneyFormOptions,
   KeysWithArrayValues,
 } from '../types';
 import { registerChildForm, mapFieldsConfig, unregisterChildForm, getFormValues } from '../helpers';
@@ -46,6 +47,12 @@ const createInitialFormFields = <
   addFormFieldErrors,
 }: CreateInitialFormFieldsOptions<ParentForm, ParentFieldName, FormContext, ChildForm>) => {
   const formFields = mapFieldsConfig(fieldsConfig, (fieldName, fieldConfig) => {
+    const executionContext: HoneyFormBaseExecutionContext<ChildForm, FormContext> = {
+      formContext,
+      formFields: formFieldsRef.current,
+      formValues: getFormValues(formFieldsRef.current),
+    };
+
     let childFormFieldValue: Nullable<ChildForm[keyof ChildForm] | undefined> = null;
 
     if (formIndex !== undefined && parentField) {
@@ -65,6 +72,7 @@ const createInitialFormFields = <
           childFormFieldValue ?? formDefaultsRef.current[fieldName] ?? fieldConfig.defaultValue,
       },
       {
+        executionContext,
         formFieldsRef,
         formDefaultsRef,
         setFieldValue,
@@ -73,11 +81,6 @@ const createInitialFormFields = <
         pushFieldValue,
         removeFieldValue,
         addFormFieldErrors,
-        executionContext: {
-          formContext,
-          formFields: formFieldsRef.current,
-          formValues: getFormValues(formFieldsRef.current),
-        },
       },
     );
   });

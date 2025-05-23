@@ -1249,32 +1249,39 @@ export const resetAllFields = <Form extends HoneyFormBaseForm, FormContext>(
 ) => mapFormFields(formFields, (fieldName, formField) => getNextResetField(formField, true));
 
 /**
- * Reset fields to default values that depend on the specified field,
- *  recursively resetting values to default value of nested dependencies.
+ * Recursively resets fields to their default values based on dependency relationships.
  *
- * @param formContext - The type representing the context associated with the form.
- * @param formFields - The next form fields state.
- * @param fieldName - The name of the field triggering the resetting.
- * @param initiatorFieldName - The name of the field that initiated the resetting (optional).
+ * When a specific field is updated or changed, any other fields that depend on it (either
+ * directly or through nested dependencies) are reset to their default state.
+ *
+ * This helps maintain form integrity when changes in one field affect others.
+ *
+ * @param executionContext - The current form execution context, including all form field values and metadata.
+ * @param fieldName - The name of the field that triggered the reset (i.e., the field that was changed).
+ * @param [initiatorFieldName] - The name of the original field that started the reset chain.
+ *                               Used to prevent infinite recursion and distinguish between initiator and dependent.
+ *
+ * @returns A new `formFields` object with updated fields, where dependent fields are reset to their default values.
  */
 const resetDependentFields = <
   Form extends HoneyFormBaseForm,
   FieldName extends keyof Form,
   FormContext,
 >(
-  formContext: FormContext,
-  formFields: HoneyFormFields<Form, FormContext>,
+  executionContext: HoneyFormBaseExecutionContext<Form, FormContext>,
   fieldName: FieldName,
   initiatorFieldName: Nullable<FieldName> = null,
 ) => {
   initiatorFieldName = initiatorFieldName || fieldName;
 
-  forEachFormField(formFields, otherFieldName => {
+  let nextFormFields = { ...executionContext.formFields };
+
+  forEachFormField(nextFormFields, otherFieldName => {
     if (otherFieldName === fieldName) {
       return;
     }
 
-    const { dependsOn } = formFields[otherFieldName].config;
+    const { dependsOn } = nextFormFields[otherFieldName].config;
 
     let isDependent: boolean;
 
@@ -1282,27 +1289,34 @@ const resetDependentFields = <
       isDependent = dependsOn.includes(fieldName);
       //
     } else if (isFunction(dependsOn)) {
-      const formValues = getFormValues(formFields);
-
-      isDependent = dependsOn(initiatorFieldName, formFields[otherFieldName].cleanValue, {
-        formContext,
-        formValues,
-        formFields,
-      });
+      isDependent = dependsOn(
+        initiatorFieldName,
+        nextFormFields[otherFieldName].cleanValue,
+        executionContext,
+      );
     } else {
       isDependent = fieldName === dependsOn;
     }
 
     if (isDependent) {
-      const otherField = formFields[otherFieldName];
+      const otherField = nextFormFields[otherFieldName];
 
-      formFields[otherFieldName] = getNextResetField(otherField, false);
+      nextFormFields[otherFieldName] = getNextResetField(otherField, false);
 
       if (otherFieldName !== initiatorFieldName) {
-        resetDependentFields(formContext, formFields, otherFieldName, fieldName);
+        nextFormFields = resetDependentFields(
+          {
+            ...executionContext,
+            formFields: nextFormFields,
+          },
+          otherFieldName,
+          fieldName,
+        );
       }
     }
   });
+
+  return nextFormFields;
 };
 
 /**
@@ -1559,7 +1573,7 @@ export const getNextFieldsState = <
   }
 
   if (isValidate) {
-    resetDependentFields(executionContext.formContext, nextFormFields, fieldName);
+    nextFormFields = resetDependentFields(executionContext, fieldName);
 
     nextFormField = executeFieldValidator({
       formFieldsValidationControllerRef,
@@ -1576,9 +1590,15 @@ export const getNextFieldsState = <
     nextFormField = getNextErrorsFreeField(nextFormField);
   }
 
+  nextFormFields[fieldName] = nextFormField;
+
   nextFormFields[fieldName] = getNextFormFieldState(nextFormField, filteredValue, {
     isFormat,
-    executionContext,
+    executionContext: {
+      ...executionContext,
+      formFields: nextFormFields,
+      formValues: getFormValues(nextFormFields),
+    },
   });
 
   const formValues = getFormValues(nextFormFields);

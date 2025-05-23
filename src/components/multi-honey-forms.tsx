@@ -40,9 +40,9 @@ export const MultiHoneyForms = <Form extends HoneyFormBaseForm, FormContext = un
   );
 
   return (
-    <MultiHoneyFormsContext.Provider value={contextValue}>
+    <MultiHoneyFormsContext value={contextValue}>
       {isFunction(children) ? children(multiHoneyFormsApi) : children}
-    </MultiHoneyFormsContext.Provider>
+    </MultiHoneyFormsContext>
   );
 };
 

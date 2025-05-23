@@ -100,7 +100,10 @@ export const requiredBuiltInFieldValidator: HoneyFormFieldBuiltInValidator = ({
   }
 
   const isEmpty =
-    isNil(fieldValue) || fieldValue === '' || (Array.isArray(fieldValue) && !fieldValue.length);
+    isNil(fieldValue) ||
+    fieldValue === '' ||
+    fieldValue === false ||
+    (Array.isArray(fieldValue) && !fieldValue.length);
 
   let isErred = isEmpty;
 

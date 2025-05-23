@@ -27,9 +27,9 @@ export const HoneyFormProvider = <Form extends HoneyFormBaseForm, FormContext = 
   const honeyFormApi = useHoneyForm(props);
 
   return (
-    <HoneyFormContext.Provider value={honeyFormApi}>
+    <HoneyFormContext value={honeyFormApi}>
       {isFunction(children) ? children(honeyFormApi) : children}
-    </HoneyFormContext.Provider>
+    </HoneyFormContext>
   );
 };
 

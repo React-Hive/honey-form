@@ -41,11 +41,7 @@ export const ChildHoneyFormProvider = <
 }: PropsWithChildren<ChildHoneyFormProviderProps<ParentForm, ParentFieldName, FormContext>>) => {
   const childHoneyFormApi = useChildHoneyForm(props);
 
-  return (
-    <ChildHoneyFormContext.Provider value={childHoneyFormApi}>
-      {children}
-    </ChildHoneyFormContext.Provider>
-  );
+  return <ChildHoneyFormContext value={childHoneyFormApi}>{children}</ChildHoneyFormContext>;
 };
 
 export const useChildHoneyFormProvider = <

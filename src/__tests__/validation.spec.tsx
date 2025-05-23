@@ -540,6 +540,60 @@ describe('Hook [use-honey-form]: Required field validation', () => {
 
     expect(onSubmit).not.toHaveBeenCalled();
   });
+
+  it('should not submit and return dynamic required error message from function when name is empty', async () => {
+    const onSubmit = jest.fn();
+
+    const { result } = renderHook(() =>
+      useHoneyForm<{ name: string }>({
+        fields: {
+          name: {
+            type: 'string',
+            required: () => 'Required to fill',
+          },
+        },
+        onSubmit,
+      }),
+    );
+
+    await act(() => result.current.submitForm());
+
+    expect(result.current.formFields.name.errors).toStrictEqual([
+      {
+        type: 'required',
+        message: 'Required to fill',
+      },
+    ]);
+
+    expect(onSubmit).not.toHaveBeenCalled();
+  });
+
+  it('should not submit and return static required error message string when name is empty', async () => {
+    const onSubmit = jest.fn();
+
+    const { result } = renderHook(() =>
+      useHoneyForm<{ name: string }>({
+        fields: {
+          name: {
+            type: 'string',
+            required: 'Must be filled',
+          },
+        },
+        onSubmit,
+      }),
+    );
+
+    await act(() => result.current.submitForm());
+
+    expect(result.current.formFields.name.errors).toStrictEqual([
+      {
+        type: 'required',
+        message: 'Must be filled',
+      },
+    ]);
+
+    expect(onSubmit).not.toHaveBeenCalled();
+  });
 });
 
 describe('Hook [use-honey-form]: Validation', () => {

@@ -3,8 +3,8 @@ import type {
   Nullable,
   JSONValue,
   KeysWithArrayValues,
-  HoneyFormBaseFieldsConfig,
   HoneyFormId,
+  HoneyFormBaseFieldsConfig,
   HoneyFormBaseForm,
   HoneyFormFields,
   HoneyFormField,
@@ -37,6 +37,8 @@ export const genericMemo: <T>(component: T) => T = React.memo;
 export const isString = (value: unknown): value is string => typeof value === 'string';
 
 export const isNumber = (value: unknown): value is number => typeof value === 'number';
+
+export const isBool = (value: unknown): value is boolean => typeof value === 'boolean';
 
 export const isFunction = (value: unknown) => typeof value === 'function';
 

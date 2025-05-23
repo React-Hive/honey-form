@@ -1,14 +1,14 @@
 import type {
+  CustomDateRangeForm,
   HoneyFormInteractiveFieldBuiltInValidator,
   HoneyFormInteractiveFieldType,
   HoneyFormInteractiveFieldValidator,
   HoneyFormFieldBuiltInValidator,
   HoneyFormPassiveFieldType,
   HoneyFormPassiveFieldValidator,
-  CustomDateRangeForm,
   HoneyFormObjectFieldValidator,
 } from './types';
-import { isFunction, isNumber, isString, isNil } from './helpers';
+import { isFunction, isNumber, isString, isNil, isBool } from './helpers';
 
 export const INTERACTIVE_FIELD_TYPE_VALIDATORS_MAP: Record<
   HoneyFormInteractiveFieldType,
@@ -105,16 +105,24 @@ export const requiredBuiltInFieldValidator: HoneyFormFieldBuiltInValidator = ({
     fieldValue === false ||
     (Array.isArray(fieldValue) && !fieldValue.length);
 
-  let isErred = isEmpty;
-
-  if (isEmpty && isFunction(fieldConfig.required)) {
-    isErred = fieldConfig.required(executionContext);
+  if (!isEmpty) {
+    return;
   }
 
-  if (isErred) {
+  const { required, errorMessages } = fieldConfig;
+
+  const requiredResult = isFunction(required) ? required(executionContext) : required;
+
+  if (requiredResult) {
+    const message = isString(required)
+      ? required
+      : isBool(requiredResult)
+        ? (errorMessages?.required ?? 'The value is required')
+        : requiredResult;
+
     fieldErrors.push({
+      message,
       type: 'required',
-      message: fieldConfig.errorMessages?.required ?? 'The value is required',
     });
   }
 };
@@ -363,8 +371,9 @@ interface CreateHoneyFormDateFromValidatorOptions<
 /**
  * Creates a validator function to ensure the validity of a "Date From" field within the context of a date range.
  *
- * @param {CreateHoneyFormDateFromValidatorOptions<Form, DateFromKey, DateToKey>} options - Options for creating the validator.
- * @returns {HoneyFormObjectFieldValidator<Form, DateFromKey, FormContext>} - The validator function for "Date From" field.
+ * @param options - Options for creating the validator.
+ *
+ * @returns The validator function for "Date From" field.
  */
 export const createHoneyFormDateFromValidator =
   <
@@ -392,7 +401,8 @@ export const createHoneyFormDateFromValidator =
    *
    * @param dateFrom - The value of the "Date From" field.
    * @param params - Validation parameters.
-   * @returns {boolean | string} - `true` if valid, error message if invalid.
+   *
+   * @returns `true` if valid, error message if invalid.
    */
   (dateFrom, { formFields, scheduleValidation }): boolean | string => {
     // Schedule validation for the associated "Date To" field
@@ -444,8 +454,9 @@ interface CreateHoneyFormDateToValidatorOptions<
 /**
  * Creates a validator function to ensure the validity of a "Date To" field within the context of a date range.
  *
- * @param {CreateHoneyFormDateToValidatorOptions<Form, DateToKey, DateFromKey>} options - Options for creating the validator.
- * @returns {HoneyFormObjectFieldValidator<Form, DateToKey, FormContext>} - The validator function for "Date To" field.
+ * @param options - Options for creating the validator.
+ *
+ * @returns The validator function for "Date To" field.
  */
 export const createHoneyFormDateToValidator =
   <
@@ -473,7 +484,8 @@ export const createHoneyFormDateToValidator =
    *
    * @param dateTo - The value of the "Date To" field.
    * @param params - Validation parameters.
-   * @returns {boolean | string} - `true` if valid, error message if invalid.
+   *
+   * @returns `true` if valid, error message if invalid.
    */
   (dateTo, { formFields, scheduleValidation }): boolean | string => {
     // Schedule validation for the associated "Date From" field

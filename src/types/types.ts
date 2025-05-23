@@ -330,22 +330,28 @@ type HoneyFormFieldConfigProps = Omit<
   'value' | 'onChange' | 'aria-required' | 'aria-invalid'
 >;
 
+export type HoneyFormFieldRequiredValue = boolean | string;
+
 /**
- * Defines whether a form field is required.
+ * Specifies whether a form field is required.
  *
- * This type can be:
+ * This type supports:
  * - A `boolean`: If `true`, the field is always required.
- * - A `function`: Determines dynamically if the field is required based on the current value
- *   of the field and the execution context of the form.
+ * - A `string`: Treated as an error message to display when the field is required and left empty.
+ * - A `function`: Dynamically determines whether the field is required, and optionally returns
+ *   an error message.
  *
- * @param executionContext - Additional execution context, which may include form state,
- *                           validation data, or other relevant information.
+ * @param executionContext - The current context of the form, including form state,
+ *                           other field values, and custom validation info.
  *
- * @returns If `true`, the field is considered required; otherwise, `false`.
+ * @returns `boolean` or `string` indicating whether the field is required and, optionally,
+ *          a custom error message.
  */
 type HoneyFormFieldRequired<Form extends HoneyFormBaseForm, FormContext> =
-  | boolean
-  | ((executionContext: HoneyFormBaseExecutionContext<Form, FormContext>) => boolean);
+  | HoneyFormFieldRequiredValue
+  | ((
+      executionContext: HoneyFormBaseExecutionContext<Form, FormContext>,
+    ) => HoneyFormFieldRequiredValue);
 
 /**
  * A function type that defines a dependency relationship between form fields.

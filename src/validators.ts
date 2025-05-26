@@ -1,3 +1,4 @@
+import { isFunction, isNumber, isString, isBool, isNilOrEmptyString } from './helpers';
 import type {
   CustomDateRangeForm,
   HoneyFormInteractiveFieldBuiltInValidator,
@@ -8,7 +9,6 @@ import type {
   HoneyFormPassiveFieldValidator,
   HoneyFormObjectFieldValidator,
 } from './types';
-import { isFunction, isNumber, isString, isNil, isBool } from './helpers';
 
 export const INTERACTIVE_FIELD_TYPE_VALIDATORS_MAP: Record<
   HoneyFormInteractiveFieldType,
@@ -100,8 +100,7 @@ export const requiredBuiltInFieldValidator: HoneyFormFieldBuiltInValidator = ({
   }
 
   const isEmpty =
-    isNil(fieldValue) ||
-    fieldValue === '' ||
+    isNilOrEmptyString(fieldValue) ||
     fieldValue === false ||
     (Array.isArray(fieldValue) && !fieldValue.length);
 

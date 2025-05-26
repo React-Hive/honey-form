@@ -35,9 +35,7 @@ describe('Hook [use-honey-form]: Work with errors', () => {
       }),
     );
 
-    act(() => {
-      result.current.formFields.age.setValue(1.5);
-    });
+    act(() => result.current.formFields.age.setValue(1.5));
 
     expect(result.current.formFields.age.value).toBe(1.5);
     expect(result.current.formFields.age.cleanValue).toBeUndefined();

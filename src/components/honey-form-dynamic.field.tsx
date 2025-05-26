@@ -3,7 +3,7 @@ import React, { useEffect } from 'react';
 import type { ReactNode } from 'react';
 import type { HoneyFormField, HoneyFormFieldConfig, HoneyFormBaseForm } from '../types';
 
-import { useHoneyFormProvider } from './honey-form.provider';
+import { useHoneyFormContext } from './honey-form.provider';
 
 type HoneyFormDynamicFieldProps<
   Form extends HoneyFormBaseForm,
@@ -25,7 +25,7 @@ export const HoneyFormDynamicField = <
   name,
   ...props
 }: HoneyFormDynamicFieldProps<Form, FieldName, FormContext, FieldValue>) => {
-  const { formFields, addFormField, removeFormField } = useHoneyFormProvider<Form, FormContext>();
+  const { formFields, addFormField, removeFormField } = useHoneyFormContext<Form, FormContext>();
 
   useEffect(() => {
     addFormField(name, props);

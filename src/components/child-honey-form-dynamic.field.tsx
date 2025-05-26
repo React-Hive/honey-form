@@ -9,7 +9,7 @@ import type {
   HoneyFormExtractChildForm,
 } from '../types';
 
-import { useChildHoneyFormProvider } from './child-honey-form.provider';
+import { useChildHoneyFormContext } from './child-honey-form.provider';
 
 type ChildHoneyFormDynamicFieldProps<
   ParentForm extends HoneyFormBaseForm,
@@ -43,7 +43,7 @@ export const ChildHoneyFormDynamicField = <
   FormContext,
   ChildForm
 >) => {
-  const { formFields, addFormField, removeFormField } = useChildHoneyFormProvider<
+  const { formFields, addFormField, removeFormField } = useChildHoneyFormContext<
     ParentForm,
     ParentFieldName,
     FormContext,

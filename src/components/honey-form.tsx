@@ -1,26 +1,26 @@
-import type { Ref } from 'react';
-import React, { forwardRef } from 'react';
-
-import type { HoneyFormBaseForm } from '../types';
-import type { HoneyFormProviderProps } from './honey-form.provider';
-import type { HoneyFormFormProps, HoneyFormFormContent } from './honey-form.form';
+import React from 'react';
+import type { RefAttributes } from 'react';
 
 import { HoneyFormProvider } from './honey-form.provider';
 import { HoneyFormForm } from './honey-form.form';
 import { genericMemo } from '../helpers';
+import type { HoneyFormBaseForm } from '../types';
+import type { HoneyFormProviderProps } from './honey-form.provider';
+import type { HoneyFormFormProps, HoneyFormFormContent } from './honey-form.form';
 
-type HoneyFormProps<
-  Form extends HoneyFormBaseForm,
-  FormContext = undefined,
-> = HoneyFormProviderProps<Form, FormContext> & {
+interface HoneyFormProps<Form extends HoneyFormBaseForm, FormContext = undefined>
+  extends RefAttributes<HTMLFormElement>,
+    HoneyFormProviderProps<Form, FormContext> {
   children?: HoneyFormFormContent<Form, FormContext>;
   formProps?: HoneyFormFormProps<Form, FormContext>;
-};
+}
 
-const HoneyFormComponent = <Form extends HoneyFormBaseForm, FormContext = undefined>(
-  { children, formProps, ...props }: HoneyFormProps<Form, FormContext>,
-  ref: Ref<HTMLFormElement>,
-) => {
+const HoneyFormComponent = <Form extends HoneyFormBaseForm, FormContext = undefined>({
+  ref,
+  children,
+  formProps,
+  ...props
+}: HoneyFormProps<Form, FormContext>) => {
   return (
     <HoneyFormProvider {...props}>
       <HoneyFormForm ref={ref} {...formProps}>
@@ -30,8 +30,4 @@ const HoneyFormComponent = <Form extends HoneyFormBaseForm, FormContext = undefi
   );
 };
 
-export const HoneyForm = genericMemo(
-  forwardRef(HoneyFormComponent) as <Form extends HoneyFormBaseForm, FormContext = undefined>(
-    props: HoneyFormProps<Form, FormContext> & React.RefAttributes<HTMLFormElement>,
-  ) => React.ReactElement,
-);
+export const HoneyForm = genericMemo(HoneyFormComponent);

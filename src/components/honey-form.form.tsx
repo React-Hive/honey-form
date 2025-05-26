@@ -1,27 +1,25 @@
-import React, { forwardRef } from 'react';
-
-import type { Ref, FormEventHandler, FormHTMLAttributes, ReactNode } from 'react';
-import type { HoneyFormBaseForm, HoneyFormApi } from '../types';
+import React from 'react';
+import type { FormEventHandler, FormHTMLAttributes, ReactNode, RefAttributes } from 'react';
 
 import { errorMessage, isFunction } from '../helpers';
-import { useHoneyFormProvider } from './honey-form.provider';
+import { useHoneyFormContext } from './honey-form.provider';
+import type { HoneyFormBaseForm, HoneyFormApi } from '../types';
 
 export type HoneyFormFormContent<Form extends HoneyFormBaseForm, FormContext = undefined> =
   | ReactNode
   | ((honeyFormApi: HoneyFormApi<Form, FormContext>) => ReactNode);
 
-export type HoneyFormFormProps<Form extends HoneyFormBaseForm, FormContext = undefined> = Omit<
-  FormHTMLAttributes<HTMLFormElement>,
-  'onSubmit' | 'children'
-> & {
+export interface HoneyFormFormProps<Form extends HoneyFormBaseForm, FormContext = undefined>
+  extends RefAttributes<HTMLFormElement>,
+    Omit<FormHTMLAttributes<HTMLFormElement>, 'onSubmit' | 'children'> {
   children?: HoneyFormFormContent<Form, FormContext>;
-};
+}
 
-const HoneyFormComponent = <Form extends HoneyFormBaseForm, FormContext = undefined>(
-  { children, ...props }: HoneyFormFormProps<Form, FormContext>,
-  ref: Ref<HTMLFormElement>,
-) => {
-  const honeyFormApi = useHoneyFormProvider<Form, FormContext>();
+export const HoneyFormForm = <Form extends HoneyFormBaseForm, FormContext = undefined>({
+  children,
+  ...props
+}: HoneyFormFormProps<Form, FormContext>) => {
+  const honeyFormApi = useHoneyFormContext<Form, FormContext>();
 
   const onSubmit: FormEventHandler<HTMLFormElement> = e => {
     e.preventDefault();
@@ -31,25 +29,19 @@ const HoneyFormComponent = <Form extends HoneyFormBaseForm, FormContext = undefi
 
   return (
     <form
-      ref={ref}
       onSubmit={onSubmit}
+      noValidate
+      // ARIA
       aria-busy={
         honeyFormApi.isFormValidating ||
         honeyFormApi.isFormSubmitting ||
         honeyFormApi.isFormDefaultsFetching
       }
+      // Data
       data-testid="honey-form"
-      noValidate
       {...props}
     >
       {isFunction(children) ? children(honeyFormApi) : children}
     </form>
   );
 };
-
-export const HoneyFormForm = forwardRef(HoneyFormComponent) as <
-  Form extends HoneyFormBaseForm,
-  FormContext = undefined,
->(
-  props: HoneyFormFormProps<Form, FormContext> & React.RefAttributes<HTMLFormElement>,
-) => React.ReactElement;

@@ -409,7 +409,8 @@ interface BaseFieldConfig<
    *
    * This property defines if the field must have a value.
    * - If `true`, the field is always required.
-   * - If a function, it dynamically determines if the field is required
+   * - If `string`, treated as an error message to display when the field is required.
+   * - If `function`, it dynamically determines if the field is required
    *   based on the field's value and the current form execution context.
    *
    * @default false
@@ -769,7 +770,7 @@ export interface HoneyFormFieldMeta<
   /**
    * Indicates if field validation is scheduled.
    */
-  isValidationScheduled: boolean;
+  validationScheduled: boolean;
   /**
    * An array of child form contexts when applicable.
    *
@@ -804,7 +805,7 @@ interface BaseHoneyFormField<
    */
   rawValue: FieldValue | undefined;
   /**
-   * The processed value after filtering and formatting. If there are errors, this may be `undefined`.
+   * The processed value after filtering and formatting. If there are errors, this is set as `undefined`.
    */
   cleanValue: FieldValue | undefined;
   /**
@@ -1067,7 +1068,7 @@ interface HoneyFormOnChangeContext<
 /**
  * Represents a callback function triggered when any form field value changes.
  *
- * @param data - The current data of the form, including all form field values.
+ * @param cleanFormValues - The current clean form field values.
  * @param context - The context object providing additional information about the change, such as form field errors.
  */
 export type HoneyFormOnChange<
@@ -1076,7 +1077,7 @@ export type HoneyFormOnChange<
   Form extends HoneyFormBaseForm,
   FormContext,
 > = (
-  data: Form,
+  cleanFormValues: Form,
   context: HoneyFormOnChangeContext<ParentForm, ParentFieldName, Form, FormContext>,
 ) => void;
 
@@ -1104,6 +1105,12 @@ export interface FormOptions<
   initialFormFieldsStateResolver: (
     options: InitialFormFieldsStateResolverOptions<Form, FormContext>,
   ) => HoneyFormFields<Form, FormContext>;
+  /**
+   * Determines how the validation process is triggered based on the specified mode.
+   *
+   * @default 'change'
+   */
+  mode?: HoneyFormFieldMode;
   /**
    * Configuration for the form fields.
    */
@@ -1154,7 +1161,7 @@ export interface FormOptions<
    * If true, the form will validate the external values upon being set.
    * If false, the external values will be set without validation.
    *
-   * @default false
+   * @default true
    */
   validateExternalValues?: boolean;
   /**
@@ -1305,30 +1312,30 @@ interface SetFormValuesOptions {
    *
    * @default true
    */
-  isValidate?: boolean;
+  shouldValidate?: boolean;
   /**
    * Indicates whether setting a new form values should mark the form as "dirty".
    *
    * @default true
    */
-  isDirty?: boolean;
+  shouldDirty?: boolean;
   /**
    * If `true`, clear all field values before setting new values.
    */
-  isClearAll?: boolean;
+  shouldClearAll?: boolean;
   /**
    * If `true`, skips the debounced `onChange` handling.
    *
    * @default false
    */
-  isSkipOnChange?: boolean;
+  shouldSkipOnChange?: boolean;
 }
 
 /**
  * Type representing a function to set values, allowing partial updates and options customization.
  */
 export type HoneyFormSetFormValues<Form extends HoneyFormBaseForm> = (
-  values: Partial<Form>,
+  targetValues: Partial<Form>,
   options?: SetFormValuesOptions,
 ) => void;
 

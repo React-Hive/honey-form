@@ -9,7 +9,7 @@ import type {
 } from '../../types';
 
 import { HoneyForm } from '../honey-form';
-import { useHoneyFormProvider } from '../honey-form.provider';
+import { useHoneyFormContext } from '../honey-form.provider';
 import { useChildHoneyForm } from '../../hooks';
 import { ChildHoneyForm } from '../child-honey-form';
 
@@ -65,7 +65,7 @@ describe('Component [HoneyForm]: Nested forms', () => {
     const onSubmit = jest.fn<Promise<void>, [ItemsForm]>();
 
     const ItemLineForm = ({ formIndex }: ItemFormProps) => {
-      const { formFields: itemsFormFields } = useHoneyFormProvider<ItemsForm>();
+      const { formFields: itemsFormFields } = useHoneyFormContext<ItemsForm>();
 
       return (
         <ChildHoneyForm
@@ -163,7 +163,7 @@ describe('Component [HoneyForm]: Nested forms', () => {
     const onSubmit = jest.fn<Promise<void>, [ItemsForm]>();
 
     const ItemLineForm = ({ formIndex }: ItemFormProps) => {
-      const { formFields: itemsFormFields } = useHoneyFormProvider<ItemsForm>();
+      const { formFields: itemsFormFields } = useHoneyFormContext<ItemsForm>();
 
       return (
         <ChildHoneyForm
@@ -333,7 +333,7 @@ describe('Component [HoneyForm]: Nested forms', () => {
     const onSubmit = jest.fn<Promise<void>, [ItemsForm]>();
 
     const ItemLineForm = ({ formIndex }: ItemFormProps) => {
-      const { formFields: itemsFormFields } = useHoneyFormProvider<ItemsForm>();
+      const { formFields: itemsFormFields } = useHoneyFormContext<ItemsForm>();
 
       const { formFields } = useChildHoneyForm<ItemsForm, 'items', ItemForm>({
         formIndex,
@@ -419,7 +419,7 @@ describe('Component [HoneyForm]: Nested forms', () => {
     const onSubmit = jest.fn<Promise<void>, [ItemsForm]>();
 
     const ItemLineForm = ({ formIndex }: ItemFormProps) => {
-      const { formFields: itemsFormFields } = useHoneyFormProvider<ItemsForm>();
+      const { formFields: itemsFormFields } = useHoneyFormContext<ItemsForm>();
 
       const { formFields } = useChildHoneyForm<ItemsForm, 'items', ItemForm>({
         formIndex,
@@ -570,7 +570,7 @@ describe('Component [HoneyForm]: Nested forms', () => {
     const onSubmit = jest.fn<Promise<void>, [ItemsForm]>();
 
     const ItemLineForm = ({ formIndex }: ItemFormProps) => {
-      const { formFields: itemsFormFields } = useHoneyFormProvider<ItemsForm>();
+      const { formFields: itemsFormFields } = useHoneyFormContext<ItemsForm>();
 
       const { formFields } = useChildHoneyForm<ItemsForm, 'items', ItemForm>({
         formIndex,

@@ -3,7 +3,7 @@ import { fireEvent, render, waitFor } from '@testing-library/react';
 
 import type { HoneyFormApi, HoneyFormFieldsConfig } from '../../types';
 
-import { MultiHoneyForms, useMultiHoneyFormsProvider } from '../multi-honey-forms';
+import { MultiHoneyForms, useMultiHoneyFormsContext } from '../multi-honey-forms';
 import { HoneyForm } from '../honey-form';
 
 describe('Component [MultiHoneyForms]: Basic usage', () => {
@@ -15,7 +15,7 @@ describe('Component [MultiHoneyForms]: Basic usage', () => {
     let multiForms: HoneyFormApi<Form>[] = [];
 
     const AnyForm = () => {
-      const { forms } = useMultiHoneyFormsProvider<Form>();
+      const { forms } = useMultiHoneyFormsContext<Form>();
 
       multiForms = forms;
 
@@ -40,7 +40,7 @@ describe('Component [MultiHoneyForms]: Basic usage', () => {
     let multiForms: HoneyFormApi<Form>[] = [];
 
     const AnyForm = () => {
-      const { forms } = useMultiHoneyFormsProvider<Form>();
+      const { forms } = useMultiHoneyFormsContext<Form>();
 
       multiForms = forms;
 

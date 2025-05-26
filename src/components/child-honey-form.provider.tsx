@@ -44,7 +44,7 @@ export const ChildHoneyFormProvider = <
   return <ChildHoneyFormContext value={childHoneyFormApi}>{children}</ChildHoneyFormContext>;
 };
 
-export const useChildHoneyFormProvider = <
+export const useChildHoneyFormContext = <
   ParentForm extends HoneyFormBaseForm,
   ParentFieldName extends KeysWithArrayValues<ParentForm>,
   FormContext = undefined,
@@ -58,7 +58,7 @@ export const useChildHoneyFormProvider = <
 
   if (!childFormContext) {
     throw new Error(
-      '[honey-form]: The `useChildHoneyFormProvider()` can be used only inside <ChildHoneyFormProvider/> component!',
+      '[honey-form]: The `useChildHoneyFormContext()` can be used only inside <ChildHoneyFormProvider/> component!',
     );
   }
 

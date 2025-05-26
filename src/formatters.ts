@@ -19,7 +19,7 @@ export const createHoneyFormSplitStringFormatter =
       return value;
     }
 
-    const segments = [];
+    const segments: string[] = [];
 
     for (let i = 0; i < value.length; i += segmentLength) {
       segments.push(value.substring(i, i + segmentLength));

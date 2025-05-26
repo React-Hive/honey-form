@@ -8,14 +8,14 @@ import { ChildHoneyFormProvider } from './child-honey-form.provider';
 import { genericMemo } from '../helpers';
 import { ChildHoneyFormForm } from './child-honey-form.form';
 
-type ChildHoneyFormProps<
+interface ChildHoneyFormProps<
   ParentForm extends HoneyFormBaseForm,
   ParentFieldName extends KeysWithArrayValues<ParentForm>,
   FormContext = undefined,
-> = ChildHoneyFormProviderProps<ParentForm, ParentFieldName, FormContext> & {
+> extends ChildHoneyFormProviderProps<ParentForm, ParentFieldName, FormContext> {
   children?: ChildHoneyFormFormContent<ParentForm, ParentFieldName, FormContext>;
   formProps?: ChildHoneyFormFormProps<ParentForm, ParentFieldName, FormContext>;
-};
+}
 
 const ChildHoneyFormComponent = <
   ParentForm extends HoneyFormBaseForm,

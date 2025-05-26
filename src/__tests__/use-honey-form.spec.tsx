@@ -1,6 +1,6 @@
-import type { ChangeEvent } from 'react';
 import React, { useEffect } from 'react';
 import { act, fireEvent, render, renderHook, waitFor } from '@testing-library/react';
+import type { ChangeEvent } from 'react';
 
 import { defer } from '../tests.helpers';
 import { useHoneyForm } from '../hooks';
@@ -212,7 +212,7 @@ describe('Hook [use-honey-form]: General', () => {
 
     expect(result.current.formFields.kind.value).toBe('vegetable');
 
-    act(() => result.current.setFormValues({ name: 'orange' }, { isClearAll: true }));
+    act(() => result.current.setFormValues({ name: 'orange' }, { shouldClearAll: true }));
 
     expect(result.current.formFields.name.value).toBe('orange');
 

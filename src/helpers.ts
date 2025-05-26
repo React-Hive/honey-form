@@ -55,6 +55,21 @@ export const isPromise = <T = unknown>(value: unknown): value is Promise<T> =>
 export const isNil = (value: unknown): value is null | undefined =>
   value === undefined || value === null;
 
+/**
+ * Checks whether the provided value is considered "empty".
+ *
+ * A value is considered empty if it is:
+ * - `null`
+ * - `undefined`
+ * - `''`
+ *
+ * @param value - The value to check.
+ *
+ * @returns `true` if the value is empty; otherwise, `false`.
+ */
+export const isNilOrEmptyString = (value: unknown): value is null | undefined =>
+  value === '' || isNil(value);
+
 export const warningMessage = (message: string) => {
   console.warn(`[honey-form]: ${message}`);
 };
@@ -250,7 +265,7 @@ export const getFormValues = <Form extends HoneyFormBaseForm, FormContext>(
  *
  * @returns A boolean indicating whether the field is interactive.
  */
-export const checkIfHoneyFormFieldIsInteractive = <
+export const checkIsInteractiveField = <
   Form extends HoneyFormBaseForm,
   FieldName extends keyof Form,
   FormContext,
@@ -263,13 +278,13 @@ export const checkIfHoneyFormFieldIsInteractive = <
   fieldConfig.type === 'email';
 
 /**
- * Checks if a given form field is of passive type, such as checkbox, radio, or file.
+ * Checks if a given form field is of a passive type, such as checkbox, radio, or file.
  *
  * @param fieldConfig - Configuration options for the form field.
  *
- * @returns A boolean indicating whether the field is of passive type.
+ * @returns A boolean indicating whether the field is of a passive type.
  */
-export const checkIfFieldIsPassive = <
+export const checkIsPassiveField = <
   Form extends HoneyFormBaseForm,
   FieldName extends keyof Form,
   FormContext,
@@ -279,13 +294,13 @@ export const checkIfFieldIsPassive = <
   fieldConfig.type === 'checkbox' || fieldConfig.type === 'radio' || fieldConfig.type === 'file';
 
 /**
- * Checks if a given form field is of object type.
+ * Checks if a given form field is of an object type.
  *
  * @param fieldConfig - Configuration options for the form field.
  *
- * @returns A boolean indicating whether the field is of object type.
+ * @returns A boolean indicating whether the field is of an object type.
  */
-export const checkIfFieldIsObject = <
+export const checkIsObjectField = <
   Form extends HoneyFormBaseForm,
   FieldName extends keyof Form,
   FormContext,
@@ -301,7 +316,7 @@ export const checkIfFieldIsObject = <
  *
  * @returns A boolean indicating whether the field is nested forms.
  */
-export const checkIfFieldIsNestedForms = <
+export const checkIsNestedFormsField = <
   Form extends HoneyFormBaseForm,
   FieldName extends keyof Form,
   FormContext,
@@ -313,7 +328,7 @@ export const checkIfFieldIsNestedForms = <
 /**
  * Options object for determining whether to skip a form field.
  */
-type CheckIsSkipFieldOptions<
+type CheckShouldSkipFieldOptions<
   ParentForm extends HoneyFormBaseForm,
   ParentFieldName extends KeysWithArrayValues<ParentForm>,
   Form extends HoneyFormBaseForm,
@@ -335,7 +350,7 @@ type CheckIsSkipFieldOptions<
  *
  * @returns A boolean indicating whether the field should be skipped.
  */
-export const checkIsSkipFormField = <
+export const checkShouldSkipField = <
   ParentForm extends HoneyFormBaseForm,
   ParentFieldName extends KeysWithArrayValues<ParentForm>,
   Form extends HoneyFormBaseForm,
@@ -345,7 +360,13 @@ export const checkIsSkipFormField = <
   executionContext,
   fieldName,
   ...options
-}: CheckIsSkipFieldOptions<ParentForm, ParentFieldName, Form, FieldName, FormContext>): boolean =>
+}: CheckShouldSkipFieldOptions<
+  ParentForm,
+  ParentFieldName,
+  Form,
+  FieldName,
+  FormContext
+>): boolean =>
   executionContext.formFields[fieldName].config.skip?.({
     ...executionContext,
     ...options,
@@ -362,7 +383,7 @@ export const scheduleFieldValidation = <
 >(
   formField: HoneyFormField<Form, FieldName>,
 ) => {
-  formField.__meta__.isValidationScheduled = true;
+  formField.__meta__.validationScheduled = true;
 };
 
 /**
@@ -406,13 +427,13 @@ export const getSubmitFormValues = <
         return childFormsCleanValues;
       }
 
-      return !checkIfHoneyFormFieldIsInteractive(formField.config) ||
-        formField.config.submitFormattedValue
-        ? formField.value
-        : formField.cleanValue;
+      const isReturnActualValue =
+        !checkIsInteractiveField(formField.config) || formField.config.submitFormattedValue;
+
+      return isReturnActualValue ? formField.value : formField.cleanValue;
     },
     fieldName =>
-      !checkIsSkipFormField({
+      !checkShouldSkipField({
         fieldName,
         parentField,
         executionContext: {

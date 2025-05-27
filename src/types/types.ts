@@ -610,6 +610,22 @@ export interface HoneyFormObjectFieldConfig<
    */
   type: HoneyFormObjectFieldType;
   /**
+   * Whether an empty array is considered a valid value for this object field.
+   *
+   * If `false`, an empty array will trigger a validation error when the field is required.
+   *
+   * @default false
+   */
+  allowEmptyArray?: boolean;
+  /**
+   * Whether the array is allowed to contain empty or nil values (e.g., `null`, `undefined`, or empty strings).
+   *
+   * This only applies when the field value is an array.
+   *
+   * @default false
+   */
+  allowEmptyArrayValues?: boolean;
+  /**
    * Custom validator function for the object field.
    */
   validator?: HoneyFormObjectFieldValidator<Form, FieldName, FormContext, FieldValue>;

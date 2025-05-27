@@ -99,13 +99,29 @@ export const requiredBuiltInFieldValidator: HoneyFormFieldBuiltInValidator = ({
     return;
   }
 
-  const isEmpty =
-    isNilOrEmptyString(fieldValue) ||
-    fieldValue === false ||
-    (Array.isArray(fieldValue) && !fieldValue.length);
+  if (Array.isArray(fieldValue)) {
+    if (fieldConfig.type === 'object') {
+      if (fieldConfig.allowEmptyArray) {
+        // No needs to check the array because the empty array is allowed
+        return;
+      }
 
-  if (!isEmpty) {
-    return;
+      const isEmptyArray =
+        !fieldValue.length ||
+        (!fieldConfig.allowEmptyArrayValues && fieldValue.some(isNilOrEmptyString));
+
+      if (!isEmptyArray) {
+        return;
+      }
+    } else if (fieldValue.length) {
+      // The array has some values
+      return;
+    }
+  } else {
+    const isEmpty = isNilOrEmptyString(fieldValue) || fieldValue === false;
+    if (!isEmpty) {
+      return;
+    }
   }
 
   const { required, errorMessages } = fieldConfig;

@@ -455,6 +455,10 @@ export const createFormField = <
       formatOnBlur: false,
       submitFormattedValue: false,
     }),
+    ...(checkIsObjectField(fieldConfig) && {
+      allowEmptyArray: false,
+      allowEmptyArrayValues: false,
+    }),
     ...fieldConfig,
   };
 

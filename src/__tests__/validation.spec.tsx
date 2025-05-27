@@ -437,6 +437,7 @@ describe('Hook [use-honey-form]: Required field validation', () => {
 
     await act(() => result.current.submitForm());
 
+    expect(result.current.formFields.category.value).toBeUndefined();
     expect(result.current.formFields.category.errors).toStrictEqual([
       {
         type: 'required',
@@ -467,6 +468,7 @@ describe('Hook [use-honey-form]: Required field validation', () => {
 
     await act(() => result.current.submitForm());
 
+    expect(result.current.formFields.name.value).toBeUndefined();
     expect(result.current.formFields.name.errors).toStrictEqual([
       {
         type: 'required',
@@ -477,7 +479,7 @@ describe('Hook [use-honey-form]: Required field validation', () => {
     expect(onSubmit).not.toHaveBeenCalled();
   });
 
-  it('should validate required field with empty array value', async () => {
+  it('should have error when empty array is not allowed', async () => {
     const onSubmit = jest.fn();
 
     const { result } = renderHook(() =>
@@ -486,6 +488,7 @@ describe('Hook [use-honey-form]: Required field validation', () => {
           names: {
             type: 'object',
             required: true,
+            allowEmptyArray: false,
             defaultValue: [],
           },
         },
@@ -495,6 +498,7 @@ describe('Hook [use-honey-form]: Required field validation', () => {
 
     await act(() => result.current.submitForm());
 
+    expect(result.current.formFields.names.value).toStrictEqual([]);
     expect(result.current.formFields.names.errors).toStrictEqual([
       {
         type: 'required',
@@ -503,6 +507,85 @@ describe('Hook [use-honey-form]: Required field validation', () => {
     ]);
 
     expect(onSubmit).not.toHaveBeenCalled();
+  });
+
+  it('should pass validation when empty array is allowed', async () => {
+    const onSubmit = jest.fn();
+
+    const { result } = renderHook(() =>
+      useHoneyForm<{ names: string[] }>({
+        fields: {
+          names: {
+            type: 'object',
+            required: true,
+            allowEmptyArray: true,
+            defaultValue: [],
+          },
+        },
+        onSubmit,
+      }),
+    );
+
+    await act(() => result.current.submitForm());
+
+    expect(result.current.formFields.names.value).toStrictEqual([]);
+    expect(result.current.formFields.names.errors).toStrictEqual([]);
+
+    expect(onSubmit).toHaveBeenCalled();
+  });
+  it('should have error when array contains null and empty values are not allowed', async () => {
+    const onSubmit = jest.fn();
+
+    const { result } = renderHook(() =>
+      useHoneyForm<{ names: string[] }>({
+        fields: {
+          names: {
+            type: 'object',
+            required: true,
+            allowEmptyArrayValues: false,
+            defaultValue: [null],
+          },
+        },
+        onSubmit,
+      }),
+    );
+
+    await act(() => result.current.submitForm());
+
+    expect(result.current.formFields.names.value).toStrictEqual([null]);
+    expect(result.current.formFields.names.errors).toStrictEqual([
+      {
+        type: 'required',
+        message: 'The value is required',
+      },
+    ]);
+
+    expect(onSubmit).not.toHaveBeenCalled();
+  });
+
+  it('should allow null in array when empty array values are allowed', async () => {
+    const onSubmit = jest.fn();
+
+    const { result } = renderHook(() =>
+      useHoneyForm<{ names: string[] }>({
+        fields: {
+          names: {
+            type: 'object',
+            required: true,
+            allowEmptyArrayValues: true,
+            defaultValue: [null],
+          },
+        },
+        onSubmit,
+      }),
+    );
+
+    await act(() => result.current.submitForm());
+
+    expect(result.current.formFields.names.value).toStrictEqual([null]);
+    expect(result.current.formFields.names.errors).toStrictEqual([]);
+
+    expect(onSubmit).toHaveBeenCalled();
   });
 
   it('should validate dynamically required fields based on form values during submission', async () => {

@@ -2,7 +2,6 @@ import type { RefObject, InputHTMLAttributes } from 'react';
 
 import type { JSONValue, Nullable } from './generic.types';
 import type {
-  HoneyFormFieldType,
   HoneyFormInteractiveFieldType,
   HoneyFormNestedFormsFieldType,
   HoneyFormObjectFieldType,
@@ -400,10 +399,6 @@ interface BaseFieldConfig<
   FormContext = undefined,
   FieldValue extends Form[FieldName] = Form[FieldName],
 > {
-  /**
-   * The type of the form field.
-   */
-  type: HoneyFormFieldType;
   /**
    * Indicates whether the field is required.
    *
@@ -901,13 +896,6 @@ export type HoneyFormFields<Form extends HoneyFormBaseForm, FormContext = undefi
 };
 
 /**
- * Base form fields configuration.
- */
-export type HoneyFormBaseFieldsConfig<Form extends HoneyFormBaseForm, FormContext = undefined> = {
-  [FieldName in keyof Form]: BaseFieldConfig<Form, FieldName, FormContext, Form[FieldName]>;
-};
-
-/**
  * Configuration object for all fields in a form.
  *
  * This type maps each field in the form to its respective configuration object,
@@ -1106,6 +1094,8 @@ export interface FormOptions<
     options: InitialFormFieldsStateResolverOptions<Form, FormContext>,
   ) => HoneyFormFields<Form, FormContext>;
   /**
+   * TODO: IMPLEMENT
+   *
    * Determines how the validation process is triggered based on the specified mode.
    *
    * @default 'change'
@@ -1114,7 +1104,7 @@ export interface FormOptions<
   /**
    * Configuration for the form fields.
    */
-  fields: HoneyFormBaseFieldsConfig<Form, FormContext>;
+  fields: HoneyFormFieldsConfig<Form, FormContext>;
   /**
    * The form name to use for saving and restoring not submitted form data.
    *

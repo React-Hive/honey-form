@@ -1,17 +1,17 @@
 {
   "compilerOptions": {
     "lib": ["dom", "ESNext"],
-    "jsx": "react",
-    "target": "ES6",
+    "jsx": "react-jsx",
+    "target": "ES2022",
     "module": "ESNext",
     "moduleResolution": "node",
     "esModuleInterop": true,
-    "sourceMap": true,
-    "declaration": true,
     "outDir": "./dist",
     "skipLibCheck": true,
+    "isolatedModules": true,
     "allowSyntheticDefaultImports": true,
     "strict": false
   },
-  "include": ["src"]
+  "include": ["src"],
+  "files": ["src/global.d.ts"]
 }

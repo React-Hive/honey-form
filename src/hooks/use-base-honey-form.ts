@@ -748,13 +748,15 @@ export const useBaseHoneyForm = <
       formFieldsRef.current = nextFormFields;
       setFormFields(nextFormFields);
 
-      await onAfterValidate?.({
-        isFormErred,
-        formContext: formContextRef.current,
-        formFields: nextFormFields,
-        formValues: getFormValues(nextFormFields),
-        formErrors: getFormErrors(nextFormFields),
-      });
+      if (onAfterValidate) {
+        await onAfterValidate({
+          isFormErred,
+          formContext: formContextRef.current,
+          formFields: nextFormFields,
+          formValues: getFormValues(nextFormFields),
+          formErrors: getFormErrors(nextFormFields),
+        });
+      }
 
       return !isFormErred;
     },

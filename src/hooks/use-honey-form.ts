@@ -1,5 +1,9 @@
 import { useContext, useEffect } from 'react';
 
+import { createFormField } from '../field';
+import { useBaseHoneyForm } from './use-base-honey-form';
+import { getFormValues, mapFieldsConfig, noop } from '../helpers';
+import { MultiHoneyFormsContext } from '../components';
 import type {
   InitialFormFieldsStateResolverOptions,
   HoneyFormBaseExecutionContext,
@@ -8,12 +12,7 @@ import type {
   HoneyFormFieldsConfig,
   HoneyFormApi,
 } from '../types';
-import type { MultiHoneyFormsContextValue } from '../components/multi-honey-forms';
-
-import { createFormField } from '../field';
-import { useBaseHoneyForm } from './use-base-honey-form';
-import { getFormValues, mapFieldsConfig, noop } from '../helpers';
-import { MultiHoneyFormsContext } from '../components/multi-honey-forms';
+import type { MultiHoneyFormsContextValue } from '../components';
 
 type CreateInitialFormFieldsOptions<
   Form extends HoneyFormBaseForm,

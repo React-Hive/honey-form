@@ -4,7 +4,6 @@ import type {
   JSONValue,
   KeysWithArrayValues,
   HoneyFormId,
-  HoneyFormBaseFieldsConfig,
   HoneyFormBaseForm,
   HoneyFormFields,
   HoneyFormField,
@@ -26,7 +25,7 @@ import type {
   HoneyFormBaseChildForm,
   HoneyFormBaseExecutionContext,
 } from './types';
-import { HONEY_FORM_ERRORS } from './constants';
+import { __DEV__, HONEY_FORM_ERRORS } from './constants';
 
 export const noop = () => {
   //
@@ -117,11 +116,14 @@ export const convertServerErrors = <Form extends HoneyFormBaseForm>(
     fieldErrors: HoneyFormFieldErrorMessage[],
   ) => HoneyFormFieldError[],
 ): HoneyFormErrors<Form> =>
-  Object.keys(serverErrors).reduce((nextFormErrors, erredFieldName: keyof Form) => {
-    nextFormErrors[erredFieldName] = callback(erredFieldName, serverErrors[erredFieldName]);
+  Object.keys(serverErrors).reduce<HoneyFormErrors<Form>>(
+    (nextFormErrors, erredFieldName: keyof Form) => {
+      nextFormErrors[erredFieldName] = callback(erredFieldName, serverErrors[erredFieldName]);
 
-    return nextFormErrors;
-  }, {} as HoneyFormErrors<Form>);
+      return nextFormErrors;
+    },
+    {} as never,
+  );
 
 /**
  * Iterates over each form field and invokes the provided callback.
@@ -651,7 +653,7 @@ const deserializeForm = <Form extends HoneyFormBaseForm>(
  * @param formData - The form data to serialize and store in the query string.
  */
 export const serializeFormToQueryString = <Form extends HoneyFormBaseForm, FormContext = undefined>(
-  fieldsConfig: HoneyFormBaseFieldsConfig<Form, FormContext>,
+  fieldsConfig: HoneyFormFieldsConfig<Form, FormContext>,
   formName: string,
   formData: Form,
 ) => {
@@ -666,7 +668,10 @@ export const serializeFormToQueryString = <Form extends HoneyFormBaseForm, FormC
     ),
   );
 
-  checkQueryStringLimit(searchParams);
+  if (__DEV__) {
+    checkQueryStringLimit(searchParams);
+  }
+
   replaceHistoryState(searchParams);
 };
 
@@ -682,17 +687,19 @@ export const deserializeFormFromQueryString = <
   Form extends HoneyFormBaseForm,
   FormContext = undefined,
 >(
-  fieldsConfig: HoneyFormBaseFieldsConfig<Form, FormContext>,
+  fieldsConfig: HoneyFormFieldsConfig<Form, FormContext>,
   formName: string,
 ): Form | undefined => {
   const searchParams = new URLSearchParams(window.location.search);
   const rawFormData = searchParams.get(formName);
 
-  return rawFormData
-    ? deserializeForm(rawFormData, (fieldName, rawValue) => {
-        const fieldConfig = fieldsConfig[fieldName];
+  if (!rawFormData) {
+    return undefined;
+  }
 
-        return fieldConfig.deserializer?.(rawValue) ?? (rawValue as Form[typeof fieldName]);
-      })
-    : undefined;
+  return deserializeForm(rawFormData, (fieldName, rawValue) => {
+    const fieldConfig = fieldsConfig[fieldName];
+
+    return fieldConfig.deserializer?.(rawValue) ?? (rawValue as Form[typeof fieldName]);
+  });
 };

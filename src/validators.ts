@@ -118,7 +118,9 @@ export const requiredBuiltInFieldValidator: HoneyFormFieldBuiltInValidator = ({
       return;
     }
   } else {
-    const isEmpty = isNilOrEmptyString(fieldValue) || fieldValue === false;
+    const isEmpty =
+      isNilOrEmptyString(fieldValue) || (fieldConfig.type === 'checkbox' && fieldValue === false);
+
     if (!isEmpty) {
       return;
     }

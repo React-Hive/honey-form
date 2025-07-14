@@ -181,11 +181,13 @@ export interface MultiHoneyFormsApi<Form extends HoneyFormBaseForm, FormContext 
    */
   forms: HoneyFormApi<Form, FormContext>[];
   /**
-   * A boolean value that indicates whether the forms are currently submitting.
+   * A boolean value that becomes `true` if **any** of the managed forms is currently in the process of being submitted.
+   *
+   * This is useful for showing a global loading state or disabling actions while any form submission is in progress.
    *
    * @default false
    */
-  isFormsSubmitting: boolean;
+  isAnyFormSubmitting: boolean;
   /**
    * Adds a new form instance to the list of managed forms.
    *

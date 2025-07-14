@@ -156,7 +156,9 @@ export const minValueBuiltInFieldValidator: HoneyFormInteractiveFieldBuiltInVali
   if (
     fieldConfig.type !== 'number' ||
     fieldConfig.min === undefined ||
-    fieldConfig.max !== undefined
+    fieldConfig.max !== undefined ||
+    Number.isNaN(fieldValue) ||
+    !isNumber(fieldValue)
   ) {
     return;
   }
@@ -165,11 +167,7 @@ export const minValueBuiltInFieldValidator: HoneyFormInteractiveFieldBuiltInVali
     ? fieldConfig.min(executionContext)
     : fieldConfig.min;
 
-  if (
-    fieldValue === undefined ||
-    Number.isNaN(fieldValue) ||
-    (isNumber(fieldValue) && fieldValue < minValue)
-  ) {
+  if (fieldValue < minValue) {
     fieldErrors.push({
       type: 'min',
       message:
@@ -190,7 +188,9 @@ export const maxValueBuiltInFieldValidator: HoneyFormInteractiveFieldBuiltInVali
   if (
     fieldConfig.type !== 'number' ||
     fieldConfig.max === undefined ||
-    fieldConfig.min !== undefined
+    fieldConfig.min !== undefined ||
+    Number.isNaN(fieldValue) ||
+    !isNumber(fieldValue)
   ) {
     return;
   }
@@ -199,7 +199,7 @@ export const maxValueBuiltInFieldValidator: HoneyFormInteractiveFieldBuiltInVali
     ? fieldConfig.max(executionContext)
     : fieldConfig.max;
 
-  if (Number.isNaN(fieldValue) || (isNumber(fieldValue) && fieldValue > maxValue)) {
+  if (fieldValue > maxValue) {
     fieldErrors.push({
       type: 'max',
       message:
@@ -220,7 +220,9 @@ export const minMaxValueBuiltInFieldValidator: HoneyFormInteractiveFieldBuiltInV
   if (
     fieldConfig.type !== 'number' ||
     fieldConfig.min === undefined ||
-    fieldConfig.max === undefined
+    fieldConfig.max === undefined ||
+    Number.isNaN(fieldValue) ||
+    !isNumber(fieldValue)
   ) {
     return;
   }
@@ -233,11 +235,7 @@ export const minMaxValueBuiltInFieldValidator: HoneyFormInteractiveFieldBuiltInV
     ? fieldConfig.max(executionContext)
     : fieldConfig.max;
 
-  if (
-    fieldValue === undefined ||
-    Number.isNaN(fieldValue) ||
-    (isNumber(fieldValue) && (fieldValue < minValue || fieldValue > maxValue))
-  ) {
+  if (fieldValue < minValue || fieldValue > maxValue) {
     fieldErrors.push({
       type: 'minMax',
       message:

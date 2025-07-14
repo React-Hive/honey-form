@@ -14,7 +14,7 @@ export const useMultiHoneyForms = <Form extends HoneyFormBaseForm, FormContext =
 }: MultiHoneyFormOptions<Form, FormContext>): MultiHoneyFormsApi<Form, FormContext> => {
   const [forms, setForms] = useState<HoneyFormApi<Form, FormContext>[]>([]);
 
-  const [isFormsSubmitting, setIsFormsSubmitting] = useState(false);
+  const [isAnyFormSubmitting, setIsAnyFormSubmitting] = useState(false);
 
   const removeForm = useCallback<MultiHoneyFormsApi<Form, FormContext>['removeForm']>(
     targetForm => {
@@ -65,7 +65,7 @@ export const useMultiHoneyForms = <Form extends HoneyFormBaseForm, FormContext =
     MultiHoneyFormsApi<Form, FormContext>['submitForms']
   >(async () => {
     try {
-      setIsFormsSubmitting(true);
+      setIsAnyFormSubmitting(true);
 
       const formsData: Form[] = [];
 
@@ -88,7 +88,7 @@ export const useMultiHoneyForms = <Form extends HoneyFormBaseForm, FormContext =
 
       return submitResult;
     } finally {
-      setIsFormsSubmitting(false);
+      setIsAnyFormSubmitting(false);
     }
   }, [forms]);
 
@@ -99,7 +99,7 @@ export const useMultiHoneyForms = <Form extends HoneyFormBaseForm, FormContext =
 
   return {
     forms,
-    isFormsSubmitting,
+    isAnyFormSubmitting,
     addForm,
     insertForm,
     replaceForm,

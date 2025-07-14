@@ -126,6 +126,7 @@ describe('Hook [use-multi-honey-forms]: General', () => {
 
     await act(() => multiFormsApi.current.validateForms());
 
+    expect(multiFormsApi.current.forms).toHaveLength(1);
     expect(multiFormsApi.current.forms[0].formErrors).toStrictEqual({
       name: [
         {

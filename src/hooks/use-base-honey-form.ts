@@ -942,25 +942,14 @@ export const useBaseHoneyForm = <
     }
   }, []);
 
+  const checkIsAnyFormFieldValidating = () =>
+    Object.keys(formFieldsRef.current).some(formField => formFields[formField].isValidating);
+
   const formValues = useMemo(() => getFormValues(formFields), [formFields]);
   formValuesRef.current = formValues;
 
   const formErrors = useMemo(() => getFormErrors(formFields), [formFields]);
   formErrorsRef.current = formErrors;
-
-  const isAnyFormFieldValidating = useMemo(
-    () => Object.keys(formFields).some(formField => formFields[formField].isValidating),
-    [formFields],
-  );
-
-  const isFormErred = Object.keys(formErrors).length > 0;
-
-  const isFormSubmitAllowed =
-    !isFormDefaultsFetching &&
-    !isFormDefaultsFetchingErred &&
-    !isAnyFormFieldValidating &&
-    !formState.isValidating &&
-    !formState.isSubmitting;
 
   return {
     formId,
@@ -994,11 +983,25 @@ export const useBaseHoneyForm = <
     get isFormSubmitted() {
       return isFormSubmittedRef.current;
     },
+    get isFormErred() {
+      return Object.keys(formErrorsRef.current).length > 0;
+    },
+    get isFormSubmitAllowed() {
+      const isAnyFormFieldValidating = checkIsAnyFormFieldValidating();
+
+      return (
+        !isFormDefaultsFetching &&
+        !isFormDefaultsFetchingErred &&
+        !isAnyFormFieldValidating &&
+        !formState.isValidating &&
+        !formState.isSubmitting
+      );
+    },
+    get isAnyFormFieldValidating() {
+      return checkIsAnyFormFieldValidating();
+    },
     isFormDefaultsFetching,
     isFormDefaultsFetchingErred,
-    isFormErred,
-    isAnyFormFieldValidating,
-    isFormSubmitAllowed,
     // Functions
     setFormValues,
     setFormErrors,

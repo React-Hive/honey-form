@@ -1,6 +1,7 @@
 import React, { createContext, useContext } from 'react';
-
+import { assert } from '@react-hive/honey-utils';
 import type { PropsWithChildren } from 'react';
+
 import type {
   HoneyFormBaseForm,
   HoneyFormApi,
@@ -56,11 +57,10 @@ export const useChildHoneyFormContext = <
     ChildHoneyFormContextValue<ParentForm, ParentFieldName, FormContext, ChildForm> | undefined
   >(ChildHoneyFormContext);
 
-  if (!childFormContext) {
-    throw new Error(
-      '[honey-form]: The `useChildHoneyFormContext()` can be used only inside <ChildHoneyFormProvider/> component!',
-    );
-  }
+  assert(
+    childFormContext,
+    '[honey-form]: The `useChildHoneyFormContext()` can be used only inside <ChildHoneyFormProvider/> component!',
+  );
 
   return childFormContext;
 };

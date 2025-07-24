@@ -1,4 +1,11 @@
-import { isFunction, isNumber, isString, isBool, isNilOrEmptyString } from './helpers';
+import {
+  isBool,
+  isFunction,
+  isNilOrEmptyString,
+  isNumber,
+  isString,
+} from '@react-hive/honey-utils';
+
 import type {
   CustomDateRangeForm,
   HoneyFormInteractiveFieldBuiltInValidator,
@@ -40,7 +47,7 @@ export const INTERACTIVE_FIELD_TYPE_VALIDATORS_MAP: Record<
     }
 
     const isValidNumber = new RegExp(
-      `^${negative ? '-?' : ''}\\d+${decimal ? `(\\.\\d{1,${maxFraction}})?` : ''}$`,
+      `^${negative ? '-?' : ''}\\d+${decimal ? `(\\.\\d{0,${maxFraction}})?` : ''}$`,
     ).test(value.toString());
 
     return (

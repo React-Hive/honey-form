@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 
 import type { ReactNode } from 'react';
 import type { HoneyFormField, HoneyFormFieldConfig, HoneyFormBaseForm } from '../types';
@@ -41,5 +41,5 @@ export const HoneyFormDynamicField = <
   }
 
   // @ts-expect-error
-  return <>{children(field)}</>;
+  return children(field);
 };

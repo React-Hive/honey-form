@@ -1,7 +1,8 @@
 import React from 'react';
+import { invokeIfFunction } from '@react-hive/honey-utils';
 import type { FormEventHandler, FormHTMLAttributes, ReactNode, RefAttributes } from 'react';
 
-import { errorMessage, isFunction } from '../helpers';
+import { errorMessage } from '../helpers';
 import { useHoneyFormContext } from './honey-form.provider';
 import type { HoneyFormBaseForm, HoneyFormApi } from '../types';
 
@@ -41,7 +42,7 @@ export const HoneyFormForm = <Form extends HoneyFormBaseForm, FormContext = unde
       data-testid="honey-form"
       {...props}
     >
-      {isFunction(children) ? children(honeyFormApi) : children}
+      {invokeIfFunction(children, honeyFormApi)}
     </form>
   );
 };

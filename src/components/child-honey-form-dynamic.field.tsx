@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 
 import type { ReactNode } from 'react';
 import type {
@@ -63,5 +63,5 @@ export const ChildHoneyFormDynamicField = <
     return null;
   }
 
-  return <>{children(field)}</>;
+  return children(field);
 };

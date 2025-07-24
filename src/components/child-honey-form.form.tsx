@@ -1,6 +1,7 @@
 import React from 'react';
-
+import { invokeIfFunction } from '@react-hive/honey-utils';
 import type { HTMLAttributes, ReactNode } from 'react';
+
 import type {
   HoneyFormBaseForm,
   HoneyFormApi,
@@ -8,7 +9,6 @@ import type {
   HoneyFormExtractChildForm,
 } from '../types';
 
-import { isFunction } from '../helpers';
 import { useChildHoneyFormContext } from './child-honey-form.provider';
 import { useHoneyFormContext } from './honey-form.provider';
 
@@ -48,7 +48,7 @@ export const ChildHoneyFormForm = <
 
   return (
     <div role="form" data-testid="child-honey-form" {...props}>
-      {isFunction(children) ? children(childHoneyFormApi, parentHoneyFormApi) : children}
+      {invokeIfFunction(children, childHoneyFormApi, parentHoneyFormApi)}
     </div>
   );
 };

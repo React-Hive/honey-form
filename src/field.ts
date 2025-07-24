@@ -1,4 +1,13 @@
 import { createRef } from 'react';
+import {
+  isFunction,
+  isString,
+  isPromise,
+  noop,
+  isNil,
+  isNumber,
+  assert,
+} from '@react-hive/honey-utils';
 import type { HTMLAttributes, HTMLInputTypeAttribute, RefObject } from 'react';
 
 import { HONEY_FORM_ERRORS } from './constants';
@@ -9,12 +18,6 @@ import {
   PASSIVE_FIELD_TYPE_VALIDATORS_MAP,
 } from './validators';
 import {
-  noop,
-  isNil,
-  isString,
-  isNumber,
-  isFunction,
-  isPromise,
   checkIsInteractiveField,
   checkIsNestedFormsField,
   checkIsObjectField,
@@ -483,9 +486,7 @@ export const createFormField = <
       return (
         fieldMeta.childForms?.map(childForm => {
           const childFormFields = childForm.formFieldsRef.current;
-          if (!childFormFields) {
-            throw new Error(HONEY_FORM_ERRORS.emptyFormFieldsRef);
-          }
+          assert(childFormFields, HONEY_FORM_ERRORS.emptyFormFieldsRef);
 
           return getFormValues(childFormFields);
           // Return field value when child forms are not mounted yet at the beginning, but the field value is set as initial value
@@ -503,9 +504,7 @@ export const createFormField = <
     clearErrors: () => clearFieldErrors(fieldName),
     validate: () => validateField(fieldName),
     focus: () => {
-      if (!formFieldRef.current) {
-        throw new Error(HONEY_FORM_ERRORS.emptyFormFieldsRef);
-      }
+      assert(formFieldRef.current, HONEY_FORM_ERRORS.emptyFormFieldsRef);
 
       formFieldRef.current.focus();
     },
@@ -1608,8 +1607,6 @@ export const getNextFieldsState = <
   } else {
     nextFormField = getNextErrorsFreeField(nextFormField);
   }
-
-  nextFormFields[fieldName] = nextFormField;
 
   nextFormFields[fieldName] = getNextFormFieldState(nextFormField, filteredValue, {
     shouldFormat,

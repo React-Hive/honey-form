@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
+import { assert, isFunction } from '@react-hive/honey-utils';
 
 import {
   createFormField,
@@ -13,7 +14,6 @@ import {
   resetAllFields,
 } from '../field';
 import {
-  isFunction,
   errorMessage,
   warningMessage,
   checkIsInteractiveField,
@@ -255,9 +255,7 @@ export const useBaseHoneyForm = <
       } = {},
     ) => {
       const formFields = formFieldsRef.current;
-      if (!formFields) {
-        throw new Error(HONEY_FORM_ERRORS.emptyFormFieldsRef);
-      }
+      assert(formFields, HONEY_FORM_ERRORS.emptyFormFieldsRef);
 
       if (shouldDirty) {
         isFormDirtyRef.current = true;
@@ -275,11 +273,10 @@ export const useBaseHoneyForm = <
           let formValues = getFormValues(nextFormFields);
 
           Object.keys(targetValues).forEach((fieldName: keyof Form) => {
-            if (!(fieldName in nextFormFields)) {
-              throw new Error(
-                `[honey-form]: Attempted to set value for non-existent field "${fieldName.toString()}"`,
-              );
-            }
+            assert(
+              fieldName in nextFormFields,
+              `[honey-form]: Attempted to set value for non-existent field "${fieldName.toString()}"`,
+            );
 
             const fieldConfig = nextFormFields[fieldName].config;
 
@@ -340,9 +337,7 @@ export const useBaseHoneyForm = <
 
   const setFormErrors = useCallback<HoneyFormSetFormErrors<Form>>(formErrors => {
     const formFields = formFieldsRef.current;
-    if (!formFields) {
-      throw new Error(HONEY_FORM_ERRORS.emptyFormFieldsRef);
-    }
+    assert(formFields, HONEY_FORM_ERRORS.emptyFormFieldsRef);
 
     const nextFormFields = { ...formFields };
 
@@ -356,9 +351,7 @@ export const useBaseHoneyForm = <
 
   const clearFormErrors = useCallback<HoneyFormClearErrors>(() => {
     const formFields = formFieldsRef.current;
-    if (!formFields) {
-      throw new Error(HONEY_FORM_ERRORS.emptyFormFieldsRef);
-    }
+    assert(formFields, HONEY_FORM_ERRORS.emptyFormFieldsRef);
 
     const nextFormFields = iterateFormFields(formFields, (_, formField) =>
       getNextErrorsFreeField(formField),
@@ -370,9 +363,7 @@ export const useBaseHoneyForm = <
 
   const finishFieldAsyncValidation: HoneyFormFieldFinishAsyncValidation<Form> = fieldName => {
     const formFields = formFieldsRef.current;
-    if (!formFields) {
-      throw new Error(HONEY_FORM_ERRORS.emptyFormFieldsRef);
-    }
+    assert(formFields, HONEY_FORM_ERRORS.emptyFormFieldsRef);
 
     const nextFormFields: HoneyFormFields<Form, FormContext> = {
       ...formFields,
@@ -394,9 +385,7 @@ export const useBaseHoneyForm = <
     } = {},
   ) => {
     const formFields = formFieldsRef.current;
-    if (!formFields) {
-      throw new Error(HONEY_FORM_ERRORS.emptyFormFieldsRef);
-    }
+    assert(formFields, HONEY_FORM_ERRORS.emptyFormFieldsRef);
 
     // Any new field value clears the next form states
     isFormValidRef.current = false;
@@ -450,18 +439,16 @@ export const useBaseHoneyForm = <
             const childForms = formField.__meta__.childForms ?? [];
 
             if (childForms.length) {
-              if (!Array.isArray(fieldValue)) {
-                throw new Error(
-                  '[honey-form]: Expected field value to be an array when setting values for child forms. Received type: ' +
-                    typeof fieldValue,
-                );
-              }
+              assert(
+                Array.isArray(fieldValue),
+                '[honey-form]: Expected field value to be an array when setting values for child forms. Received type: ' +
+                  typeof fieldValue,
+              );
 
-              if (childForms.length !== fieldValue.length) {
-                throw new Error(
-                  `[honey-form]: Mismatched length. The number of child forms "${childForms.length}" must match the length of "${fieldValue.length}".`,
-                );
-              }
+              assert(
+                childForms.length === fieldValue.length,
+                `[honey-form]: Mismatched length. The number of child forms "${childForms.length}" must match the length of "${fieldValue.length}".`,
+              );
 
               childForms.forEach((childForm, childFormIndex) => {
                 childForm.setFormValues(fieldValue[childFormIndex], {
@@ -482,9 +469,7 @@ export const useBaseHoneyForm = <
 
   const clearFieldErrors: HoneyFormFieldClearErrors<Form> = fieldName => {
     const formFields = formFieldsRef.current;
-    if (!formFields) {
-      throw new Error(HONEY_FORM_ERRORS.emptyFormFieldsRef);
-    }
+    assert(formFields, HONEY_FORM_ERRORS.emptyFormFieldsRef);
 
     const nextFormFields: HoneyFormFields<Form, FormContext> = {
       ...formFields,
@@ -497,9 +482,7 @@ export const useBaseHoneyForm = <
 
   const pushFieldValue: HoneyFormFieldPushValue<Form> = (fieldName, value) => {
     const formFields = formFieldsRef.current;
-    if (!formFields) {
-      throw new Error(HONEY_FORM_ERRORS.emptyFormFieldsRef);
-    }
+    assert(formFields, HONEY_FORM_ERRORS.emptyFormFieldsRef);
 
     setFieldValue(
       fieldName,
@@ -515,9 +498,7 @@ export const useBaseHoneyForm = <
    */
   const removeFieldValue: HoneyFormFieldRemoveValue<Form> = (fieldName, formIndex) => {
     const formFields = formFieldsRef.current;
-    if (!formFields) {
-      throw new Error(HONEY_FORM_ERRORS.emptyFormFieldsRef);
-    }
+    assert(formFields, HONEY_FORM_ERRORS.emptyFormFieldsRef);
 
     const fieldValue = formFields[fieldName]
       .getChildFormsValues()
@@ -530,9 +511,7 @@ export const useBaseHoneyForm = <
 
   const validateField: HoneyFormValidateField<Form> = fieldName => {
     const formFields = formFieldsRef.current;
-    if (!formFields) {
-      throw new Error(HONEY_FORM_ERRORS.emptyFormFieldsRef);
-    }
+    assert(formFields, HONEY_FORM_ERRORS.emptyFormFieldsRef);
 
     const formValues = getFormValues(formFields);
 
@@ -577,9 +556,7 @@ export const useBaseHoneyForm = <
 
   const addFormFieldErrors = useCallback<HoneyFormFieldAddErrors<Form>>((fieldName, errors) => {
     const formFields = formFieldsRef.current;
-    if (!formFields) {
-      throw new Error(HONEY_FORM_ERRORS.emptyFormFieldsRef);
-    }
+    assert(formFields, HONEY_FORM_ERRORS.emptyFormFieldsRef);
 
     const formField = formFields[fieldName];
 
@@ -604,9 +581,7 @@ export const useBaseHoneyForm = <
   const addFormField = useCallback<HoneyFormAddFormField<Form, FormContext>>(
     (fieldName, fieldConfig) => {
       const formFields = formFieldsRef.current;
-      if (!formFields) {
-        throw new Error(HONEY_FORM_ERRORS.emptyFormFieldsRef);
-      }
+      assert(formFields, HONEY_FORM_ERRORS.emptyFormFieldsRef);
 
       if (formFields[fieldName]) {
         warningMessage(`Form field "${fieldName.toString()}" is already present.`);
@@ -689,9 +664,7 @@ export const useBaseHoneyForm = <
   const validateForm = useCallback<HoneyFormValidate<Form>>(
     async ({ targetFields, excludeFields } = {}) => {
       const formFields = formFieldsRef.current;
-      if (!formFields) {
-        throw new Error(HONEY_FORM_ERRORS.emptyFormFieldsRef);
-      }
+      assert(formFields, HONEY_FORM_ERRORS.emptyFormFieldsRef);
 
       // Variable to track if any errors are found during validation
       let isFormErred = false;
@@ -838,13 +811,8 @@ export const useBaseHoneyForm = <
 
   const submitForm = useCallback<HoneyFormSubmit<Form, FormContext>>(
     async formSubmitHandler => {
-      if (!formFieldsRef.current) {
-        throw new Error(HONEY_FORM_ERRORS.emptyFormFieldsRef);
-      }
-
-      if (!formSubmitHandler && !onSubmit) {
-        throw new Error(HONEY_FORM_ERRORS.submitHandlerOrOnSubmit);
-      }
+      assert(formFieldsRef.current, HONEY_FORM_ERRORS.emptyFormFieldsRef);
+      assert(formSubmitHandler || onSubmit, HONEY_FORM_ERRORS.submitHandlerOrOnSubmit);
 
       try {
         updateFormState({

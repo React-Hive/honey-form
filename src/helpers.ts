@@ -1,4 +1,5 @@
 import React from 'react';
+import { assert, isString } from '@react-hive/honey-utils';
 import type {
   Nullable,
   JSONValue,
@@ -27,47 +28,7 @@ import type {
 } from './types';
 import { __DEV__, HONEY_FORM_ERRORS } from './constants';
 
-export const noop = () => {
-  //
-};
-
 export const genericMemo: <T>(component: T) => T = React.memo;
-
-export const isString = (value: unknown): value is string => typeof value === 'string';
-
-export const isNumber = (value: unknown): value is number => typeof value === 'number';
-
-export const isBool = (value: unknown): value is boolean => typeof value === 'boolean';
-
-export const isFunction = (value: unknown) => typeof value === 'function';
-
-export const isPromise = <T = unknown>(value: unknown): value is Promise<T> =>
-  isFunction((value as Promise<T>)?.then);
-
-/**
- * Checks if a value is null or undefined.
- *
- * @param value - The value to check.
- *
- * @returns `true` if the value is `null` or `undefined`, otherwise `false`.
- */
-export const isNil = (value: unknown): value is null | undefined =>
-  value === undefined || value === null;
-
-/**
- * Checks whether the provided value is considered "empty".
- *
- * A value is considered empty if it is:
- * - `null`
- * - `undefined`
- * - `''`
- *
- * @param value - The value to check.
- *
- * @returns `true` if the value is empty; otherwise, `false`.
- */
-export const isNilOrEmptyString = (value: unknown): value is null | undefined =>
-  value === '' || isNil(value);
 
 export const warningMessage = (message: string) => {
   console.warn(`[honey-form]: ${message}`);
@@ -417,9 +378,7 @@ export const getSubmitFormValues = <
 
         formField.__meta__.childForms.forEach(childForm => {
           const childFormFields = childForm.formFieldsRef.current;
-          if (!childFormFields) {
-            throw new Error(HONEY_FORM_ERRORS.emptyFormFieldsRef);
-          }
+          assert(childFormFields, HONEY_FORM_ERRORS.emptyFormFieldsRef);
 
           childFormsCleanValues.push(
             getSubmitFormValues(parentField, formContext, childFormFields),

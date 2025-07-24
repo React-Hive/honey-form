@@ -1,8 +1,9 @@
 import { useContext, useEffect } from 'react';
+import { noop } from '@react-hive/honey-utils';
 
 import { createFormField } from '../field';
 import { useBaseHoneyForm } from './use-base-honey-form';
-import { getFormValues, mapFieldsConfig, noop } from '../helpers';
+import { getFormValues, mapFieldsConfig } from '../helpers';
 import { MultiHoneyFormsContext } from '../components';
 import type {
   InitialFormFieldsStateResolverOptions,

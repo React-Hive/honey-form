@@ -1,9 +1,9 @@
-import type { ReactNode } from 'react';
 import React, { createContext, useContext } from 'react';
+import { assert, invokeIfFunction } from '@react-hive/honey-utils';
+import type { ReactNode } from 'react';
 
 import type { HoneyFormBaseForm, HoneyFormApi, HoneyFormOptions } from '../types';
 
-import { isFunction } from '../helpers';
 import { useHoneyForm } from '../hooks';
 
 type HoneyFormContextValue<Form extends HoneyFormBaseForm, FormContext = undefined> = HoneyFormApi<
@@ -26,7 +26,7 @@ export const HoneyFormProvider = <Form extends HoneyFormBaseForm, FormContext = 
 
   return (
     <HoneyFormContext value={honeyFormApi}>
-      {isFunction(children) ? children(honeyFormApi) : children}
+      {invokeIfFunction(children, honeyFormApi)}
     </HoneyFormContext>
   );
 };
@@ -36,11 +36,10 @@ export const useHoneyFormContext = <Form extends HoneyFormBaseForm, FormContext 
     HoneyFormContext,
   );
 
-  if (!formContext) {
-    throw new Error(
-      '[honey-form]: The `useHoneyFormContext()` can be used only inside <HoneyFormProvider/> component!',
-    );
-  }
+  assert(
+    formContext,
+    '[honey-form]: The `useHoneyFormContext()` can be used only inside <HoneyFormProvider/> component!',
+  );
 
   return formContext;
 };

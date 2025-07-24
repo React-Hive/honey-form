@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useMemo } from 'react';
+import { assert, invokeIfFunction } from '@react-hive/honey-utils';
 import type { ReactNode } from 'react';
 
-import { isFunction } from '../helpers';
 import { useMultiHoneyForms } from '../hooks';
 import type { HoneyFormBaseForm, MultiHoneyFormOptions, MultiHoneyFormsApi } from '../types';
 
@@ -39,7 +39,7 @@ export const MultiHoneyForms = <Form extends HoneyFormBaseForm, FormContext = un
 
   return (
     <MultiHoneyFormsContext value={contextValue}>
-      {isFunction(children) ? children(multiHoneyFormsApi) : children}
+      {invokeIfFunction(children, multiHoneyFormsApi)}
     </MultiHoneyFormsContext>
   );
 };
@@ -52,11 +52,10 @@ export const useMultiHoneyFormsContext = <
     MultiHoneyFormsContext,
   );
 
-  if (!multiFormsContext) {
-    throw new Error(
-      '[honey-form]: The `useMultiHoneyFormsContext()` can be used only inside <MultiHoneyForms/> component!',
-    );
-  }
+  assert(
+    multiFormsContext,
+    '[honey-form]: The `useMultiHoneyFormsContext()` can be used only inside <MultiHoneyForms/> component!',
+  );
 
   return multiFormsContext;
 };

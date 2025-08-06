@@ -804,69 +804,81 @@ interface BaseHoneyFormField<
   /**
    * Configuration options for this field.
    */
-  config: HoneyFormFieldConfig<Form, FieldName, FormContext, FieldValue>;
+  readonly config: HoneyFormFieldConfig<Form, FieldName, FormContext, FieldValue>;
   /**
    * The default value initially set for the field.
    *
    * @default undefined
    */
-  defaultValue: FieldValue | undefined;
+  readonly defaultValue: FieldValue | undefined;
   /**
    * The unprocessed value, before any filtering or formatting.
    */
-  rawValue: FieldValue | undefined;
+  readonly rawValue: FieldValue | undefined;
+  /**
+   * The initial clean value of the field.
+   *
+   * @default undefined
+   */
+  readonly initialCleanValue: FieldValue | undefined;
   /**
    * The processed value after filtering and formatting. If there are errors, this is set as `undefined`.
    */
-  cleanValue: FieldValue | undefined;
+  readonly cleanValue: FieldValue | undefined;
   /**
    * The final, formatted value ready to be displayed to the user.
    */
-  value: FieldValue | undefined;
+  readonly value: FieldValue | undefined;
   /**
    * An array of errors associated with this field.
    *
    * @default []
    */
-  errors: HoneyFormFieldError[];
+  readonly errors: HoneyFormFieldError[];
+  /**
+   * Indicates whether the value has changed from its initial value.
+   *
+   * @default false
+   */
+  readonly isDirty: boolean;
   /**
    * Indicates whether the field is currently undergoing validation.
    *
    * @default false
    */
-  isValidating: boolean;
+  readonly isValidating: boolean;
   /**
    * A function to set the field's value.
    */
-  setValue: HoneyFormFieldSetValue<FieldValue>;
+  readonly setValue: HoneyFormFieldSetValue<FieldValue>;
   /**
    * A function to remove a value from a parent field by its index.
    */
-  removeValue: (formIndex: number) => void;
+  readonly removeValue: (formIndex: number) => void;
   /**
    * Reset field value to default value and clear all errors.
    */
-  resetValue: () => void;
+  readonly resetValue: () => void;
   /**
    * A function to add a new error to the field.
    */
-  addError: (error: HoneyFormFieldError) => void;
+  readonly addError: (error: HoneyFormFieldError) => void;
   /**
    * A function to add the new errors to the field.
    */
-  addErrors: (errors: HoneyFormFieldError[]) => void;
+  readonly addErrors: (errors: HoneyFormFieldError[]) => void;
   /**
    * A function to clear all errors associated with this field.
    */
-  clearErrors: () => void;
+  readonly clearErrors: () => void;
   /**
    * A function to validate the field.
    */
-  validate: () => void;
+  readonly validate: () => void;
   /**
    * Built-in metadata used by the library.
    */
-  __meta__: HoneyFormFieldMeta<Form, FieldName, FormContext>;
+  readonly __meta__: HoneyFormFieldMeta<Form, FieldName, FormContext>;
 }
 
 /**
@@ -882,18 +894,18 @@ export interface HoneyFormField<
   /**
    * A function to add a new value to a parent field that can have child forms.
    */
-  pushValue: (value: HoneyFormExtractChildForm<FieldValue>) => void;
+  readonly pushValue: (value: HoneyFormExtractChildForm<FieldValue>) => void;
   /**
    * A function to retrieve child forms' values if the field is a parent field.
    */
-  getChildFormsValues: () => HoneyFormExtractChildForms<FieldValue>;
+  readonly getChildFormsValues: () => HoneyFormExtractChildForms<FieldValue>;
   /**
    * A function to focus on this field.
    *
    * @remarks
    * Can only be used when `props` are destructured within a component.
    */
-  focus: () => void;
+  readonly focus: () => void;
 }
 
 /**
@@ -1134,6 +1146,7 @@ export interface FormOptions<
   parentField?: HoneyFormParentField<ParentForm, ParentFieldName>;
   /**
    * Default values for the form fields.
+   * Has a priority over the default values specified in the `fields` configuration.
    * Can be a Promise function to asynchronously retrieve defaults.
    *
    * @default {}
@@ -1156,20 +1169,26 @@ export interface FormOptions<
    */
   values?: Partial<Form>;
   /**
+   * Specifies whether the form should perform validation for passed values.
+   *
+   * @default true
+   */
+  validateValues?: boolean;
+  /**
+   * If `true`, prevents updating form fields that have been marked as dirty.
+   *
+   * Use this to avoid overwriting user-modified fields during external values synchronization.
+   *
+   * @default false
+   */
+  skipSyncDirtyFields?: boolean;
+  /**
    * Determines whether the form should be reset to its initial state after a successful submitting.
    * The form will be reset only when the `onSubmit` callback does not return any errors.
    *
    * @default false
    */
   resetAfterSubmit?: boolean;
-  /**
-   * Specifies whether the form should perform validation for external values.
-   * If true, the form will validate the external values upon being set.
-   * If false, the external values will be set without validation.
-   *
-   * @default true
-   */
-  validateExternalValues?: boolean;
   /**
    * Always run validation for the parent form field when any child field value is changed.
    *
@@ -1318,23 +1337,31 @@ interface SetFormValuesOptions {
    *
    * @default true
    */
-  shouldValidate?: boolean;
+  validate?: boolean;
+  /**
+   * If `true`, only updates fields that have been modified (i.e., dirty) with new values.
+   *
+   * Useful for preserving user-edited values during form updates while syncing untouched fields.
+   *
+   * @default true
+   */
+  updateDirtyValues?: boolean;
   /**
    * Indicates whether setting a new form values should mark the form as "dirty".
    *
    * @default true
    */
-  shouldDirty?: boolean;
+  dirty?: boolean;
   /**
    * If `true`, clear all field values before setting new values.
    */
-  shouldClearAll?: boolean;
+  clearAll?: boolean;
   /**
    * If `true`, skips the debounced `onChange` handling.
    *
    * @default false
    */
-  shouldSkipOnChange?: boolean;
+  skipOnChange?: boolean;
 }
 
 /**

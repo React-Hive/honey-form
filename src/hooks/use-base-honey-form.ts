@@ -59,6 +59,7 @@ import type {
   HoneyFormRestoreUnfinishedForm,
   HoneyFormFieldsValidationController,
   HoneyFormBaseExecutionContext,
+  HoneyFormField,
 } from '../types';
 
 const FORM_DEFAULTS = {};
@@ -82,8 +83,9 @@ export const useBaseHoneyForm = <
   defaults = FORM_DEFAULTS,
   readDefaultsFromStorage = false,
   values: externalValues,
+  validateValues: validateExternalValues = true,
+  skipSyncDirtyFields = false,
   resetAfterSubmit = false,
-  validateExternalValues = true,
   alwaysValidateParentField = false,
   storage,
   context: formContext,
@@ -128,6 +130,13 @@ export const useBaseHoneyForm = <
   const updateFormState = useCallback((newFormState: Partial<HoneyFormState>) => {
     setFormState(prevFormState => ({ ...prevFormState, ...newFormState }));
   }, []);
+
+  const resolveFormFields = (): HoneyFormFields<Form, FormContext> => {
+    const formFields = formFieldsRef.current;
+    assert(formFields, HONEY_FORM_ERRORS.emptyFormFieldsRef);
+
+    return formFields;
+  };
 
   /**
    * Processes form field changes with optional debouncing.
@@ -248,16 +257,16 @@ export const useBaseHoneyForm = <
     (
       targetValues,
       {
-        shouldValidate = true,
-        shouldDirty = true,
-        shouldClearAll = false,
-        shouldSkipOnChange = false,
+        validate = true,
+        updateDirtyValues = true,
+        dirty = true,
+        clearAll = false,
+        skipOnChange = false,
       } = {},
     ) => {
-      const formFields = formFieldsRef.current;
-      assert(formFields, HONEY_FORM_ERRORS.emptyFormFieldsRef);
+      const formFields = resolveFormFields();
 
-      if (shouldDirty) {
+      if (dirty) {
         isFormDirtyRef.current = true;
       }
 
@@ -266,7 +275,7 @@ export const useBaseHoneyForm = <
         () => {
           let nextFormFields = { ...formFields };
 
-          if (shouldClearAll) {
+          if (clearAll) {
             nextFormFields = resetAllFields(nextFormFields);
           }
 
@@ -277,6 +286,10 @@ export const useBaseHoneyForm = <
               fieldName in nextFormFields,
               `[honey-form]: Attempted to set value for non-existent field "${fieldName.toString()}"`,
             );
+
+            if (!updateDirtyValues && nextFormFields[fieldName].isDirty) {
+              return;
+            }
 
             const fieldConfig = nextFormFields[fieldName].config;
 
@@ -291,7 +304,7 @@ export const useBaseHoneyForm = <
                 ? fieldConfig.filter(targetValues[fieldName], executionContext)
                 : targetValues[fieldName];
 
-            const nextFormField = shouldValidate
+            const nextFormField: HoneyFormField<Form, keyof Form, FormContext> = validate
               ? executeFieldValidator({
                   executionContext,
                   formFieldsValidationControllerRef,
@@ -322,7 +335,7 @@ export const useBaseHoneyForm = <
 
           return nextFormFields;
         },
-        shouldSkipOnChange,
+        skipOnChange,
       );
 
       formFieldsRef.current = nextFormFields;
@@ -336,8 +349,7 @@ export const useBaseHoneyForm = <
   );
 
   const setFormErrors = useCallback<HoneyFormSetFormErrors<Form>>(formErrors => {
-    const formFields = formFieldsRef.current;
-    assert(formFields, HONEY_FORM_ERRORS.emptyFormFieldsRef);
+    const formFields = resolveFormFields();
 
     const nextFormFields = { ...formFields };
 
@@ -350,8 +362,7 @@ export const useBaseHoneyForm = <
   }, []);
 
   const clearFormErrors = useCallback<HoneyFormClearErrors>(() => {
-    const formFields = formFieldsRef.current;
-    assert(formFields, HONEY_FORM_ERRORS.emptyFormFieldsRef);
+    const formFields = resolveFormFields();
 
     const nextFormFields = iterateFormFields(formFields, (_, formField) =>
       getNextErrorsFreeField(formField),
@@ -362,8 +373,7 @@ export const useBaseHoneyForm = <
   }, []);
 
   const finishFieldAsyncValidation: HoneyFormFieldFinishAsyncValidation<Form> = fieldName => {
-    const formFields = formFieldsRef.current;
-    assert(formFields, HONEY_FORM_ERRORS.emptyFormFieldsRef);
+    const formFields = resolveFormFields();
 
     const nextFormFields: HoneyFormFields<Form, FormContext> = {
       ...formFields,
@@ -377,21 +387,15 @@ export const useBaseHoneyForm = <
   const setFieldValue: HoneyFormFieldSetValueInternal<Form> = (
     fieldName,
     fieldValue,
-    {
-      shouldValidate = true,
-      shouldDirty = true,
-      shouldFormat = true,
-      shouldSetChildFormsValues = true,
-    } = {},
+    { validate = true, dirty = true, format = true, shouldSetChildFormsValues = true } = {},
   ) => {
-    const formFields = formFieldsRef.current;
-    assert(formFields, HONEY_FORM_ERRORS.emptyFormFieldsRef);
+    const formFields = resolveFormFields();
 
     // Any new field value clears the next form states
     isFormValidRef.current = false;
     isFormSubmittedRef.current = false;
 
-    if (shouldDirty) {
+    if (dirty) {
       isFormDirtyRef.current = true;
     }
 
@@ -410,14 +414,14 @@ export const useBaseHoneyForm = <
         const isValidateOnSubmit =
           checkIsInteractiveField(formField.config) && formField.config.mode === 'submit';
 
-        const isValidateField = !isValidateOnSubmit && (shouldValidate || isFieldPreviouslyErred);
+        const isValidateField = !isValidateOnSubmit && (validate || isFieldPreviouslyErred);
 
         const nextFormFields = getNextFieldsState(fieldName, fieldValue, {
           executionContext,
           formFieldsValidationControllerRef,
           parentField,
-          shouldValidate: isValidateField,
-          shouldFormat,
+          validate: isValidateField,
+          format: format,
           finishFieldAsyncValidation,
         });
 
@@ -452,7 +456,7 @@ export const useBaseHoneyForm = <
 
               childForms.forEach((childForm, childFormIndex) => {
                 childForm.setFormValues(fieldValue[childFormIndex], {
-                  shouldValidate: isValidateField,
+                  validate: isValidateField,
                 });
               });
             }
@@ -468,8 +472,7 @@ export const useBaseHoneyForm = <
   };
 
   const clearFieldErrors: HoneyFormFieldClearErrors<Form> = fieldName => {
-    const formFields = formFieldsRef.current;
-    assert(formFields, HONEY_FORM_ERRORS.emptyFormFieldsRef);
+    const formFields = resolveFormFields();
 
     const nextFormFields: HoneyFormFields<Form, FormContext> = {
       ...formFields,
@@ -481,8 +484,7 @@ export const useBaseHoneyForm = <
   };
 
   const pushFieldValue: HoneyFormFieldPushValue<Form> = (fieldName, value) => {
-    const formFields = formFieldsRef.current;
-    assert(formFields, HONEY_FORM_ERRORS.emptyFormFieldsRef);
+    const formFields = resolveFormFields();
 
     setFieldValue(
       fieldName,
@@ -497,8 +499,7 @@ export const useBaseHoneyForm = <
    * Removes a value from a specific form field that holds an array of values.
    */
   const removeFieldValue: HoneyFormFieldRemoveValue<Form> = (fieldName, formIndex) => {
-    const formFields = formFieldsRef.current;
-    assert(formFields, HONEY_FORM_ERRORS.emptyFormFieldsRef);
+    const formFields = resolveFormFields();
 
     const fieldValue = formFields[fieldName]
       .getChildFormsValues()
@@ -510,9 +511,7 @@ export const useBaseHoneyForm = <
   };
 
   const validateField: HoneyFormValidateField<Form> = fieldName => {
-    const formFields = formFieldsRef.current;
-    assert(formFields, HONEY_FORM_ERRORS.emptyFormFieldsRef);
-
+    const formFields = resolveFormFields();
     const formValues = getFormValues(formFields);
 
     const executionContext: HoneyFormBaseExecutionContext<Form, FormContext> = {
@@ -555,9 +554,7 @@ export const useBaseHoneyForm = <
   };
 
   const addFormFieldErrors = useCallback<HoneyFormFieldAddErrors<Form>>((fieldName, errors) => {
-    const formFields = formFieldsRef.current;
-    assert(formFields, HONEY_FORM_ERRORS.emptyFormFieldsRef);
-
+    const formFields = resolveFormFields();
     const formField = formFields[fieldName];
 
     const nextFormFields: HoneyFormFields<Form, FormContext> = {
@@ -580,9 +577,7 @@ export const useBaseHoneyForm = <
 
   const addFormField = useCallback<HoneyFormAddFormField<Form, FormContext>>(
     (fieldName, fieldConfig) => {
-      const formFields = formFieldsRef.current;
-      assert(formFields, HONEY_FORM_ERRORS.emptyFormFieldsRef);
-
+      const formFields = resolveFormFields();
       if (formFields[fieldName]) {
         warningMessage(`Form field "${fieldName.toString()}" is already present.`);
       }
@@ -663,8 +658,7 @@ export const useBaseHoneyForm = <
    */
   const validateForm = useCallback<HoneyFormValidate<Form>>(
     async ({ targetFields, excludeFields } = {}) => {
-      const formFields = formFieldsRef.current;
-      assert(formFields, HONEY_FORM_ERRORS.emptyFormFieldsRef);
+      const formFields = resolveFormFields();
 
       // Variable to track if any errors are found during validation
       let isFormErred = false;
@@ -792,7 +786,10 @@ export const useBaseHoneyForm = <
     formFieldsValidationControllerRef.current = {};
 
     if (newFormDefaults) {
-      formDefaultsRef.current = { ...formDefaultsRef.current, ...newFormDefaults };
+      formDefaultsRef.current = {
+        ...formDefaultsRef.current,
+        ...newFormDefaults,
+      };
     }
 
     setFormFields(getInitialFormFieldsState);
@@ -876,12 +873,13 @@ export const useBaseHoneyForm = <
   useEffect(() => {
     if (externalValues) {
       setFormValues(externalValues, {
-        shouldValidate: validateExternalValues,
-        shouldDirty: false,
-        shouldSkipOnChange: true,
+        validate: validateExternalValues,
+        updateDirtyValues: !skipSyncDirtyFields,
+        dirty: false,
+        skipOnChange: true,
       });
     }
-  }, [externalValues, validateExternalValues]);
+  }, [externalValues, validateExternalValues, skipSyncDirtyFields]);
 
   useEffect(() => {
     if (isFunction(defaults)) {
@@ -896,9 +894,9 @@ export const useBaseHoneyForm = <
           };
 
           setFormValues(defaultValues, {
-            shouldValidate: false,
-            shouldDirty: false,
-            shouldSkipOnChange: true,
+            validate: false,
+            dirty: false,
+            skipOnChange: true,
           });
         })
         .catch(() => {

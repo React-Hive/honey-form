@@ -82,12 +82,32 @@ const DEFAULT_FIELD_VALUE_CONVERTORS_MAP: Partial<
 > = {
   number: (value: number | string | undefined) => {
     if (isString(value) && value) {
-      // Try to replace the thousand separators because they can be added by number filter
+      // Should replace the thousand separators because they can be added by number filter
       return Number(value.replace(/,/g, ''));
     }
 
     return isNumber(value) ? value : undefined;
   },
+};
+
+/**
+ * Sanitizes the value of a form field based on its type.
+ * If a convertor for the provided field type exists in the default map, it uses it to convert the value.
+ * If a convertor does not exist, it returns the original value.
+ */
+const sanitizeFieldValue = <
+  Form extends HoneyFormBaseForm,
+  FieldName extends keyof Form,
+  FieldValue extends Form[FieldName],
+>(
+  fieldType: HoneyFormFieldType | undefined,
+  fieldValue: FieldValue | undefined,
+) => {
+  const valueConvertor = fieldType
+    ? (DEFAULT_FIELD_VALUE_CONVERTORS_MAP[fieldType] as HoneyFormFieldValueConvertor<FieldValue>)
+    : null;
+
+  return valueConvertor ? valueConvertor(fieldValue) : fieldValue;
 };
 
 /**
@@ -183,8 +203,8 @@ const getInteractiveFormFieldProps = <
     inputMode: getInteractiveFieldInputMode(fieldConfig),
     onChange: e => {
       setFieldValue(fieldName, e.target.value, {
-        shouldValidate: fieldConfig.mode === 'change',
-        shouldFormat: !fieldConfig.formatOnBlur,
+        validate: fieldConfig.mode === 'change',
+        format: !fieldConfig.formatOnBlur,
       });
     },
     ...((fieldConfig.mode === 'blur' || fieldConfig.formatOnBlur) && {
@@ -253,7 +273,7 @@ const getPassiveFormFieldProps = <
       }
 
       setFieldValue(fieldName, newFieldValue, {
-        shouldFormat: false,
+        format: false,
       });
     },
     // Additional field properties from field configuration
@@ -302,7 +322,7 @@ const getObjectFormFieldProps = <
     //
     onChange: newFieldValue => {
       setFieldValue(fieldName, newFieldValue, {
-        shouldFormat: false,
+        format: false,
       });
     },
     // Additional field properties from field configuration
@@ -471,13 +491,16 @@ export const createFormField = <
     fieldConfig: resultFieldConfig,
   });
 
+  const cleanValue = sanitizeFieldValue(resultFieldConfig.type, filteredValue);
+
   return {
     ...fieldProps,
+    cleanValue,
     config: resultFieldConfig,
     errors: [],
     defaultValue: resultFieldConfig.defaultValue,
     rawValue: filteredValue,
-    cleanValue: filteredValue,
+    initialCleanValue: cleanValue,
     value: resultValue,
     isValidating: false,
     // TODO: try to fix the next error
@@ -943,26 +966,6 @@ const handleFieldAsyncValidationResult = <
         });
       }
     });
-
-/**
- * Sanitizes the value of a form field based on its type.
- * If a convertor for the provided field type exists in the default map, it uses it to convert the value.
- * If a convertor does not exist, it returns the original value.
- */
-const sanitizeFieldValue = <
-  Form extends HoneyFormBaseForm,
-  FieldName extends keyof Form,
-  FieldValue extends Form[FieldName],
->(
-  fieldType: HoneyFormFieldType | undefined,
-  fieldValue: FieldValue | undefined,
-) => {
-  const valueConvertor = fieldType
-    ? (DEFAULT_FIELD_VALUE_CONVERTORS_MAP[fieldType] as HoneyFormFieldValueConvertor<FieldValue>)
-    : null;
-
-  return valueConvertor ? valueConvertor(fieldValue) : fieldValue;
-};
 
 /**
  * Updates the validation controller for a specific form field, ensuring that any
@@ -1533,11 +1536,11 @@ interface NextFieldsStateOptions<
   /**
    * Flag indicating whether to validate the form fields.
    */
-  shouldValidate: boolean;
+  validate: boolean;
   /**
    * Flag indicating whether to format the form fields.
    */
-  shouldFormat: boolean;
+  format: boolean;
   /**
    * Callback function to complete asynchronous validation for the field.
    *
@@ -1570,8 +1573,8 @@ export const getNextFieldsState = <
     executionContext,
     formFieldsValidationControllerRef,
     parentField,
-    shouldValidate,
-    shouldFormat,
+    validate,
+    format,
     finishFieldAsyncValidation,
   }: NextFieldsStateOptions<ParentForm, ParentFieldName, Form, FieldName, FormContext>,
 ): HoneyFormFields<Form, FormContext> => {
@@ -1590,7 +1593,7 @@ export const getNextFieldsState = <
     }
   }
 
-  if (shouldValidate) {
+  if (validate) {
     nextFormFields = resetDependentFields(executionContext, fieldName);
 
     nextFormField = executeFieldValidator({
@@ -1609,13 +1612,18 @@ export const getNextFieldsState = <
   }
 
   nextFormFields[fieldName] = getNextFormFieldState(nextFormField, filteredValue, {
-    shouldFormat,
+    shouldFormat: format,
     executionContext: {
       ...executionContext,
       formFields: nextFormFields,
       formValues: getFormValues(nextFormFields),
     },
   });
+
+  nextFormFields[fieldName] = {
+    ...nextFormFields[fieldName],
+    isDirty: nextFormFields[fieldName].initialCleanValue !== nextFormField.cleanValue,
+  };
 
   const formValues = getFormValues(nextFormFields);
 

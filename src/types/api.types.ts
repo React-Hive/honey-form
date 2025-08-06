@@ -21,54 +21,54 @@ export interface HoneyFormApi<Form extends HoneyFormBaseForm, FormContext = unde
   /**
    * Form ID.
    */
-  formId: HoneyFormId;
+  readonly formId: HoneyFormId;
   /**
    * Reference to form fields.
    */
-  formFieldsRef: RefObject<HoneyFormFields<Form, FormContext>>;
+  readonly formFieldsRef: RefObject<HoneyFormFields<Form, FormContext>>;
   /**
    * Form context.
    *
    * @default undefined
    */
-  formContext: FormContext;
+  readonly formContext: FormContext;
   /**
    * An object that contains the state of the form fields.
    *
    * @default {}
    */
-  formFields: HoneyFormFields<Form, FormContext>;
+  readonly formFields: HoneyFormFields<Form, FormContext>;
   /**
    * Provides quick access to the current values of all form fields.
    *
    * @default {}
    */
-  formValues: HoneyFormValues<Form>;
+  readonly formValues: HoneyFormValues<Form>;
   /**
    * Provides quick access to the default values of all form fields.
    *
    * @default {}
    */
-  formDefaultValues: HoneyFormDefaultValues<Form>;
+  readonly formDefaultValues: HoneyFormDefaultValues<Form>;
   /**
    * @default {}
    */
-  formErrors: HoneyFormErrors<Form>;
+  readonly formErrors: HoneyFormErrors<Form>;
   /**
    * A boolean value that becomes `true` when the form has any error.
    * It remains `false` when the form is error-free.
    *
    * @default false
    */
-  isFormErred: boolean;
+  readonly isFormErred: boolean;
   /**
    * @default false
    */
-  isFormDefaultsFetching: boolean;
+  readonly isFormDefaultsFetching: boolean;
   /**
    * @default false
    */
-  isFormDefaultsFetchingErred: boolean;
+  readonly isFormDefaultsFetchingErred: boolean;
   /**
    * A boolean value that indicates whether any field value in the form has changed.
    * It is `false` by default and becomes `true` when any field value is changed.
@@ -76,41 +76,41 @@ export interface HoneyFormApi<Form extends HoneyFormBaseForm, FormContext = unde
    *
    * @default false
    */
-  isFormDirty: boolean;
+  readonly isFormDirty: boolean;
   /**
    * A boolean value that becomes `true` when the form is in the process of validation.
    * It indicates that the validation of the form's fields is currently underway.
    *
    * @default false
    */
-  isFormValidating: boolean;
+  readonly isFormValidating: boolean;
   /**
    * A boolean value that becomes `true` when the process of form validation has successfully finished,
    *  and no errors have been detected in any of the form's fields.
    *
    * @default false
    */
-  isFormValid: boolean;
+  readonly isFormValid: boolean;
   /**
    * A boolean value that indicates whether the form is currently submitting.
    *
    * @default false
    */
-  isFormSubmitting: boolean;
+  readonly isFormSubmitting: boolean;
   /**
    * A boolean value that becomes `true` when the form has been successfully submitted.
    * It resets to `false` when any field value is changed.
    *
    * @default false
    */
-  isFormSubmitted: boolean;
+  readonly isFormSubmitted: boolean;
   /**
    * A boolean value that becomes `true` if any form field is currently validating using promise-based validator functions.
    * This value changes only when the field value is changed. It does not apply during full form validation.
    *
    * @default false
    */
-  isAnyFormFieldValidating: boolean;
+  readonly isAnyFormFieldValidating: boolean;
   /**
    * A boolean value that indicates whether the form submission is allowed.
    *
@@ -123,7 +123,7 @@ export interface HoneyFormApi<Form extends HoneyFormBaseForm, FormContext = unde
    *
    * @default true
    */
-  isFormSubmitAllowed: boolean;
+  readonly isFormSubmitAllowed: boolean;
   /**
    * Sets the values of the form fields.
    */
@@ -179,7 +179,7 @@ export interface MultiHoneyFormsApi<Form extends HoneyFormBaseForm, FormContext 
    *
    * @default []
    */
-  forms: HoneyFormApi<Form, FormContext>[];
+  readonly forms: HoneyFormApi<Form, FormContext>[];
   /**
    * A boolean value that becomes `true` if **any** of the managed forms is currently in the process of being submitted.
    *
@@ -187,7 +187,7 @@ export interface MultiHoneyFormsApi<Form extends HoneyFormBaseForm, FormContext 
    *
    * @default false
    */
-  isAnyFormSubmitting: boolean;
+  readonly isAnyFormSubmitting: boolean;
   /**
    * Adds a new form instance to the list of managed forms.
    *

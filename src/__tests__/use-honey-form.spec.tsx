@@ -212,7 +212,7 @@ describe('Hook [use-honey-form]: General', () => {
 
     expect(result.current.formFields.kind.value).toBe('vegetable');
 
-    act(() => result.current.setFormValues({ name: 'orange' }, { shouldClearAll: true }));
+    act(() => result.current.setFormValues({ name: 'orange' }, { clearAll: true }));
 
     expect(result.current.formFields.name.value).toBe('orange');
 
@@ -245,7 +245,7 @@ describe('Hook [use-honey-form]: General', () => {
   it('should synchronize form values with external values', () => {
     type Form = { name: string };
 
-    let externalFormValues: Partial<Form> = {};
+    let externalFormValues: Form = {};
 
     const { result, rerender } = renderHook(() =>
       useHoneyForm<Form>({
@@ -265,6 +265,47 @@ describe('Hook [use-honey-form]: General', () => {
     rerender();
 
     expect(result.current.formFields.name.value).toBe('apple');
+  });
+
+  it('should not synchronize form values with external values for dirty fields', () => {
+    type Form = {
+      nameA: string;
+      nameB: string;
+    };
+
+    let externalFormValues: Form = {
+      nameA: 'banana',
+      nameB: 'apple',
+    };
+
+    const { result, rerender } = renderHook(() =>
+      useHoneyForm<Form>({
+        fields: {
+          nameA: {
+            type: 'string',
+          },
+          nameB: {
+            type: 'string',
+          },
+        },
+        values: externalFormValues,
+        skipSyncDirtyFields: true,
+      }),
+    );
+
+    expect(result.current.formFields.nameA.value).toBe('banana');
+
+    act(() => result.current.formFields.nameA.setValue('pear'));
+
+    externalFormValues = {
+      nameA: 'raspberry',
+      nameB: 'mango',
+    };
+
+    rerender();
+
+    expect(result.current.formFields.nameA.value).toBe('pear');
+    expect(result.current.formFields.nameB.value).toBe('mango');
   });
 });
 

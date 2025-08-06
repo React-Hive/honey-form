@@ -178,14 +178,14 @@ interface HoneyFormFieldSetValueOptions {
    *
    * @default true
    */
-  shouldDirty?: boolean;
+  dirty?: boolean;
   /**
    * Determines whether the new field value should be automatically formatted using
    * a predefined formatting function (if available).
    *
    * @default true
    */
-  shouldFormat?: boolean;
+  format?: boolean;
   /**
    * Controls whether the validation function should be triggered after the new field value
    * is set. If `false`, validation will not occur unless there are existing field errors.
@@ -193,13 +193,13 @@ interface HoneyFormFieldSetValueOptions {
    * @remarks
    * - If this is set to `false`, validation will still be executed if any validation errors
    *   exist for the field.
-   * - If the field's `mode` is set to `'submit'`, the value of `shouldValidate` will be ignored.
+   * - If the field's `mode` is set to `'submit'`, the value of `validate` will be ignored.
    *   Validation for the field will only be triggered when the form is submitted, regardless of
    *   the value of this flag.
    *
    * @default true
    */
-  shouldValidate?: boolean;
+  validate?: boolean;
 }
 
 export type HoneyFormFieldSetValue<FieldValue> = (

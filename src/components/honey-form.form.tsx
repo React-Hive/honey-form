@@ -28,16 +28,17 @@ export const HoneyFormForm = <Form extends HoneyFormBaseForm, FormContext = unde
     honeyFormApi.submitForm().catch(errorMessage);
   };
 
+  const isFormBusy =
+    honeyFormApi.isFormValidating ||
+    honeyFormApi.isFormSubmitting ||
+    honeyFormApi.isFormDefaultsFetching;
+
   return (
     <form
       onSubmit={onSubmit}
       noValidate
       // ARIA
-      aria-busy={
-        honeyFormApi.isFormValidating ||
-        honeyFormApi.isFormSubmitting ||
-        honeyFormApi.isFormDefaultsFetching
-      }
+      aria-busy={isFormBusy}
       // Data
       data-testid="honey-form"
       {...props}

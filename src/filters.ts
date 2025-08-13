@@ -1,3 +1,5 @@
+import { isNilOrEmptyString } from '@react-hive/honey-utils';
+
 import type { HoneyFormBaseForm, HoneyFormFieldFilter } from './types';
 
 interface NumericFilterOptions {
@@ -36,7 +38,7 @@ export const createHoneyFormNumericFilter =
     FormContext
   > =>
   value => {
-    if (!value) {
+    if (isNilOrEmptyString(value)) {
       return value;
     }
 
@@ -114,14 +116,13 @@ export const createHoneyFormNumberFilter =
     splitThousands = false,
   }: HoneyFormNumberFilterOptions = {}): HoneyFormFieldFilter<Form, FieldValue, FormContext> =>
   value => {
-    if (!value) {
+    if (isNilOrEmptyString(value)) {
       return value;
     }
 
     const pattern = new RegExp(`[^0-9${decimal ? '.' : ''}${negative ? '-' : ''}]+`, 'g');
     let cleanedValue = value.toString().replace(pattern, '');
 
-    // Check and handle the negative sign
     let isNegativeSignPresent = false;
     if (negative) {
       isNegativeSignPresent = cleanedValue.startsWith('-');
@@ -132,8 +133,16 @@ export const createHoneyFormNumberFilter =
     // Split by the decimal point
     const [integerPart, fractionPart] = cleanedValue.split('.');
 
-    // Remove leading zeros; if decimal is allowed, preserve a single zero if it's the only digit left
-    const limitedIntegerPart = integerPart.replace(decimal ? /^0+(?=\d)/ : /^0+/, '');
+    // If decimals are allowed, remove extra leading zeros but keep a single zero
+    //  if it's the only digit (e.g., "0005" → "5", "0" → "0").
+    //
+    // If decimals are not allowed, collapse all zeros to a single "0" if the input is all zeros,
+    //  otherwise strip all leading zeros (e.g., "00" → "0", "0005" → "5").
+    const limitedIntegerPart = decimal
+      ? integerPart.replace(/^0+(?=\d)/, '')
+      : /^0+$/.test(integerPart)
+        ? '0'
+        : integerPart.replace(/^0+/, '');
 
     // Limit the lengths of the parts based on the maxLength options
     const limitedBeforeDecimal = limitedIntegerPart.slice(0, maxLengthBeforeDecimal);

@@ -310,11 +310,11 @@ describe('Hook [use-honey-form]: Use predefined number filter', () => {
 
     act(() => result.current.formFields.amount.setValue('0'));
 
-    expect(result.current.formValues.amount).toBe('');
+    expect(result.current.formValues.amount).toBe('0');
 
     act(() => result.current.formFields.amount.setValue('00'));
 
-    expect(result.current.formValues.amount).toBe('');
+    expect(result.current.formValues.amount).toBe('0');
 
     act(() => result.current.formFields.amount.setValue('001'));
 

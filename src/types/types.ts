@@ -1362,6 +1362,16 @@ interface SetFormValuesOptions {
    * @default false
    */
   skipOnChange?: boolean;
+  /**
+   * Prevents resetting dependent fields when updating form values.
+   *
+   * Normally, when a parent field is updated via `setFormValues`, all fields
+   * that depend on it will be reset to `undefined`. Enabling this option keeps
+   * the current values of dependent fields unchanged.
+   *
+   * @default false
+   */
+  skipResetDependentFields?: boolean;
 }
 
 /**

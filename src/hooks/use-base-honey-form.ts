@@ -12,6 +12,7 @@ import {
   getNextAsyncValidatedField,
   processSkippableFields,
   resetAllFields,
+  resetDependentFields,
 } from '../field';
 import {
   errorMessage,
@@ -262,6 +263,7 @@ export const useBaseHoneyForm = <
         dirty = true,
         clearAll = false,
         skipOnChange = false,
+        skipResetDependentFields = false,
       } = {},
     ) => {
       const formFields = resolveFormFields();
@@ -292,6 +294,17 @@ export const useBaseHoneyForm = <
             }
 
             const fieldConfig = nextFormFields[fieldName].config;
+
+            if (!skipResetDependentFields) {
+              nextFormFields = resetDependentFields(
+                {
+                  formValues,
+                  formContext: formContextRef.current,
+                  formFields: nextFormFields,
+                },
+                fieldName,
+              );
+            }
 
             const executionContext: HoneyFormBaseExecutionContext<Form, FormContext> = {
               formValues,

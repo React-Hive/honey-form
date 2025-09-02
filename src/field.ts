@@ -201,6 +201,9 @@ const getInteractiveFormFieldProps = <
     ...baseFieldProps,
     value: fieldValue ? String(fieldValue) : '',
     inputMode: getInteractiveFieldInputMode(fieldConfig),
+    onClick: () => {
+      // touched field
+    },
     onChange: e => {
       setFieldValue(fieldName, e.target.value, {
         validate: fieldConfig.mode === 'change',
@@ -1279,7 +1282,7 @@ export const resetAllFields = <Form extends HoneyFormBaseForm, FormContext>(
  *
  * @returns A new `formFields` object with updated fields, where dependent fields are reset to their default values.
  */
-const resetDependentFields = <
+export const resetDependentFields = <
   Form extends HoneyFormBaseForm,
   FieldName extends keyof Form,
   FormContext,
@@ -1593,9 +1596,9 @@ export const getNextFieldsState = <
     }
   }
 
-  if (validate) {
-    nextFormFields = resetDependentFields(executionContext, fieldName);
+  nextFormFields = resetDependentFields(executionContext, fieldName);
 
+  if (validate) {
     nextFormField = executeFieldValidator({
       formFieldsValidationControllerRef,
       fieldName,

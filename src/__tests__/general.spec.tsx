@@ -1,0 +1,592 @@
+import React, { useEffect } from 'react';
+import { act, fireEvent, render, renderHook, waitFor } from '@testing-library/react';
+import type { ChangeEvent } from 'react';
+
+import { defer } from '../tests.helpers';
+import { useHoneyForm } from '../hooks';
+
+describe('Hook [use-honey-form]: General', () => {
+  it('should be dirty after setting a new field value', () => {
+    const { result } = renderHook(() =>
+      useHoneyForm({
+        fields: {
+          age: {
+            type: 'string',
+            defaultValue: 45,
+          },
+        },
+      }),
+    );
+
+    expect(result.current.isFormDirty).toBeFalsy();
+
+    act(() => result.current.formFields.age.setValue(56));
+
+    expect(result.current.isFormDirty).toBeTruthy();
+  });
+
+  it('should not mark the form as dirty when successfully submitted', async () => {
+    const { result } = renderHook(() =>
+      useHoneyForm({
+        fields: {
+          age: {
+            type: 'string',
+            defaultValue: 45,
+          },
+        },
+        onSubmit: async () => {},
+      }),
+    );
+
+    act(() => result.current.formFields.age.setValue(56));
+
+    expect(result.current.isFormDirty).toBeTruthy();
+
+    await act(() => result.current.submitForm());
+
+    expect(result.current.isFormDirty).toBeFalsy();
+  });
+
+  it('should clear manually added form fields errors', () => {
+    const { result } = renderHook(() =>
+      useHoneyForm<{ name: string; age: number }>({
+        fields: {
+          name: {
+            type: 'string',
+          },
+          age: {
+            type: 'string',
+          },
+        },
+      }),
+    );
+
+    act(() => {
+      result.current.addFormFieldError('name', {
+        type: 'server',
+        message: 'name should be less than 255 chars',
+      });
+
+      result.current.addFormFieldError('age', {
+        type: 'server',
+        message: 'age should be less than 55',
+      });
+    });
+
+    expect(Object.keys(result.current.formErrors).length).toBe(2);
+
+    act(() => result.current.clearFormErrors());
+
+    expect(Object.keys(result.current.formErrors).length).toBe(0);
+  });
+
+  it('should re-render form one time when `onChange` is triggered', () => {
+    let renderers = 0;
+
+    const Comp = () => {
+      const { formFields } = useHoneyForm<{ name: string }>({
+        fields: {
+          name: {
+            type: 'string',
+          },
+        },
+      });
+
+      renderers += 1;
+
+      return <input {...formFields.name.props} data-testid="name" />;
+    };
+
+    const { getByTestId } = render(<Comp />);
+
+    expect(renderers).toBe(1);
+
+    fireEvent.change(getByTestId('name'), { target: { value: 'Jake' } });
+
+    expect(renderers).toBe(2);
+  });
+
+  it('should call `onChange` with form data when any field value is changed', async () => {
+    const onChange = jest.fn();
+
+    const { result } = renderHook(() =>
+      useHoneyForm<{ name: string; kind: string }>({
+        fields: {
+          name: {
+            type: 'string',
+          },
+          kind: {
+            type: 'string',
+          },
+        },
+        onChange,
+      }),
+    );
+
+    expect(onChange).not.toHaveBeenCalled();
+
+    act(() => result.current.formFields.name.setValue('a'));
+
+    await waitFor(() =>
+      expect(onChange.mock.calls[0][0]).toStrictEqual({ name: 'a', kind: undefined }),
+    );
+
+    act(() => result.current.formFields.kind.setValue('f'));
+
+    await waitFor(() => expect(onChange.mock.calls[1][0]).toStrictEqual({ name: 'a', kind: 'f' }));
+  });
+
+  it('should indicate form is dirty after setting new values', () => {
+    const { result } = renderHook(() =>
+      useHoneyForm<{ name: string }>({
+        fields: {
+          name: {
+            type: 'string',
+          },
+        },
+        defaults: {
+          name: 'Apple',
+        },
+      }),
+    );
+
+    expect(result.current.isFormDirty).toBeFalsy();
+
+    act(() => result.current.setFormValues({ name: 'apple' }));
+
+    expect(result.current.isFormDirty).toBeTruthy();
+  });
+
+  it('should partially set form values', () => {
+    const { result } = renderHook(() =>
+      useHoneyForm<{ name: string; kind: string }>({
+        fields: {
+          name: {
+            type: 'string',
+            defaultValue: 'banana',
+          },
+          kind: {
+            type: 'string',
+            defaultValue: 'fruit',
+          },
+        },
+      }),
+    );
+
+    expect(result.current.formFields.name.value).toBe('banana');
+    expect(result.current.formFields.name.cleanValue).toBe('banana');
+    expect(result.current.formFields.name.props.value).toBe('banana');
+
+    expect(result.current.formFields.kind.value).toBe('fruit');
+    expect(result.current.formFields.kind.cleanValue).toBe('fruit');
+    expect(result.current.formFields.kind.props.value).toBe('fruit');
+
+    act(() => result.current.setFormValues({ name: 'apple' }));
+
+    expect(result.current.formFields.name.value).toBe('apple');
+    expect(result.current.formFields.name.cleanValue).toBe('apple');
+    expect(result.current.formFields.name.props.value).toBe('apple');
+
+    expect(result.current.formFields.kind.value).toBe('fruit');
+    expect(result.current.formFields.kind.cleanValue).toBe('fruit');
+    expect(result.current.formFields.kind.props.value).toBe('fruit');
+  });
+
+  it('should partially set form values with resetting all values to default', () => {
+    const { result } = renderHook(() =>
+      useHoneyForm<{ name: string; kind: string }>({
+        fields: {
+          name: {
+            type: 'string',
+            defaultValue: 'banana',
+          },
+          kind: {
+            type: 'string',
+            defaultValue: 'fruit',
+          },
+        },
+      }),
+    );
+
+    act(() => result.current.formFields.kind.setValue('vegetable'));
+
+    expect(result.current.formFields.kind.value).toBe('vegetable');
+
+    act(() => result.current.setFormValues({ name: 'orange' }, { clearAll: true }));
+
+    expect(result.current.formFields.name.value).toBe('orange');
+
+    expect(result.current.formFields.kind.value).toBe('fruit');
+    expect(result.current.formFields.kind.rawValue).toBe('fruit');
+    expect(result.current.formFields.kind.cleanValue).toBe('fruit');
+    expect(result.current.formFields.kind.props.value).toBe('fruit');
+  });
+
+  it('should initially synchronize form values with external values', () => {
+    type Form = { name: string };
+
+    const externalFormValues: Partial<Form> = { name: 'apple' };
+
+    const { result } = renderHook(() =>
+      useHoneyForm<Form>({
+        fields: {
+          name: {
+            type: 'string',
+            defaultValue: 'banana',
+          },
+        },
+        values: externalFormValues,
+      }),
+    );
+
+    expect(result.current.formFields.name.value).toBe('apple');
+  });
+
+  it('should synchronize form values with external values', () => {
+    type Form = { name: string };
+
+    let externalFormValues: Partial<Form> = {};
+
+    const { result, rerender } = renderHook(() =>
+      useHoneyForm<Form>({
+        fields: {
+          name: {
+            type: 'string',
+            defaultValue: 'banana',
+          },
+        },
+        values: externalFormValues,
+      }),
+    );
+
+    expect(result.current.formFields.name.value).toBe('banana');
+
+    externalFormValues = { name: 'apple' };
+    rerender();
+
+    expect(result.current.formFields.name.value).toBe('apple');
+  });
+
+  it('should not synchronize form values with external values for dirty fields', () => {
+    type Form = {
+      nameA: string;
+      nameB: string;
+    };
+
+    let externalFormValues: Form = {
+      nameA: 'banana',
+      nameB: 'apple',
+    };
+
+    const { result, rerender } = renderHook(() =>
+      useHoneyForm<Form>({
+        fields: {
+          nameA: {
+            type: 'string',
+          },
+          nameB: {
+            type: 'string',
+          },
+        },
+        values: externalFormValues,
+        skipSyncDirtyFields: true,
+      }),
+    );
+
+    expect(result.current.formFields.nameA.value).toBe('banana');
+
+    act(() => result.current.formFields.nameA.setValue('pear'));
+
+    externalFormValues = {
+      nameA: 'raspberry',
+      nameB: 'mango',
+    };
+
+    rerender();
+
+    expect(result.current.formFields.nameA.value).toBe('pear');
+    expect(result.current.formFields.nameB.value).toBe('mango');
+  });
+});
+
+describe('Hook [use-honey-form]: Reset form', () => {
+  it('should reset to initial field values', () => {
+    const { result } = renderHook(() =>
+      useHoneyForm<{ name: string; age: string }>({
+        fields: {
+          name: {
+            type: 'string',
+            defaultValue: 'Alex',
+          },
+          age: {
+            type: 'string',
+            defaultValue: '45',
+          },
+        },
+      }),
+    );
+
+    act(() => {
+      result.current.formFields.name.setValue('Dima');
+      result.current.formFields.age.setValue('47');
+    });
+
+    expect(result.current.formValues).toStrictEqual({
+      name: 'Dima',
+      age: '47',
+    });
+
+    act(() => result.current.resetForm());
+
+    expect(result.current.formValues).toStrictEqual({
+      name: 'Alex',
+      age: '45',
+    });
+  });
+
+  it('should clear form and field errors after form reset', () => {
+    const { result } = renderHook(() =>
+      useHoneyForm<{ name: string }>({
+        fields: {
+          name: {
+            type: 'string',
+            required: true,
+          },
+        },
+      }),
+    );
+
+    act(() => {
+      result.current.formFields.name.setValue('Apple');
+    });
+
+    expect(result.current.formValues.name).toBe('Apple');
+
+    act(() => result.current.resetForm());
+
+    expect(result.current.formValues.name).toBe(undefined);
+
+    expect(result.current.formErrors).toStrictEqual({});
+    expect(result.current.formFields.name.errors).toStrictEqual([]);
+  });
+
+  it('should set new default values when resetting the form', () => {
+    const { result } = renderHook(() =>
+      useHoneyForm<{ name: string; price: string }>({
+        fields: {
+          name: {
+            type: 'string',
+          },
+          price: {
+            type: 'string',
+          },
+        },
+        defaults: {
+          name: 'Product',
+          price: '10',
+        },
+      }),
+    );
+
+    act(() => {
+      result.current.formFields.name.setValue('Lemon');
+      result.current.formFields.price.setValue('7');
+    });
+
+    act(() =>
+      result.current.resetForm({
+        name: 'Pear',
+        price: '5',
+      }),
+    );
+
+    expect(result.current.formDefaultValues).toStrictEqual({
+      name: 'Pear',
+      price: '5',
+    });
+
+    expect(result.current.formValues).toStrictEqual({
+      name: 'Pear',
+      price: '5',
+    });
+  });
+});
+
+describe('Hook [use-honey-form]: Default values', () => {
+  it('should set default form fields values using fields config', () => {
+    const { result } = renderHook(() =>
+      useHoneyForm({
+        fields: {
+          name: {
+            type: 'string',
+            defaultValue: 'Alex',
+          },
+          age: {
+            type: 'string',
+            defaultValue: 45,
+          },
+        },
+      }),
+    );
+
+    expect(result.current.formFields.name.value).toBe('Alex');
+    expect(result.current.formFields.age.value).toBe(45);
+
+    expect(result.current.formValues).toStrictEqual({
+      name: 'Alex',
+      age: 45,
+    });
+  });
+
+  it('should set default fields values using form config', () => {
+    const { result } = renderHook(() =>
+      useHoneyForm<{ name: string }>({
+        fields: {
+          name: {
+            type: 'string',
+          },
+        },
+        defaults: {
+          name: 'banana',
+        },
+      }),
+    );
+
+    expect(result.current.formDefaultValues.name).toBe('banana');
+
+    expect(result.current.formFields.name.value).toBe('banana');
+    expect(result.current.formFields.name.cleanValue).toBe('banana');
+    expect(result.current.formFields.name.props.value).toBe('banana');
+  });
+
+  it('should set default field values via `Promise` function', async () => {
+    const { result } = renderHook(() =>
+      useHoneyForm<{ name: string }>({
+        fields: {
+          name: {
+            type: 'string',
+          },
+        },
+        defaults: () =>
+          defer(() => ({
+            name: 'apple',
+          })),
+      }),
+    );
+
+    expect(result.current.formDefaultValues.name).toBeUndefined();
+
+    expect(result.current.formFields.name.value).toBeUndefined();
+    expect(result.current.formFields.name.cleanValue).toBeUndefined();
+    expect(result.current.formFields.name.props.value).toBe('');
+
+    await waitFor(() => expect(result.current.isFormDefaultsFetching).toBeTruthy());
+    await waitFor(() => expect(result.current.isFormDefaultsFetching).toBeFalsy());
+
+    expect(result.current.formFields.name.value).toBe('apple');
+    // Clean value should be undefined because the validation should not be run for defaults
+    expect(result.current.formFields.name.cleanValue).toBeUndefined();
+    expect(result.current.formFields.name.props.value).toBe('apple');
+
+    expect(result.current.formDefaultValues.name).toBe('apple');
+  });
+});
+
+describe('Hook [use-honey-form]: Fields', () => {
+  it('should set a new value via the `onChange` function', () => {
+    const { result } = renderHook(() =>
+      useHoneyForm<{ name: string }>({
+        fields: {
+          name: {
+            type: 'string',
+          },
+        },
+      }),
+    );
+
+    act(() => {
+      result.current.formFields.name.props.onChange({
+        target: { value: 'Peter' },
+      } as ChangeEvent<HTMLInputElement>);
+    });
+
+    expect(result.current.formFields.name.value).toBe('Peter');
+  });
+
+  it('should use custom boolean field validator', () => {
+    const { result } = renderHook(() =>
+      useHoneyForm<{ age: number }>({
+        fields: {
+          age: {
+            type: 'string',
+            validator: value => value === 45,
+          },
+        },
+      }),
+    );
+
+    expect(result.current.formFields.age.errors).toStrictEqual([]);
+
+    act(() => {
+      result.current.formFields.age.setValue(43);
+    });
+
+    expect(result.current.formFields.age.errors).toStrictEqual([
+      {
+        type: 'invalid',
+        message: 'Invalid value',
+      },
+    ]);
+
+    act(() => {
+      result.current.formFields.age.setValue(45);
+    });
+
+    expect(result.current.formFields.age.errors).toStrictEqual([]);
+  });
+
+  it('should focus the form field', () => {
+    const Comp = () => {
+      const { formFields } = useHoneyForm<{ name: string }>({
+        fields: {
+          name: {
+            type: 'string',
+          },
+        },
+      });
+
+      useEffect(() => {
+        formFields.name.focus();
+      }, []);
+
+      return <input data-testid="name" {...formFields.name.props} />;
+    };
+
+    const { getByTestId } = render(<Comp />);
+
+    expect(document.activeElement).toBe(getByTestId('name'));
+  });
+
+  it('should call `onChange` when field value is changed', async () => {
+    const onNameChange = jest.fn();
+
+    const { result } = renderHook(() =>
+      useHoneyForm<{ name: string }>({
+        fields: {
+          name: {
+            type: 'string',
+            onChange: onNameChange,
+          },
+        },
+      }),
+    );
+
+    expect(onNameChange).not.toHaveBeenCalled();
+
+    act(() => {
+      result.current.formFields.name.setValue('Dan');
+    });
+
+    await waitFor(() => expect(onNameChange).toHaveBeenCalledWith('Dan', expect.any(Object)));
+  });
+});

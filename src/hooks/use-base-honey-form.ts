@@ -890,6 +890,7 @@ export const useBaseHoneyForm = <
         updateDirtyValues: !skipSyncDirtyFields,
         dirty: false,
         skipOnChange: true,
+        skipResetDependentFields: true,
       });
     }
   }, [externalValues, validateExternalValues, skipSyncDirtyFields]);

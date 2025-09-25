@@ -1,5 +1,5 @@
 import React from 'react';
-import { assert, isString } from '@react-hive/honey-utils';
+import { assert, isString, runParallel } from '@react-hive/honey-utils';
 import type {
   Nullable,
   JSONValue,
@@ -16,8 +16,6 @@ import type {
   HoneyFormFieldError,
   HoneyFormServerErrors,
   HoneyFormFieldErrorMessage,
-  HoneyFormFieldSerializer,
-  HoneyFormFieldDeserializer,
   HoneyFormInteractiveFieldConfig,
   HoneyFormPassiveFieldConfig,
   HoneyFormObjectFieldConfig,
@@ -507,13 +505,11 @@ export const runChildFormsValidation = async <
   let hasErrors = false;
 
   // Perform validation on child forms (when the field is an array that includes child forms)
-  await Promise.all(
-    childForms.map(async childForm => {
-      if (!(await childForm.validateForm())) {
-        hasErrors = true;
-      }
-    }),
-  );
+  await runParallel(childForms, async childForm => {
+    if (!(await childForm.validateForm())) {
+      hasErrors = true;
+    }
+  });
 
   return hasErrors;
 };
@@ -549,26 +545,30 @@ export const checkQueryStringLimit = (searchParams: URLSearchParams) => {
 /**
  * Serializes a form object into a base64-encoded string.
  *
- * This function processes the form data by applying a custom serializer to each field, and then
- * encodes the result in base64.
+ * Each field value is passed through its custom `serializer` (if defined in `fieldsConfig`).
+ * Objects are stringified to preserve their structure. The entire form is then encoded as a
+ * base64 string for safe transport or storage.
  *
- * @param formData - The form data to be serialized.
- * @param formFieldSerializer - The serializer function applied to each field.
+ * @param form - The form object.
+ * @param fieldsConfig - Form fields configuration.
  *
  * @returns A base64-encoded string representing the serialized form data.
  */
 const serializeForm = <Form extends HoneyFormBaseForm>(
-  formData: Form,
-  formFieldSerializer: HoneyFormFieldSerializer<Form>,
+  form: Form,
+  fieldsConfig: HoneyFormFieldsConfig<Form>,
 ): string => {
-  const jsonEncodedForm = JSON.stringify(formData, (key, value) => {
-    // Handle the special case of the initial object to avoid unnecessary processing
+  const jsonEncodedForm = JSON.stringify(form, (key, value) => {
+    // Skip processing for the root object
     if (key === '') {
       return value as Form;
     }
 
-    const processedValue = formFieldSerializer(key as keyof Form, value as Form[keyof Form]);
+    const processedValue =
+      fieldsConfig[key as keyof Form].serializer?.(value as Form[keyof Form]) ??
+      (value as JSONValue);
 
+    // Store nested objects as JSON strings
     if (processedValue !== null && typeof processedValue === 'object') {
       return JSON.stringify(processedValue);
     }
@@ -580,19 +580,24 @@ const serializeForm = <Form extends HoneyFormBaseForm>(
 };
 
 /**
- * Deserializes raw form data into a form object.
+ * Deserializes a base64-encoded form string back into a form object.
  *
- * @param rawFormData - The raw form data as a string.
- * @param formFieldDeserializer - The deserializer function for the form fields.
+ * The encoded string is first decoded from base64, then parsed back into an object.
+ * Each field value is passed through its custom `deserializer` (if defined in `fieldsConfig`).
  *
- * @returns The deserialized form object.
+ * @param rawFormData - The base64-encoded form string.
+ * @param fieldsConfig - Form fields configuration.
+ *
+ * @returns The reconstructed form object with properly deserialized field values.
  */
 const deserializeForm = <Form extends HoneyFormBaseForm>(
   rawFormData: string,
-  formFieldDeserializer: HoneyFormFieldDeserializer<Form>,
-): Form =>
-  JSON.parse(decodeURI(window.atob(rawFormData)), (key: keyof Form, value: JSONValue) => {
-    // Handle the special case of the initial object to avoid unnecessary processing
+  fieldsConfig: HoneyFormFieldsConfig<Form>,
+): Form => {
+  const jsonDecodedForm = decodeURI(window.atob(rawFormData));
+
+  return JSON.parse(jsonDecodedForm, (key: keyof Form, value: JSONValue) => {
+    // Skip processing for the root object
     if (key === '') {
       return value;
     }
@@ -601,31 +606,26 @@ const deserializeForm = <Form extends HoneyFormBaseForm>(
       value = JSON.parse(value) as JSONValue;
     }
 
-    return formFieldDeserializer(key, value);
+    return fieldsConfig[key].deserializer?.(value) ?? value;
   }) as Form;
+};
 
 /**
  * Serializes form data and stores it in the query string under the specified form name.
  *
  * @param fieldsConfig - Configuration object for the form fields, including serializer functions.
  * @param formName - The name to use as the key in the query string.
- * @param formData - The form data to serialize and store in the query string.
+ * @param form - The form object to serialize and store in the query string.
  */
 export const serializeFormToQueryString = <Form extends HoneyFormBaseForm, FormContext = undefined>(
   fieldsConfig: HoneyFormFieldsConfig<Form, FormContext>,
   formName: string,
-  formData: Form,
+  form: Form,
 ) => {
-  const searchParams = new URLSearchParams(window.location.search);
+  const serializedFormData = serializeForm(form, fieldsConfig);
 
-  searchParams.set(
-    formName,
-    serializeForm(
-      formData,
-      (fieldName, fieldValue) =>
-        fieldsConfig[fieldName].serializer?.(fieldValue) ?? (fieldValue as JSONValue),
-    ),
-  );
+  const searchParams = new URLSearchParams(window.location.search);
+  searchParams.set(formName, serializedFormData);
 
   if (__DEV__) {
     checkQueryStringLimit(searchParams);
@@ -656,9 +656,5 @@ export const deserializeFormFromQueryString = <
     return undefined;
   }
 
-  return deserializeForm(rawFormData, (fieldName, rawValue) => {
-    const fieldConfig = fieldsConfig[fieldName];
-
-    return fieldConfig.deserializer?.(rawValue) ?? (rawValue as Form[typeof fieldName]);
-  });
+  return deserializeForm(rawFormData, fieldsConfig);
 };

@@ -95,6 +95,11 @@ export const useBaseHoneyForm = <
   onChange,
   onChangeDebounce,
 }: FormOptions<ParentForm, ParentFieldName, Form, FormContext>) => {
+  assert(
+    !storage || formName,
+    '[honey-form]: The form name is required when any form data storage is used',
+  );
+
   const formId = useId();
 
   const [formState, setFormState] = useState<HoneyFormState>(INITIAL_FORM_STATE);
@@ -106,7 +111,10 @@ export const useBaseHoneyForm = <
     if (readDefaultsFromStorage && formName) {
       if (storage === 'qs') {
         // Defaults from storage can extend/override the defaults set via property
-        return { ...defaults, ...deserializeFormFromQueryString(fieldsConfig, formName) };
+        return {
+          ...defaults,
+          ...deserializeFormFromQueryString(fieldsConfig, formName),
+        };
       }
     }
 
@@ -125,6 +133,7 @@ export const useBaseHoneyForm = <
   const isFormValidRef = useRef(false);
   const isUnfinishedFormDetected = useRef(false);
   const isFormSubmittedRef = useRef(false);
+  const totalFormSubmissionsRef = useRef(0);
   const onChangeFormTimeoutIdRef = useRef<Nullable<number>>(null);
   const onChangeFieldsTimeoutIdRef = useRef<Record<keyof Form, Nullable<number>>>({} as never);
 
@@ -670,7 +679,7 @@ export const useBaseHoneyForm = <
    * - Validation errors labeled as `server` errors will not prevent the form from being considered valid.
    */
   const validateForm = useCallback<HoneyFormValidate<Form>>(
-    async ({ targetFields, excludeFields } = {}) => {
+    async ({ targetFields, excludeFields, shouldSetErrors = true } = {}) => {
       const formFields = resolveFormFields();
 
       // Variable to track if any errors are found during validation
@@ -710,14 +719,15 @@ export const useBaseHoneyForm = <
           isFormErred = true;
         }
 
-        const nextField = await executeFieldValidatorAsync({
+        const { nextField, fieldErrors } = await executeFieldValidatorAsync({
           executionContext,
           formFieldsValidationControllerRef,
           parentField,
           fieldName,
+          shouldSetErrors,
         });
 
-        isFormErred ||= nextField.errors.some(fieldError => fieldError.type !== 'server');
+        isFormErred ||= fieldErrors.some(fieldError => fieldError.type !== 'server');
 
         return nextField;
       });
@@ -864,6 +874,8 @@ export const useBaseHoneyForm = <
           isFormDirtyRef.current = false;
           isFormSubmittedRef.current = true;
 
+          totalFormSubmissionsRef.current += 1;
+
           if (storage === 'qs') {
             serializeFormToQueryString(fieldsConfig, formName, submitData);
           }
@@ -947,6 +959,9 @@ export const useBaseHoneyForm = <
     },
     get formErrors() {
       return formErrorsRef.current;
+    },
+    get totalFormSubmissions() {
+      return totalFormSubmissionsRef.current;
     },
     get isFormDirty() {
       return isFormDirtyRef.current;

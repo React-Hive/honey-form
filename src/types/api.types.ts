@@ -55,6 +55,12 @@ export interface HoneyFormApi<Form extends HoneyFormBaseForm, FormContext = unde
    */
   readonly formErrors: HoneyFormErrors<Form>;
   /**
+   * The total number of form submissions.
+   *
+   * @default 0
+   */
+  readonly totalFormSubmissions: number;
+  /**
    * A boolean value that becomes `true` when the form has any error.
    * It remains `false` when the form is error-free.
    *

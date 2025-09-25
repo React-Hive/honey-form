@@ -1432,6 +1432,22 @@ interface HoneyFormValidateOptions<Form extends HoneyFormBaseForm> {
    * @default undefined
    */
   excludeFields?: (keyof Form)[];
+  /**
+   * Determines whether validation errors should be set to the form field's state.
+   *
+   * When set to `true`, any validation failures will update the corresponding field's
+   * error collection. When set to `false`, the validation logic still runs and the return value
+   * of the validation call will accurately reflect whether the form is valid,
+   * but no error messages will be stored or rendered in the form fields.
+   *
+   * @remarks
+   * Use `false` when you need a "silent" validation-for example, to check validity
+   * before navigation or to perform conditional logic—without showing error feedback
+   * to the user or overwriting existing error states.
+   *
+   * @default true
+   */
+  shouldSetErrors?: boolean;
 }
 
 /**

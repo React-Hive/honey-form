@@ -7,6 +7,7 @@ import {
   isNil,
   isNumber,
   assert,
+  isBool,
 } from '@react-hive/honey-utils';
 import type { HTMLAttributes, HTMLInputTypeAttribute, RefObject } from 'react';
 
@@ -723,7 +724,7 @@ const handleFieldValidationResult = <
       fieldErrors.push(...validationResult);
     }
     // If the result is not a boolean, treat it as an invalid value and add it to fieldErrors
-    else if (typeof validationResult !== 'boolean') {
+    else if (!isBool(validationResult)) {
       fieldErrors.push({
         type: 'invalid',
         message: validationResult,
@@ -1121,6 +1122,11 @@ interface ExecuteFieldValidatorAsyncOptions<
    * The name of the field to validate.
    */
   fieldName: FieldName;
+  /**
+   * Whether to update the form fields with validation errors.
+   * `true` applies errors to the form, `false` validates silently.
+   */
+  shouldSetErrors: boolean;
 }
 
 /**
@@ -1141,13 +1147,14 @@ export const executeFieldValidatorAsync = async <
   formFieldsValidationControllerRef,
   parentField,
   fieldName,
+  shouldSetErrors,
 }: ExecuteFieldValidatorAsyncOptions<
   ParentForm,
   ParentFieldName,
   Form,
   FieldName,
   FormContext
->): Promise<HoneyFormField<Form, FieldName, FormContext>> => {
+>) => {
   const formField = executionContext.formFields[fieldName];
 
   const fieldErrors: HoneyFormFieldError[] = [];
@@ -1213,7 +1220,17 @@ export const executeFieldValidatorAsync = async <
     }
   }
 
-  return getNextValidatedField(fieldErrors, validationResult, formField, sanitizedValue);
+  if (shouldSetErrors) {
+    return {
+      fieldErrors,
+      nextField: getNextValidatedField(fieldErrors, validationResult, formField, sanitizedValue),
+    };
+  }
+
+  return {
+    fieldErrors,
+    nextField: formField,
+  };
 };
 
 /**

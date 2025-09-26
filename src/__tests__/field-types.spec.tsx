@@ -3,7 +3,7 @@ import type { ChangeEvent } from 'react';
 
 import { useHoneyForm } from '../hooks';
 
-describe('Hook [use-honey-form]: String field type', () => {
+describe('String field type', () => {
   it('should only fill interactive field props for string field type', () => {
     const { result } = renderHook(() =>
       useHoneyForm<{ name: string }>({
@@ -21,7 +21,7 @@ describe('Hook [use-honey-form]: String field type', () => {
   });
 });
 
-describe('Hook [use-honey-form]: Numeric field type', () => {
+describe('Numeric field type', () => {
   it('should only fill interactive field props for numeric field type', () => {
     const { result } = renderHook(() =>
       useHoneyForm<{ phone: string }>({
@@ -96,7 +96,7 @@ describe('Hook [use-honey-form]: Numeric field type', () => {
   });
 });
 
-describe('Hook [use-honey-form]: Number field type', () => {
+describe('Number field type', () => {
   it('should only fill interactive field props for number field type', () => {
     const { result } = renderHook(() =>
       useHoneyForm<{ age: string }>({
@@ -189,7 +189,7 @@ describe('Hook [use-honey-form]: Number field type', () => {
   });
 });
 
-describe('Hook [use-honey-form]: Email field type', () => {
+describe('Email field type', () => {
   it('should only fill interactive field props for email field type', () => {
     const { result } = renderHook(() =>
       useHoneyForm<{ email: string }>({
@@ -314,7 +314,7 @@ describe('Hook [use-honey-form]: Email field type', () => {
   });
 });
 
-describe('Hook [use-honey-form]: Checkbox field type', () => {
+describe('Checkbox field type', () => {
   it('should only fill passive field props for checkbox field type', () => {
     const { result } = renderHook(() =>
       useHoneyForm<{ isAcceptTerms: boolean }>({
@@ -346,7 +346,7 @@ describe('Hook [use-honey-form]: Checkbox field type', () => {
   });
 });
 
-describe('Hook [use-honey-form]: Radio field type', () => {
+describe('Radio field type', () => {
   it('should only fill passive field props for radio field type', () => {
     const { result } = renderHook(() =>
       useHoneyForm<{ mode: string }>({
@@ -378,7 +378,7 @@ describe('Hook [use-honey-form]: Radio field type', () => {
   });
 });
 
-describe('Hook [use-honey-form]: Object field type', () => {
+describe('Object field type', () => {
   type Category = {
     id: number;
     name: string;

@@ -2,7 +2,7 @@ import { act, renderHook, waitFor } from '@testing-library/react';
 
 import { useHoneyForm } from '../hooks';
 
-describe('Hook [use-honey-form]: Skip form fields', () => {
+describe('Skip form fields', () => {
   it('should skip field permanently', async () => {
     type Form = {
       name: string;

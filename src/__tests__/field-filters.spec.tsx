@@ -2,7 +2,7 @@ import { act, renderHook } from '@testing-library/react';
 import { useHoneyForm } from '../hooks';
 import { createHoneyFormNumberFilter, createHoneyFormNumericFilter } from '../filters';
 
-describe('Hook [use-honey-form]: Builtin filtering', () => {
+describe('Builtin filtering', () => {
   it('should trim all spaces from the begging', () => {
     const { result } = renderHook(() =>
       useHoneyForm<{ name: string }>({
@@ -34,7 +34,7 @@ describe('Hook [use-honey-form]: Builtin filtering', () => {
   });
 });
 
-describe('Hook [use-honey-form]: Filter function', () => {
+describe('Filter as a function', () => {
   it('should filter the default field value', () => {
     const { result } = renderHook(() =>
       useHoneyForm<{ age: string }>({
@@ -96,7 +96,7 @@ describe('Hook [use-honey-form]: Filter function', () => {
   });
 });
 
-describe('Hook [use-honey-form]: Use predefined numeric filter', () => {
+describe('Use predefined numeric filter', () => {
   it('should remove non-numeric characters from passed value and limit the length', () => {
     const { result } = renderHook(() =>
       useHoneyForm<{ price: string }>({
@@ -135,7 +135,7 @@ describe('Hook [use-honey-form]: Use predefined numeric filter', () => {
   });
 });
 
-describe('Hook [use-honey-form]: Use predefined number filter', () => {
+describe('Use predefined number filter', () => {
   it('should remove non-numeric characters and limit length to max length', () => {
     const { result } = renderHook(() =>
       useHoneyForm<{ amount: string }>({

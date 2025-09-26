@@ -1,7 +1,7 @@
 import { act, renderHook } from '@testing-library/react';
 import { useHoneyForm } from '../hooks';
 
-describe('Hook [use-honey-form]: Dependent fields', () => {
+describe('Dependent fields', () => {
   it('should reset dependent field on parent field change', () => {
     type Form = {
       city: string;

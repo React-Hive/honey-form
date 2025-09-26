@@ -1,7 +1,7 @@
 import { act, renderHook } from '@testing-library/react';
 import { useHoneyForm } from '../hooks';
 
-describe('Hook [use-honey-form]: Form context', () => {
+describe('Form context', () => {
   it('should use `allowedNames` configuration from the context in validator function', () => {
     type FormData = {
       name: string;

@@ -1,7 +1,7 @@
 import { act, renderHook } from '@testing-library/react';
 import { useHoneyForm, useChildHoneyForm } from '../hooks';
 
-describe('Hook [use-honey-form]: Nested forms field type', () => {
+describe('Nested field type', () => {
   it('should not fill any field props for nested forms field type', () => {
     type Item = {
       name: string;
@@ -23,7 +23,7 @@ describe('Hook [use-honey-form]: Nested forms field type', () => {
   });
 });
 
-describe('Hook [use-honey-form]: Nested forms', () => {
+describe('Nested forms', () => {
   it('should correctly identify the value type of an array field', () => {
     type Item = {
       name: string;

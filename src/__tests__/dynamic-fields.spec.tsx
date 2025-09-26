@@ -2,7 +2,7 @@ import { act, renderHook } from '@testing-library/react';
 
 import { useHoneyForm } from '../hooks';
 
-describe('Hook [use-honey-form]: Dynamic fields', () => {
+describe('Dynamic fields', () => {
   it('should dynamically add a new form field', () => {
     const { result } = renderHook(() =>
       useHoneyForm<{ gender?: 'male' | 'female' }>({

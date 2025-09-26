@@ -4,7 +4,7 @@ import { useHoneyForm } from '../hooks';
 import { createHoneyFormNumberFormatter, createHoneyFormSplitStringFormatter } from '../formatters';
 import { createHoneyFormNumericFilter } from '../filters';
 
-describe('Hook [use-honey-form]: Formatter function', () => {
+describe('Formatter function', () => {
   it('should have formatted value', () => {
     const { result } = renderHook(() =>
       useHoneyForm<{ price: string }>({
@@ -110,7 +110,7 @@ describe('Hook [use-honey-form]: Formatter function', () => {
   });
 });
 
-describe('Hook [use-honey-form]: Use predefined string formatter for segments', () => {
+describe('Use predefined string formatter for segments', () => {
   it('should split passed value by equal 4 characters segments', () => {
     const { result } = renderHook(() =>
       useHoneyForm<{ cardNumber: string }>({
@@ -145,7 +145,7 @@ describe('Hook [use-honey-form]: Use predefined string formatter for segments', 
   });
 });
 
-describe('Hook [use-honey-form]: Use predefined number formatter', () => {
+describe('Use predefined number formatter', () => {
   it('correctly formats and filters input values', () => {
     const { result } = renderHook(() =>
       useHoneyForm<{ amount: string }>({

@@ -2,7 +2,7 @@ import type { ChangeEvent } from 'react';
 import { act, renderHook } from '@testing-library/react';
 import { useHoneyForm } from '../hooks';
 
-describe('Hook [use-honey-form]: Form submission', () => {
+describe('Form submission', () => {
   it('should submit default fields values', async () => {
     const onSubmit = jest.fn();
 

@@ -2,7 +2,7 @@ import { act, renderHook } from '@testing-library/react';
 
 import { useMultiHoneyForms, useHoneyForm } from '../hooks';
 
-describe('Hook [use-multi-honey-forms]: General', () => {
+describe('General', () => {
   it('should add/remove a form to/from multi forms list', () => {
     const { result: multiFormsApi } = renderHook(() => useMultiHoneyForms({}));
 

@@ -5,7 +5,7 @@ import type { ChangeEvent } from 'react';
 import { defer } from '../tests.helpers';
 import { useHoneyForm } from '../hooks';
 
-describe('Hook [use-honey-form]: General', () => {
+describe('General', () => {
   it('should be dirty after setting a new field value', () => {
     const { result } = renderHook(() =>
       useHoneyForm({
@@ -309,7 +309,7 @@ describe('Hook [use-honey-form]: General', () => {
   });
 });
 
-describe('Hook [use-honey-form]: Reset form', () => {
+describe('Reset form', () => {
   it('should reset to initial field values', () => {
     const { result } = renderHook(() =>
       useHoneyForm<{ name: string; age: string }>({
@@ -412,7 +412,7 @@ describe('Hook [use-honey-form]: Reset form', () => {
   });
 });
 
-describe('Hook [use-honey-form]: Default values', () => {
+describe('Default values', () => {
   it('should set default form fields values using fields config', () => {
     const { result } = renderHook(() =>
       useHoneyForm({
@@ -492,7 +492,7 @@ describe('Hook [use-honey-form]: Default values', () => {
   });
 });
 
-describe('Hook [use-honey-form]: Fields', () => {
+describe('Fields', () => {
   it('should set a new value via the `onChange` function', () => {
     const { result } = renderHook(() =>
       useHoneyForm<{ name: string }>({

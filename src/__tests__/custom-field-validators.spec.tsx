@@ -1,0 +1,126 @@
+import { StrictMode } from 'react';
+import { act, renderHook } from '@testing-library/react';
+
+import { useHoneyForm } from '../hooks';
+
+describe('Custom field validators', () => {
+  it('should call the field validator function once when the field value is set', () => {
+    const validator = jest.fn().mockReturnValue(true);
+
+    const { result } = renderHook(() =>
+      useHoneyForm<{ name: string }>({
+        fields: {
+          name: {
+            type: 'string',
+            validator,
+          },
+        },
+      }),
+    );
+
+    act(() => result.current.formFields.name.setValue('Apple'));
+
+    expect(validator).toHaveBeenCalled();
+  });
+
+  it('should call the field validator function every time the field value changes (with StrictMode)', () => {
+    const onValidate = jest.fn().mockReturnValue(true);
+
+    const { result } = renderHook(
+      () =>
+        useHoneyForm<{ name: string }>({
+          fields: {
+            name: {
+              type: 'string',
+              validator: onValidate,
+            },
+          },
+        }),
+      {
+        wrapper: StrictMode,
+      },
+    );
+
+    act(() => result.current.formFields.name.setValue('A'));
+    act(() => result.current.formFields.name.setValue('Ap'));
+    act(() => result.current.formFields.name.setValue('App'));
+
+    expect(onValidate).toHaveBeenCalledTimes(3);
+  });
+
+  it('should handle multiple field validators affecting each other', async () => {
+    const onSubmit = jest.fn();
+
+    const { result } = renderHook(() =>
+      useHoneyForm<{ age1: number; age2: number; age3: number }>({
+        fields: {
+          age1: {
+            type: 'number',
+            defaultValue: 1,
+            validator: (value, { formFields }) => value < formFields.age2.value,
+          },
+          age2: {
+            type: 'number',
+            defaultValue: 2,
+            validator: (value, { formFields }) =>
+              value > formFields.age1.value && value < formFields.age3.value,
+          },
+          age3: {
+            type: 'number',
+            defaultValue: 3,
+            validator: (value, { formFields }) => value > formFields.age2.value,
+          },
+        },
+        onSubmit,
+      }),
+    );
+
+    act(() => {
+      result.current.formFields.age1.setValue(2);
+      result.current.formFields.age2.setValue(3);
+      result.current.formFields.age3.setValue(4);
+    });
+
+    expect(result.current.formFields.age1.value).toBe(2);
+    expect(result.current.formFields.age2.value).toBe(3);
+    expect(result.current.formFields.age3.value).toBe(4);
+
+    await act(() => result.current.submitForm());
+
+    expect(onSubmit).toHaveBeenCalledWith(
+      {
+        age1: 2,
+        age2: 3,
+        age3: 4,
+      },
+      { context: undefined },
+    );
+  });
+
+  it('should validate the field only on form submission when mode is `submit`', async () => {
+    const onSubmit = jest.fn();
+    const validator = jest.fn().mockReturnValue(true);
+
+    const { result } = renderHook(() =>
+      useHoneyForm<{ name: string }>({
+        fields: {
+          name: {
+            type: 'string',
+            mode: 'submit',
+            validator,
+          },
+        },
+        onSubmit,
+      }),
+    );
+
+    act(() => result.current.formFields.name.setValue('Apple'));
+
+    expect(validator).not.toHaveBeenCalled();
+
+    await act(() => result.current.submitForm());
+
+    expect(validator).toHaveBeenCalledTimes(1);
+    expect(onSubmit).toHaveBeenCalled();
+  });
+});

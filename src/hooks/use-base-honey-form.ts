@@ -935,7 +935,7 @@ export const useBaseHoneyForm = <
   }, []);
 
   const checkIsAnyFormFieldValidating = () =>
-    Object.keys(formFieldsRef.current).some(formField => formFields[formField].isValidating);
+    Object.keys(formFieldsRef.current).some(fieldName => formFields[fieldName].isValidating);
 
   const formValues = useMemo(() => getFormValues(formFields), [formFields]);
   formValuesRef.current = formValues;

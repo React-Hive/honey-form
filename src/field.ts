@@ -476,6 +476,7 @@ export const createFormField = <
 
   const resultFieldConfig: HoneyFormFieldConfig<Form, FieldName, FormContext> = {
     required: false,
+    resetDependentToDefault: false,
     ...(checkIsInteractiveField(fieldConfig) && {
       // Set the default config values
       mode: 'change',
@@ -661,30 +662,30 @@ export const getNextResetField = <
   formField: HoneyFormField<Form, FieldName, FormContext>,
   shouldResetToDefault: boolean,
 ): HoneyFormField<Form, FieldName, FormContext> => {
-  const fieldConfig = formField.config;
-
   const errorsFreeField = getNextErrorsFreeField(formField);
 
   const nextFieldValue = shouldResetToDefault ? errorsFreeField.defaultValue : undefined;
 
-  const props: HoneyFormInteractiveFieldProps | undefined = checkIsInteractiveField(fieldConfig)
+  const props: HoneyFormInteractiveFieldProps | undefined = checkIsInteractiveField(
+    formField.config,
+  )
     ? {
         ...errorsFreeField.props,
         value: isNil(nextFieldValue) ? '' : String(nextFieldValue),
       }
     : undefined;
 
-  const passiveProps: HoneyFormPassiveFieldProps | undefined = checkIsPassiveField(fieldConfig)
+  const passiveProps: HoneyFormPassiveFieldProps | undefined = checkIsPassiveField(formField.config)
     ? {
         ...errorsFreeField.passiveProps,
-        ...(fieldConfig.type === 'checkbox' && {
-          checked: errorsFreeField.defaultValue as boolean,
+        ...(formField.config.type === 'checkbox' && {
+          checked: nextFieldValue as boolean,
         }),
       }
     : undefined;
 
   const objectProps: HoneyFormObjectFieldProps<Form, FieldName> | undefined = checkIsObjectField(
-    fieldConfig,
+    formField.config,
   )
     ? {
         ...errorsFreeField.objectProps,
@@ -1337,7 +1338,10 @@ export const resetDependentFields = <
     if (isDependent) {
       const otherField = nextFormFields[otherFieldName];
 
-      nextFormFields[otherFieldName] = getNextResetField(otherField, false);
+      nextFormFields[otherFieldName] = getNextResetField(
+        otherField,
+        otherField.config.resetDependentToDefault,
+      );
 
       if (otherFieldName !== initiatorFieldName) {
         nextFormFields = resetDependentFields(

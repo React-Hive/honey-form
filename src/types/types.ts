@@ -421,9 +421,21 @@ interface BaseFieldConfig<
    */
   defaultValue?: FieldValue;
   /**
-   * Clears the field value when the dependent field is changed.
+   * Specifies dependency relationships between fields.
+   *
+   * When the referenced field (or fields) changes, this field will be automatically cleared or reset.
+   * The exact reset behavior depends on the `resetDependentToDefault` setting.
    */
   dependsOn?: HoneyFormFieldDependsOn<Form, FieldName, FormContext>;
+  /**
+   * Determines how this field is reset when a dependent field changes.
+   *
+   * - If `false`, the field is cleared (its value becomes `undefined`).
+   * - If `true`, the field is restored to its `defaultValue` instead.
+   *
+   * @default false
+   */
+  resetDependentToDefault?: boolean;
   /**
    * Custom error messages for this field.
    */
@@ -1436,13 +1448,13 @@ interface HoneyFormValidateOptions<Form extends HoneyFormBaseForm> {
    * Determines whether validation errors should be set to the form field's state.
    *
    * When set to `true`, any validation failures will update the corresponding field's
-   * error collection. When set to `false`, the validation logic still runs and the return value
+   * error collection. When set to `false`, the validation logic still runs, and the return value
    * of the validation call will accurately reflect whether the form is valid,
    * but no error messages will be stored or rendered in the form fields.
    *
    * @remarks
-   * Use `false` when you need a "silent" validation-for example, to check validity
-   * before navigation or to perform conditional logic—without showing error feedback
+   * Use `false` when you need a "silent" validation, for example, to check validity
+   * before navigation or to perform conditional logic without showing error feedback
    * to the user or overwriting existing error states.
    *
    * @default true

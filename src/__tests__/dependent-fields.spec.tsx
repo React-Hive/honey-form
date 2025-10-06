@@ -99,7 +99,47 @@ describe('Dependent fields', () => {
     expect(result.current.formFields.address.value).toBe('53rd King');
   });
 
-  it('should not reset field value to `undefined` when `dependsOn` condition is met', () => {
+  it('should reset the dependent field to its default value when `resetDependentToDefault` is true', () => {
+    type Form = {
+      country: string;
+      state: string;
+    };
+
+    const { result } = renderHook(() =>
+      useHoneyForm<Form>({
+        fields: {
+          country: {
+            type: 'string',
+          },
+          state: {
+            type: 'string',
+            defaultValue: 'Select a state',
+            dependsOn: 'country',
+            resetDependentToDefault: true,
+          },
+        },
+      }),
+    );
+
+    act(() => {
+      result.current.formFields.country.setValue('USA');
+      result.current.formFields.state.setValue('New York');
+    });
+
+    expect(result.current.formFields.country.value).toBe('USA');
+    expect(result.current.formFields.state.value).toBe('New York');
+
+    act(() => result.current.formFields.country.setValue('Canada'));
+
+    expect(result.current.formFields.country.value).toBe('Canada');
+
+    expect(result.current.formFields.state.value).toBe('Select a state');
+    expect(result.current.formFields.state.rawValue).toBe('Select a state');
+    expect(result.current.formFields.state.cleanValue).toBe('Select a state');
+    expect(result.current.formFields.state.props.value).toBe('Select a state');
+  });
+
+  it('should not clear field value to `undefined` when `dependsOn` condition is met', () => {
     type Form = {
       building: string;
       unit: string;

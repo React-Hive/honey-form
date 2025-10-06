@@ -424,18 +424,18 @@ interface BaseFieldConfig<
    * Specifies dependency relationships between fields.
    *
    * When the referenced field (or fields) changes, this field will be automatically cleared or reset.
-   * The exact reset behavior depends on the `resetDependentToDefault` setting.
+   * The exact reset behavior depends on the `resetOnDependencyToDefault` setting.
    */
   dependsOn?: HoneyFormFieldDependsOn<Form, FieldName, FormContext>;
   /**
-   * Determines how this field is reset when a dependent field changes.
+   * Determines how this field resets when one of its dependencies changes.
    *
    * - If `false`, the field is cleared (its value becomes `undefined`).
    * - If `true`, the field is restored to its `defaultValue` instead.
    *
    * @default false
    */
-  resetDependentToDefault?: boolean;
+  resetOnDependencyToDefault?: boolean;
   /**
    * Custom error messages for this field.
    */

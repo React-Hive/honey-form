@@ -476,7 +476,7 @@ export const createFormField = <
 
   const resultFieldConfig: HoneyFormFieldConfig<Form, FieldName, FormContext> = {
     required: false,
-    resetDependentToDefault: false,
+    resetOnDependencyToDefault: false,
     ...(checkIsInteractiveField(fieldConfig) && {
       // Set the default config values
       mode: 'change',
@@ -1340,7 +1340,7 @@ export const resetDependentFields = <
 
       nextFormFields[otherFieldName] = getNextResetField(
         otherField,
-        otherField.config.resetDependentToDefault,
+        otherField.config.resetOnDependencyToDefault,
       );
 
       if (otherFieldName !== initiatorFieldName) {

@@ -99,7 +99,7 @@ describe('Dependent fields', () => {
     expect(result.current.formFields.address.value).toBe('53rd King');
   });
 
-  it('should reset the dependent field to its default value when `resetDependentToDefault` is true', () => {
+  it('should reset the field to its default value when a dependency changes and `resetOnDependencyToDefault` is true', () => {
     type Form = {
       country: string;
       state: string;
@@ -115,7 +115,7 @@ describe('Dependent fields', () => {
             type: 'string',
             defaultValue: 'Select a state',
             dependsOn: 'country',
-            resetDependentToDefault: true,
+            resetOnDependencyToDefault: true,
           },
         },
       }),

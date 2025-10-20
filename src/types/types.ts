@@ -25,6 +25,7 @@ import type {
   HoneyFormBaseChildForm,
   HoneyFormBaseForm,
   HoneyFormId,
+  HoneyFormStorage,
   HoneyFormValues,
 } from './common.types';
 import type {
@@ -1219,7 +1220,7 @@ export interface FormOptions<
    *
    * @default undefined
    */
-  storage?: 'qs' | 'ls';
+  storage?: HoneyFormStorage;
   /**
    * Any object that can be used to pass contextual data to field functions.
    * This provides a way to share additional information or context with field-specific logic.

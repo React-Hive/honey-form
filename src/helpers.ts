@@ -28,11 +28,11 @@ import { __DEV__, HONEY_FORM_ERRORS } from './constants';
 
 export const genericMemo: <T>(component: T) => T = React.memo;
 
-export const warningMessage = (message: string) => {
+export const warning = (message: string) => {
   console.warn(`[honey-form]: ${message}`);
 };
 
-export const errorMessage = (message: string) => {
+export const error = (message: string) => {
   console.error(`[honey-form]: ${message}`);
 };
 
@@ -356,7 +356,7 @@ export const scheduleFieldValidation = <
  *
  * @returns Object containing values of the form fields suitable for submission.
  */
-export const getSubmitFormValues = <
+export const getFormSubmitValues = <
   ParentForm extends HoneyFormBaseForm,
   ParentFieldName extends KeysWithArrayValues<ParentForm>,
   Form extends HoneyFormBaseForm,
@@ -379,7 +379,7 @@ export const getSubmitFormValues = <
           assert(childFormFields, HONEY_FORM_ERRORS.emptyFormFieldsRef);
 
           childFormsCleanValues.push(
-            getSubmitFormValues(parentField, formContext, childFormFields),
+            getFormSubmitValues(parentField, formContext, childFormFields),
           );
         });
 
@@ -476,7 +476,7 @@ export const unregisterChildForm = <
   const childFormIndex = getChildFormIndex(parentField, formId);
 
   if (childFormIndex === -1) {
-    warningMessage('Child form index cannot be resolved.');
+    warning('Child form index cannot be resolved.');
   } else {
     parentField.__meta__.childForms.splice(childFormIndex, 1);
   }
@@ -536,7 +536,7 @@ export const checkQueryStringLimit = (searchParams: URLSearchParams) => {
   }
 
   if (queryStringLimit && searchParams.toString().length > queryStringLimit) {
-    warningMessage(
+    warning(
       `The query string exceeds the limit of ${queryStringLimit} characters. This might cause unexpected behavior or errors. Please reduce the length of the query string.`,
     );
   }

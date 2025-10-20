@@ -2,7 +2,7 @@ import { useContext, useEffect } from 'react';
 import { noop } from '@react-hive/honey-utils';
 
 import { createFormField } from '../field';
-import { useBaseHoneyForm } from './use-base-honey-form';
+import { useForm } from './internal';
 import { getFormValues, mapFieldsConfig } from '../helpers';
 import { MultiHoneyFormsContext } from '../components';
 import type {
@@ -51,6 +51,8 @@ const createInitialFormFields = <Form extends HoneyFormBaseForm, FormContext>({
         executionContext,
         formFieldsRef,
         formDefaultsRef,
+      },
+      {
         setFieldValue,
         clearFieldErrors,
         validateField,
@@ -72,7 +74,7 @@ export const useHoneyForm = <Form extends HoneyFormBaseForm, FormContext = undef
     MultiHoneyFormsContext,
   );
 
-  const formApi = useBaseHoneyForm<never, never, Form, FormContext>({
+  const formApi = useForm<never, never, Form, FormContext>({
     initialFormFieldsStateResolver: config => createInitialFormFields({ fieldsConfig, ...config }),
     fields: fieldsConfig,
     ...options,

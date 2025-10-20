@@ -13,7 +13,7 @@ import type {
 } from '../types';
 import { registerChildForm, mapFieldsConfig, unregisterChildForm, getFormValues } from '../helpers';
 
-import { useBaseHoneyForm } from './use-base-honey-form';
+import { useForm } from './internal';
 import { createFormField } from '../field';
 
 interface CreateInitialFormFieldsOptions<
@@ -75,6 +75,8 @@ const createInitialFormFields = <
         executionContext,
         formFieldsRef,
         formDefaultsRef,
+      },
+      {
         setFieldValue,
         clearFieldErrors,
         validateField,
@@ -112,7 +114,7 @@ export const useChildHoneyForm = <
   ChildForm,
   FormContext
 > => {
-  const childFormApi = useBaseHoneyForm<ParentForm, ParentFieldName, ChildForm, FormContext>({
+  const childFormApi = useForm<ParentForm, ParentFieldName, ChildForm, FormContext>({
     parentField,
     fieldsConfig,
     initialFormFieldsStateResolver: config =>

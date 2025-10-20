@@ -2,6 +2,8 @@ export type HoneyFormId = string;
 
 export type HoneyFormFieldName = string;
 
+export type HoneyFormStorage = 'qs' | 'ls';
+
 /**
  * Defines the structure of a basic form where each field is identified by a name and holds a value.
  *

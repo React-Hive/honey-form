@@ -414,6 +414,9 @@ interface CreateFormFieldOptions<Form extends HoneyFormBaseForm, FormContext> {
   executionContext: HoneyFormBaseExecutionContext<Form, FormContext>;
   formFieldsRef: HoneyFormFieldsRef<Form, FormContext>;
   formDefaultsRef: HoneyFormDefaultsRef<Form>;
+}
+
+interface CreateFormFieldApiAccess<Form extends HoneyFormBaseForm> {
   setFieldValue: HoneyFormFieldSetValueInternal<Form>;
   clearFieldErrors: HoneyFormFieldClearErrors<Form>;
   validateField: HoneyFormValidateField<Form>;
@@ -442,17 +445,15 @@ export const createFormField = <
 >(
   fieldName: FieldName,
   fieldConfig: HoneyFormFieldConfig<Form, FieldName, FormContext>,
+  { executionContext, formFieldsRef, formDefaultsRef }: CreateFormFieldOptions<Form, FormContext>,
   {
-    executionContext,
-    formFieldsRef,
-    formDefaultsRef,
     setFieldValue,
     clearFieldErrors,
     validateField,
     pushFieldValue,
     removeFieldValue,
     addFormFieldErrors,
-  }: CreateFormFieldOptions<Form, FormContext>,
+  }: CreateFormFieldApiAccess<Form>,
 ): HoneyFormField<Form, FieldName, FormContext> => {
   formDefaultsRef.current[fieldName] = fieldConfig.defaultValue;
 

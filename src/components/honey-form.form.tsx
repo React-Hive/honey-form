@@ -2,7 +2,7 @@ import React from 'react';
 import { invokeIfFunction } from '@react-hive/honey-utils';
 import type { FormEventHandler, FormHTMLAttributes, ReactNode, RefAttributes } from 'react';
 
-import { errorMessage } from '../helpers';
+import { error } from '../helpers';
 import { useHoneyFormContext } from './honey-form.provider';
 import type { HoneyFormBaseForm, HoneyFormApi } from '../types';
 
@@ -25,7 +25,7 @@ export const HoneyFormForm = <Form extends HoneyFormBaseForm, FormContext = unde
   const onSubmit: FormEventHandler<HTMLFormElement> = e => {
     e.preventDefault();
 
-    honeyFormApi.submitForm().catch(errorMessage);
+    honeyFormApi.submitForm().catch(error);
   };
 
   const isFormBusy =

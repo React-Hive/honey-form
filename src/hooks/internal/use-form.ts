@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
-import { assert, isFunction } from '@react-hive/honey-utils';
+import { assert } from '@react-hive/honey-utils';
 
+import { HONEY_FORM_ERRORS } from '../../constants';
 import {
   createFormField,
   executeFieldValidator,
@@ -13,25 +14,23 @@ import {
   processSkippableFields,
   resetAllFields,
   resetDependentFields,
-} from '../field';
+} from '../../field';
 import {
-  errorMessage,
-  warningMessage,
+  warning,
   checkIsInteractiveField,
   checkIsNestedFormsField,
   forEachFormError,
   getFormErrors,
   getFormValues,
-  getSubmitFormValues,
+  getFormSubmitValues,
   checkShouldSkipField,
   iterateFormFields,
   convertServerErrors,
   runChildFormsValidation,
-  deserializeFormFromQueryString,
   serializeFormToQueryString,
   mapFormFieldsAsync,
-} from '../helpers';
-import { HONEY_FORM_ERRORS } from '../constants';
+} from '../../helpers';
+import { useFormDefaults } from './use-form-defaults';
 import type {
   Nullable,
   KeysWithArrayValues,
@@ -40,7 +39,6 @@ import type {
   HoneyFormBaseForm,
   HoneyFormFieldAddError,
   HoneyFormFieldClearErrors,
-  HoneyFormDefaultValues,
   HoneyFormFields,
   HoneyFormFieldPushValue,
   HoneyFormFieldRemoveValue,
@@ -61,7 +59,7 @@ import type {
   HoneyFormFieldsValidationController,
   HoneyFormBaseExecutionContext,
   HoneyFormField,
-} from '../types';
+} from '../../types';
 
 const FORM_DEFAULTS = {};
 
@@ -70,7 +68,7 @@ const INITIAL_FORM_STATE: HoneyFormState = {
   isSubmitting: false,
 };
 
-export const useBaseHoneyForm = <
+export const useForm = <
   ParentForm extends HoneyFormBaseForm,
   ParentFieldName extends KeysWithArrayValues<ParentForm>,
   Form extends HoneyFormBaseForm,
@@ -104,24 +102,6 @@ export const useBaseHoneyForm = <
 
   const [formState, setFormState] = useState<HoneyFormState>(INITIAL_FORM_STATE);
 
-  const [isFormDefaultsFetching, setIsFormDefaultsFetching] = useState(false);
-  const [isFormDefaultsFetchingErred, setIsFormDefaultsFetchingErred] = useState(false);
-
-  const [formDefaults] = useState<HoneyFormDefaultValues<Form>>(() => {
-    if (readDefaultsFromStorage && formName) {
-      if (storage === 'qs') {
-        // Defaults from storage can extend/override the defaults set via property
-        return {
-          ...defaults,
-          ...deserializeFormFromQueryString(fieldsConfig, formName),
-        };
-      }
-    }
-
-    return isFunction(defaults) ? {} : { ...defaults };
-  });
-
-  const formDefaultsRef = useRef<HoneyFormDefaultValues<Form>>(formDefaults);
   const formContextRef = useRef<FormContext>(formContext);
   formContextRef.current = formContext;
 
@@ -170,7 +150,7 @@ export const useBaseHoneyForm = <
 
     if (!parentField) {
       if (storage === 'qs') {
-        const formValues = getSubmitFormValues(parentField, formContextRef.current, nextFormFields);
+        const formValues = getFormSubmitValues(parentField, formContextRef.current, nextFormFields);
 
         serializeFormToQueryString(fieldsConfig, formName, formValues);
       }
@@ -185,7 +165,7 @@ export const useBaseHoneyForm = <
     }
 
     const initiateOnChange = () => {
-      const cleanFormValues = getSubmitFormValues(
+      const cleanFormValues = getFormSubmitValues(
         parentField,
         formContextRef.current,
         nextFormFields,
@@ -597,11 +577,26 @@ export const useBaseHoneyForm = <
     [],
   );
 
+  const { formDefaultsRef, isFormDefaultsFetching, isFormDefaultsFetchingErred } = useFormDefaults({
+    formName,
+    fields: fieldsConfig,
+    defaults,
+    readDefaultsFromStorage,
+    storage,
+    onFetchSucceed: values => {
+      setFormValues(values, {
+        validate: false,
+        dirty: false,
+        skipOnChange: true,
+      });
+    },
+  });
+
   const addFormField = useCallback<HoneyFormAddFormField<Form, FormContext>>(
     (fieldName, fieldConfig) => {
       const formFields = resolveFormFields();
       if (formFields[fieldName]) {
-        warningMessage(`Form field "${fieldName.toString()}" is already present.`);
+        warning(`Form field "${fieldName.toString()}" is already present.`);
       }
 
       const executionContext: HoneyFormBaseExecutionContext<Form, FormContext> = {
@@ -612,17 +607,23 @@ export const useBaseHoneyForm = <
 
       const nextFormFields: HoneyFormFields<Form, FormContext> = {
         ...formFields,
-        [fieldName]: createFormField(fieldName, fieldConfig, {
-          executionContext,
-          formFieldsRef,
-          formDefaultsRef,
-          setFieldValue,
-          clearFieldErrors,
-          validateField,
-          pushFieldValue,
-          removeFieldValue,
-          addFormFieldErrors,
-        }),
+        [fieldName]: createFormField(
+          fieldName,
+          fieldConfig,
+          {
+            executionContext,
+            formFieldsRef,
+            formDefaultsRef,
+          },
+          {
+            setFieldValue,
+            clearFieldErrors,
+            validateField,
+            pushFieldValue,
+            removeFieldValue,
+            addFormFieldErrors,
+          },
+        ),
       };
 
       formFieldsRef.current = nextFormFields;
@@ -848,7 +849,7 @@ export const useBaseHoneyForm = <
             isSubmitting: true,
           });
 
-          const submitData = getSubmitFormValues(
+          const submitValues = getFormSubmitValues(
             parentField,
             formContextRef.current,
             formFieldsRef.current,
@@ -856,7 +857,7 @@ export const useBaseHoneyForm = <
 
           const submitHandler = formSubmitHandler || onSubmit;
 
-          const serverErrors = await submitHandler(submitData, { formContext });
+          const serverErrors = await submitHandler(submitValues, { formContext });
 
           if (serverErrors && Object.keys(serverErrors).length) {
             setFormErrors(
@@ -877,7 +878,7 @@ export const useBaseHoneyForm = <
           totalFormSubmissionsRef.current += 1;
 
           if (storage === 'qs') {
-            serializeFormToQueryString(fieldsConfig, formName, submitData);
+            serializeFormToQueryString(fieldsConfig, formName, submitValues);
           }
         }
       } finally {
@@ -906,33 +907,6 @@ export const useBaseHoneyForm = <
       });
     }
   }, [externalValues, validateExternalValues, skipSyncDirtyFields]);
-
-  useEffect(() => {
-    if (isFunction(defaults)) {
-      setIsFormDefaultsFetching(true);
-
-      defaults()
-        .then(defaultValues => {
-          // Returned defaults from the promise function can extend/override the form defaults
-          formDefaultsRef.current = {
-            ...formDefaultsRef.current,
-            ...defaultValues,
-          };
-
-          setFormValues(defaultValues, {
-            validate: false,
-            dirty: false,
-            skipOnChange: true,
-          });
-        })
-        .catch(() => {
-          errorMessage('Unable to fetch or process the form default values.');
-
-          setIsFormDefaultsFetchingErred(true);
-        })
-        .finally(() => setIsFormDefaultsFetching(false));
-    }
-  }, []);
 
   const checkIsAnyFormFieldValidating = () =>
     Object.keys(formFieldsRef.current).some(fieldName => formFields[fieldName].isValidating);

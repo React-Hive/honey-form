@@ -20,6 +20,7 @@ import type {
   HoneyFormFieldPushValue,
   HoneyFormValidateField,
   HoneyFormFieldProps,
+  HoneyFormPolymorphicFieldType,
 } from './field.types';
 import type {
   HoneyFormBaseChildForm,
@@ -217,7 +218,7 @@ export interface HoneyFormObjectFieldValidatorContext<
 }
 
 /**
- * Validator function for an object field.
+ * Validator function for the object field.
  */
 export type HoneyFormObjectFieldValidator<
   Form extends HoneyFormBaseForm,
@@ -236,7 +237,7 @@ export type HoneyFormObjectFieldValidator<
 ) => HoneyFormFieldValidationResult | Promise<HoneyFormFieldValidationResult>;
 
 /**
- * Context object passed to the validator function for a nested forms field.
+ * Context object passed to the validator function for the nested forms field.
  */
 export interface HoneyFormNestedFormsFieldValidatorContext<
   Form extends HoneyFormBaseForm,
@@ -267,6 +268,42 @@ export type HoneyFormNestedFormsFieldValidator<
    * The validation context, containing the field configuration and other form fields.
    */
   validatorContext: HoneyFormNestedFormsFieldValidatorContext<
+    Form,
+    FieldName,
+    FormContext,
+    FieldValue
+  >,
+) => HoneyFormFieldValidationResult | Promise<HoneyFormFieldValidationResult>;
+
+/**
+ * Context object passed to the validator function for the polymorphic field.
+ */
+export interface HoneyFormPolymorphicFieldValidatorContext<
+  Form extends HoneyFormBaseForm,
+  FieldName extends keyof Form,
+  FormContext,
+  FieldValue extends Form[FieldName] = Form[FieldName],
+> extends BaseFormFieldValidatorContext<Form, FieldName, FormContext> {
+  fieldConfig: HoneyFormPolymorphicFieldConfig<Form, FieldName, FormContext, FieldValue>;
+}
+
+/**
+ * Validator function for the polymorphic field.
+ */
+export type HoneyFormPolymorphicFieldValidator<
+  Form extends HoneyFormBaseForm,
+  FieldName extends keyof Form,
+  FormContext = undefined,
+  FieldValue extends Form[FieldName] = Form[FieldName],
+> = (
+  /**
+   * The current value of the polymorphic field.
+   */
+  value: FieldValue | undefined,
+  /**
+   * Context object containing information about the form and field.
+   */
+  validatorContext: HoneyFormPolymorphicFieldValidatorContext<
     Form,
     FieldName,
     FormContext,
@@ -663,6 +700,22 @@ export interface HoneyFormNestedFormsFieldConfig<
   validator?: HoneyFormNestedFormsFieldValidator<Form, FieldName, FormContext, FieldValue>;
 }
 
+export interface HoneyFormPolymorphicFieldConfig<
+  Form extends HoneyFormBaseForm,
+  FieldName extends keyof Form,
+  FormContext,
+  FieldValue extends Form[FieldName] = Form[FieldName],
+> extends BaseFieldConfig<Form, FieldName, FormContext, FieldValue> {
+  /**
+   * Type identifier for the polymorphic field.
+   */
+  type: HoneyFormPolymorphicFieldType;
+  /**
+   * Custom validator function for the polymorphic field.
+   */
+  validator?: HoneyFormPolymorphicFieldValidator<Form, FieldName, FormContext, FieldValue>;
+}
+
 /**
  * Represents the configuration for a form field within the context of a specific form.
  */
@@ -675,7 +728,8 @@ export type HoneyFormFieldConfig<
   | HoneyFormInteractiveFieldConfig<Form, FieldName, FormContext, FieldValue>
   | HoneyFormPassiveFieldConfig<Form, FieldName, FormContext, FieldValue>
   | HoneyFormObjectFieldConfig<Form, FieldName, FormContext, FieldValue>
-  | HoneyFormNestedFormsFieldConfig<Form, FieldName, FormContext, FieldValue>;
+  | HoneyFormNestedFormsFieldConfig<Form, FieldName, FormContext, FieldValue>
+  | HoneyFormPolymorphicFieldConfig<Form, FieldName, FormContext, FieldValue>;
 
 /**
  * Represents the configuration for a child form field within the context of a specific parent form.
@@ -693,7 +747,8 @@ export type ChildHoneyFormFieldConfig<
   | HoneyFormInteractiveFieldConfig<ChildForm, FieldName, FormContext, FieldValue>
   | HoneyFormPassiveFieldConfig<ChildForm, FieldName, FormContext, FieldValue>
   | HoneyFormObjectFieldConfig<ChildForm, FieldName, FormContext, FieldValue>
-  | HoneyFormNestedFormsFieldConfig<ChildForm, FieldName, FormContext, FieldValue>;
+  | HoneyFormNestedFormsFieldConfig<ChildForm, FieldName, FormContext, FieldValue>
+  | HoneyFormPolymorphicFieldConfig<ChildForm, FieldName, FormContext, FieldValue>;
 
 interface HoneyFormFieldBuiltInValidatorContext<
   Form extends HoneyFormBaseForm,
@@ -783,7 +838,6 @@ export interface HoneyFormChildFormContext<
  */
 export interface HoneyFormFieldMeta<
   Form extends HoneyFormBaseForm,
-  FieldName extends keyof Form,
   FormContext,
   NestedFormsFieldName extends KeysWithArrayValues<Form> = KeysWithArrayValues<Form>,
 > {
@@ -891,7 +945,7 @@ interface BaseHoneyFormField<
   /**
    * Built-in metadata used by the library.
    */
-  readonly __meta__: HoneyFormFieldMeta<Form, FieldName, FormContext>;
+  readonly __meta__: HoneyFormFieldMeta<Form, FormContext>;
 }
 
 /**
@@ -903,7 +957,7 @@ export interface HoneyFormField<
   FormContext = undefined,
   FieldValue extends Form[FieldName] = Form[FieldName],
 > extends BaseHoneyFormField<Form, FieldName, FormContext, FieldValue>,
-    HoneyFormFieldProps<Form, FieldName, FieldValue> {
+    HoneyFormFieldProps {
   /**
    * A function to add a new value to a parent field that can have child forms.
    */

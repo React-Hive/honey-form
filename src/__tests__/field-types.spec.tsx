@@ -17,7 +17,6 @@ describe('String field type', () => {
 
     expect(result.current.formFields.name.props).toBeDefined();
     expect(result.current.formFields.name.passiveProps).toBeUndefined();
-    expect(result.current.formFields.name.objectProps).toBeUndefined();
   });
 });
 
@@ -35,7 +34,6 @@ describe('Numeric field type', () => {
 
     expect(result.current.formFields.phone.props).toBeDefined();
     expect(result.current.formFields.phone.passiveProps).toBeUndefined();
-    expect(result.current.formFields.phone.objectProps).toBeUndefined();
   });
 
   it('should not raise an error when numeric value is empty', () => {
@@ -110,7 +108,6 @@ describe('Number field type', () => {
 
     expect(result.current.formFields.age.props).toBeDefined();
     expect(result.current.formFields.age.passiveProps).toBeUndefined();
-    expect(result.current.formFields.age.objectProps).toBeUndefined();
   });
 
   it('initially the number field type value should be undefined', () => {
@@ -203,7 +200,6 @@ describe('Email field type', () => {
 
     expect(result.current.formFields.email.props).toBeDefined();
     expect(result.current.formFields.email.passiveProps).toBeUndefined();
-    expect(result.current.formFields.email.objectProps).toBeUndefined();
   });
 
   it('should not raise an error when email is empty', () => {
@@ -328,7 +324,6 @@ describe('Checkbox field type', () => {
 
     expect(result.current.formFields.isAcceptTerms.props).toBeUndefined();
     expect(result.current.formFields.isAcceptTerms.passiveProps).toBeDefined();
-    expect(result.current.formFields.isAcceptTerms.objectProps).toBeUndefined();
   });
 
   it('should have `checked` attribute in `passiveProps` for checkbox field type', () => {
@@ -360,7 +355,6 @@ describe('Radio field type', () => {
 
     expect(result.current.formFields.mode.props).toBeUndefined();
     expect(result.current.formFields.mode.passiveProps).toBeDefined();
-    expect(result.current.formFields.mode.objectProps).toBeUndefined();
   });
 
   it('should not have `checked` attribute in `passiveProps` for radio field type', () => {
@@ -397,30 +391,5 @@ describe('Object field type', () => {
 
     expect(result.current.formFields.category.props).toBeUndefined();
     expect(result.current.formFields.category.passiveProps).toBeUndefined();
-    expect(result.current.formFields.category.objectProps).toBeDefined();
-  });
-
-  it('should set a new value via the `onChange` function using `objectProps`', () => {
-    const { result } = renderHook(() =>
-      useHoneyForm<{ category: Category }>({
-        fields: {
-          category: {
-            type: 'object',
-          },
-        },
-      }),
-    );
-
-    act(() =>
-      result.current.formFields.category.objectProps.onChange({
-        id: 0,
-        name: 'Fruits',
-      }),
-    );
-
-    expect(result.current.formFields.category.value).toStrictEqual({
-      id: 0,
-      name: 'Fruits',
-    });
   });
 });

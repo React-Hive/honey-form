@@ -19,7 +19,6 @@ describe('Nested field type', () => {
 
     expect(result.current.formFields.items.props).toBeUndefined();
     expect(result.current.formFields.items.passiveProps).toBeUndefined();
-    expect(result.current.formFields.items.objectProps).toBeUndefined();
   });
 });
 

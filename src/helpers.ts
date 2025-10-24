@@ -20,6 +20,7 @@ import type {
   HoneyFormPassiveFieldConfig,
   HoneyFormObjectFieldConfig,
   HoneyFormNestedFormsFieldConfig,
+  HoneyFormPolymorphicFieldConfig,
   HoneyFormExtractChildForm,
   HoneyFormBaseChildForm,
   HoneyFormBaseExecutionContext,
@@ -285,6 +286,15 @@ export const checkIsNestedFormsField = <
   fieldConfig: HoneyFormFieldConfig<Form, FieldName, FormContext>,
 ): fieldConfig is HoneyFormNestedFormsFieldConfig<Form, FieldName, FormContext> =>
   fieldConfig.type === 'nestedForms';
+
+export const checkIsPolymorphicField = <
+  Form extends HoneyFormBaseForm,
+  FieldName extends keyof Form,
+  FormContext,
+>(
+  fieldConfig: HoneyFormFieldConfig<Form, FieldName, FormContext>,
+): fieldConfig is HoneyFormPolymorphicFieldConfig<Form, FieldName, FormContext> =>
+  fieldConfig.type === 'polymorphic';
 
 /**
  * Options object for determining whether to skip a form field.

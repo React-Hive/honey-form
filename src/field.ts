@@ -20,9 +20,10 @@ import {
 } from './validators';
 import {
   checkIsInteractiveField,
-  checkIsNestedFormsField,
-  checkIsObjectField,
   checkIsPassiveField,
+  checkIsObjectField,
+  checkIsNestedFormsField,
+  checkIsPolymorphicField,
   forEachFormField,
   getFormValues,
   checkShouldSkipField,
@@ -53,10 +54,8 @@ import type {
   HoneyFormFieldFinishAsyncValidation,
   HoneyFormFieldsRef,
   HoneyFormDefaultsRef,
-  HoneyFormObjectFieldProps,
   HoneyFormInteractiveFieldConfig,
   HoneyFormPassiveFieldConfig,
-  HoneyFormObjectFieldConfig,
   HoneyFormPassiveFieldProps,
   HoneyFormInteractiveFieldProps,
   HoneyFormValidateField,
@@ -285,55 +284,6 @@ const getPassiveFormFieldProps = <
   };
 };
 
-interface ObjectFieldPropsOptions<
-  Form extends HoneyFormBaseForm,
-  FieldName extends keyof Form,
-  FormContext,
-> {
-  formFieldRef: RefObject<HTMLElement>;
-  fieldConfig: HoneyFormObjectFieldConfig<Form, FieldName, FormContext>;
-  setFieldValue: HoneyFormFieldSetValueInternal<Form>;
-}
-
-/**
- * Gets the object field properties for a form field.
- *
- * @param fieldName - The name of the field.
- * @param fieldValue - The current value of the field.
- * @param options - Options for object field properties.
- *
- * @returns The object field properties.
- */
-const getObjectFormFieldProps = <
-  Form extends HoneyFormBaseForm,
-  FieldName extends keyof Form,
-  FormContext,
-  FieldValue extends Form[FieldName],
->(
-  fieldName: FieldName,
-  fieldValue: FieldValue,
-  {
-    formFieldRef,
-    fieldConfig,
-    setFieldValue,
-  }: ObjectFieldPropsOptions<Form, FieldName, FormContext>,
-): HoneyFormObjectFieldProps<Form, FieldName, FieldValue> => {
-  const baseFieldProps = getBaseFieldProps(fieldName, formFieldRef, fieldConfig);
-
-  return {
-    ...baseFieldProps,
-    value: fieldValue,
-    //
-    onChange: newFieldValue => {
-      setFieldValue(fieldName, newFieldValue, {
-        format: false,
-      });
-    },
-    // Additional field properties from field configuration
-    ...fieldConfig.props,
-  };
-};
-
 interface FieldPropsOptions<
   Form extends HoneyFormBaseForm,
   FieldName extends keyof Form,
@@ -366,11 +316,10 @@ const getFormFieldProps = <
   fieldName: FieldName,
   fieldValue: FieldValue,
   { formFieldRef, fieldConfig, setFieldValue }: FieldPropsOptions<Form, FieldName, FormContext>,
-): HoneyFormFieldProps<Form, FieldName, FieldValue> => {
+): HoneyFormFieldProps => {
   if (checkIsInteractiveField(fieldConfig)) {
     return {
       passiveProps: undefined,
-      objectProps: undefined,
       props: getInteractiveFormFieldProps(fieldName, fieldValue, {
         formFieldRef,
         fieldConfig,
@@ -382,7 +331,6 @@ const getFormFieldProps = <
   if (checkIsPassiveField(fieldConfig)) {
     return {
       props: undefined,
-      objectProps: undefined,
       passiveProps: getPassiveFormFieldProps(fieldName, {
         formFieldRef,
         fieldConfig,
@@ -395,18 +343,12 @@ const getFormFieldProps = <
     return {
       props: undefined,
       passiveProps: undefined,
-      objectProps: getObjectFormFieldProps(fieldName, fieldValue, {
-        formFieldRef,
-        fieldConfig,
-        setFieldValue,
-      }),
     };
   }
 
   return {
     props: undefined,
     passiveProps: undefined,
-    objectProps: undefined,
   };
 };
 
@@ -467,7 +409,7 @@ export const createFormField = <
       ? fieldConfig.formatter(filteredValue, executionContext)
       : filteredValue;
 
-  const fieldMeta: HoneyFormFieldMeta<Form, FieldName, FormContext> = {
+  const fieldMeta: HoneyFormFieldMeta<Form, FormContext> = {
     formFieldsRef,
     validationScheduled: false,
     childForms: undefined,
@@ -574,20 +516,10 @@ export const getNextErrorsFreeField = <
       }
     : undefined;
 
-  const objectProps: HoneyFormObjectFieldProps<Form, FieldName> | undefined = checkIsObjectField(
-    formField.config,
-  )
-    ? {
-        ...formField.objectProps,
-        'aria-invalid': false,
-      }
-    : undefined;
-
   return {
     ...formField,
     props,
     passiveProps,
-    objectProps,
     cleanValue: undefined,
     errors: [],
   };
@@ -627,20 +559,10 @@ export const getNextErredField = <
       }
     : undefined;
 
-  const objectProps: HoneyFormObjectFieldProps<Form, FieldName> | undefined = checkIsObjectField(
-    formField.config,
-  )
-    ? {
-        ...formField.objectProps,
-        'aria-invalid': isFieldErred,
-      }
-    : undefined;
-
   return {
     ...formField,
     props,
     passiveProps,
-    objectProps,
     errors: fieldErrors,
     // Set clean value as `undefined` if any error is present
     cleanValue: fieldErrors.length ? undefined : formField.cleanValue,
@@ -685,20 +607,10 @@ export const getNextResetField = <
       }
     : undefined;
 
-  const objectProps: HoneyFormObjectFieldProps<Form, FieldName> | undefined = checkIsObjectField(
-    formField.config,
-  )
-    ? {
-        ...errorsFreeField.objectProps,
-        value: nextFieldValue,
-      }
-    : undefined;
-
   return {
     ...errorsFreeField,
     props,
     passiveProps,
-    objectProps,
     value: nextFieldValue,
     rawValue: nextFieldValue,
     cleanValue: nextFieldValue,
@@ -845,7 +757,11 @@ const executeFieldTypeValidator = <
   formField: HoneyFormField<Form, FieldName, FormContext>,
   fieldValue: FieldValue | undefined,
 ): Nullable<HoneyFormFieldValidationResult> => {
-  if (checkIsObjectField(formField.config) || checkIsNestedFormsField(formField.config)) {
+  if (
+    checkIsObjectField(formField.config) ||
+    checkIsNestedFormsField(formField.config) ||
+    checkIsPolymorphicField(formField.config)
+  ) {
     return null;
   }
 
@@ -1520,19 +1436,10 @@ export const getNextFormFieldState = <
       }
     : undefined;
 
-  const objectProps: HoneyFormObjectFieldProps<Form, FieldName, FieldValue> | undefined =
-    checkIsObjectField(formField.config)
-      ? {
-          ...formField.objectProps,
-          value: fieldValue,
-        }
-      : undefined;
-
   return {
     ...formField,
     props,
     passiveProps,
-    objectProps,
     rawValue: fieldValue,
     value: formattedValue,
   };

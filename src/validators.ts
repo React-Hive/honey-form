@@ -6,6 +6,7 @@ import {
   isString,
 } from '@react-hive/honey-utils';
 
+import { checkIsObjectField } from './helpers';
 import type {
   CustomDateRangeForm,
   HoneyFormInteractiveFieldBuiltInValidator,
@@ -107,7 +108,7 @@ export const requiredBuiltInFieldValidator: HoneyFormFieldBuiltInValidator = ({
   }
 
   if (Array.isArray(fieldValue)) {
-    if (fieldConfig.type === 'object') {
+    if (checkIsObjectField(fieldConfig)) {
       if (fieldConfig.allowEmptyArray) {
         // No needs to check the array because the empty array is allowed
         return;

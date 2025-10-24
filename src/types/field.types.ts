@@ -29,13 +29,20 @@ export type HoneyFormObjectFieldType = 'object';
 export type HoneyFormNestedFormsFieldType = 'nestedForms';
 
 /**
+ * Describes a field type that can handle polymorphic data, allowing the form to handle
+ * different types of data based on the value of a specific field.
+ */
+export type HoneyFormPolymorphicFieldType = 'polymorphic';
+
+/**
  * Represents all possible form field types.
  */
 export type HoneyFormFieldType =
   | HoneyFormInteractiveFieldType
   | HoneyFormPassiveFieldType
   | HoneyFormObjectFieldType
-  | HoneyFormNestedFormsFieldType;
+  | HoneyFormNestedFormsFieldType
+  | HoneyFormPolymorphicFieldType;
 
 /**
  * Defines the possible modes for handling form field interactions and validations.
@@ -91,28 +98,9 @@ export interface HoneyFormInteractiveFieldProps
 export type HoneyFormPassiveFieldProps = Readonly<HoneyFormFieldBaseHTMLAttributes<any>>;
 
 /**
- * Represents the props for an object form field.
- *
- * @remarks
- * These props include the base HTML attributes, a ref, the field value, and the `onChange` handler.
- */
-export interface HoneyFormObjectFieldProps<
-  Form extends HoneyFormBaseForm,
-  FieldName extends keyof Form,
-  FieldValue extends Form[FieldName] = Form[FieldName],
-> extends Omit<HoneyFormFieldBaseHTMLAttributes<any>, 'value' | 'onChange'> {
-  value: FieldValue | undefined;
-  onChange: (value: FieldValue | undefined) => void;
-}
-
-/**
  * Represents the properties for a specific form field within a form.
  */
-export interface HoneyFormFieldProps<
-  Form extends HoneyFormBaseForm,
-  FieldName extends keyof Form,
-  FieldValue extends Form[FieldName] = Form[FieldName],
-> {
+export interface HoneyFormFieldProps {
   /**
    * An object with the necessary props to bind to the corresponding input element in the form.
    */
@@ -121,10 +109,6 @@ export interface HoneyFormFieldProps<
    * Properties for non-interactive fields (e.g., checkbox, radio, file).
    */
   passiveProps: HoneyFormPassiveFieldProps | undefined;
-  /**
-   * An object containing the properties needed for object fields, which handle complex data structures.
-   */
-  objectProps: HoneyFormObjectFieldProps<Form, FieldName, FieldValue> | undefined;
 }
 
 /**

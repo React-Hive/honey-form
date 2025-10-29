@@ -23,7 +23,7 @@ import {
   getFormErrors,
   getFormValues,
   getFormSubmitValues,
-  checkShouldSkipField,
+  isSkipField,
   iterateFormFields,
   convertServerErrors,
   runChildFormsValidation,
@@ -81,6 +81,7 @@ export const useForm = <
   parentField,
   defaults = FORM_DEFAULTS,
   readDefaultsFromStorage = false,
+  refetchDefaultsOnContextChange = true,
   values: externalValues,
   validateValues: validateExternalValues = true,
   skipSyncDirtyFields = false,
@@ -578,11 +579,13 @@ export const useForm = <
   );
 
   const { formDefaultsRef, isFormDefaultsFetching, isFormDefaultsFetchingErred } = useFormDefaults({
-    formName,
-    fields: fieldsConfig,
     defaults,
-    readDefaultsFromStorage,
+    formName,
     storage,
+    formContext: formContextRef.current,
+    fields: fieldsConfig,
+    readFromStorage: readDefaultsFromStorage,
+    refetchOnContextChange: refetchDefaultsOnContextChange,
     onFetchSucceed: values => {
       setFormValues(values, {
         validate: false,
@@ -703,10 +706,12 @@ export const useForm = <
           ? excludeFields.includes(fieldName)
           : false;
 
+        if (isExcludeFieldFromValidation || !isTargetFieldValidation) {
+          return formField;
+        }
+
         if (
-          isExcludeFieldFromValidation ||
-          !isTargetFieldValidation ||
-          checkShouldSkipField({
+          isSkipField({
             executionContext,
             parentField,
             fieldName,

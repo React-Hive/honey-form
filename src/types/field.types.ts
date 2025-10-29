@@ -1,5 +1,6 @@
 import type { InputHTMLAttributes, ReactElement, RefObject } from 'react';
 
+import type { HoneyFormBaseExecutionContext } from './types';
 import type { HoneyFormBaseForm } from './common.types';
 import type { JSONValue } from './generic.types';
 import type { HoneyFormExtractChildForm } from './utility.types';
@@ -54,26 +55,70 @@ export type HoneyFormFieldType =
 export type HoneyFormFieldMode = 'change' | 'blur' | 'submit';
 
 /**
+ * Represents the structure of an error message for a form field.
+ */
+export type HoneyFormFieldErrorMessage = string | ReactElement;
+
+/**
+ * A function or static message that represents a custom validation error message
+ * for a specific form field. The function receives the form's execution context,
+ * allowing dynamic message generation based on the form state.
+ */
+type HoneyFormFieldCustomErrorMessage<Form extends HoneyFormBaseForm, FormContext> =
+  | HoneyFormFieldErrorMessage
+  | ((
+      executionContext: HoneyFormBaseExecutionContext<Form, FormContext>,
+    ) => HoneyFormFieldErrorMessage);
+
+/**
+ * A function or static message that represents a custom validation error message
+ * for a specific validation rule that uses a configured parameter value.
+ *
+ * @template ConstraintValue - The type of the configured rule parameter (e.g., number or range object).
+ */
+type HoneyFormFieldCustomErrorMessageWithValue<
+  Form extends HoneyFormBaseForm,
+  FormContext,
+  ConstraintValue,
+> =
+  | HoneyFormFieldErrorMessage
+  | ((
+      constraintValue: ConstraintValue,
+      executionContext: HoneyFormBaseExecutionContext<Form, FormContext>,
+    ) => HoneyFormFieldErrorMessage);
+
+/**
+ * Defines a mapping of error types to their respective error messages.
+ * This allows assigning custom error messages for each type of error encountered.
+ */
+export type HoneyFormFieldCustomErrorMessages<Form extends HoneyFormBaseForm, FormContext> = {
+  required?: HoneyFormFieldCustomErrorMessage<Form, FormContext>;
+  invalid?: HoneyFormFieldCustomErrorMessage<Form, FormContext>;
+  server?: HoneyFormFieldCustomErrorMessage<Form, FormContext>;
+  min?: HoneyFormFieldCustomErrorMessageWithValue<Form, FormContext, number>;
+  max?: HoneyFormFieldCustomErrorMessageWithValue<Form, FormContext, number>;
+  /**
+   * Error message or generator for combined minimum and maximum value rule.
+   * Receives the configured range object `{ min, max }`.
+   */
+  minMax?: HoneyFormFieldCustomErrorMessageWithValue<
+    Form,
+    FormContext,
+    {
+      min: number;
+      max: number;
+    }
+  >;
+};
+
+/**
  * Enumerates the various error types that can occur within a form field.
  *
  * @remarks
  * - The 'server' error type refers to errors from the backend and does not prevent form submission.
  * - 'required', 'invalid', 'min', and 'max' errors are typically triggered by client-side validation.
  */
-export type HoneyFormFieldErrorType = 'required' | 'invalid' | 'server' | 'min' | 'max' | 'minMax';
-
-/**
- * Represents the structure of an error message for a form field.
- */
-export type HoneyFormFieldErrorMessage = string | ReactElement;
-
-/**
- * Defines a mapping of error types to their respective error messages.
- * This allows assigning custom error messages for each type of error encountered.
- */
-export type HoneyFormFieldErrorMessages = Partial<
-  Record<HoneyFormFieldErrorType, HoneyFormFieldErrorMessage>
->;
+export type HoneyFormFieldErrorType = keyof HoneyFormFieldCustomErrorMessages<any, any>;
 
 export interface HoneyFormFieldBaseHTMLAttributes<T>
   extends Omit<InputHTMLAttributes<T>, 'children'> {

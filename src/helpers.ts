@@ -321,7 +321,7 @@ type CheckShouldSkipFieldOptions<
  *
  * @returns A boolean indicating whether the field should be skipped.
  */
-export const checkShouldSkipField = <
+export const isSkipField = <
   ParentForm extends HoneyFormBaseForm,
   ParentFieldName extends KeysWithArrayValues<ParentForm>,
   Form extends HoneyFormBaseForm,
@@ -402,7 +402,7 @@ export const getFormSubmitValues = <
       return isReturnActualValue ? formField.value : formField.cleanValue;
     },
     fieldName =>
-      !checkShouldSkipField({
+      !isSkipField({
         fieldName,
         parentField,
         executionContext: {

@@ -8,6 +8,7 @@ import {
   isNumber,
   assert,
   isBool,
+  invokeIfFunction,
 } from '@react-hive/honey-utils';
 import type { HTMLAttributes, HTMLInputTypeAttribute, RefObject } from 'react';
 
@@ -26,7 +27,7 @@ import {
   checkIsPolymorphicField,
   forEachFormField,
   getFormValues,
-  checkShouldSkipField,
+  isSkipField,
   scheduleFieldValidation,
   mapFormFields,
 } from './helpers';
@@ -450,6 +451,7 @@ export const createFormField = <
     rawValue: filteredValue,
     initialCleanValue: cleanValue,
     value: resultValue,
+    isDirty: false,
     isValidating: false,
     // TODO: try to fix the next error
     // @ts-expect-error
@@ -620,6 +622,9 @@ export const getNextResetField = <
 /**
  * Handle the result of field validation and update the field errors array accordingly.
  *
+ * @param executionContext - The execution context providing form-wide information,
+ *                           including field configurations, current form values,
+ *                           and helper functions for validation scheduling.
  * @param fieldErrors - The array to collect validation errors for the field.
  * @param fieldConfig - Configuration for the field being validated.
  * @param validationResult - The result of the field validation.
@@ -629,6 +634,7 @@ const handleFieldValidationResult = <
   FieldName extends keyof Form,
   FormContext,
 >(
+  executionContext: HoneyFormBaseExecutionContext<Form, FormContext>,
   fieldErrors: HoneyFormFieldError[],
   fieldConfig: HoneyFormFieldConfig<Form, FieldName, FormContext>,
   validationResult: Nullable<HoneyFormFieldValidationResult>,
@@ -649,7 +655,8 @@ const handleFieldValidationResult = <
   else if (validationResult === false) {
     fieldErrors.push({
       type: 'invalid',
-      message: fieldConfig.errorMessages?.invalid ?? 'Invalid value',
+      message:
+        invokeIfFunction(fieldConfig.errorMessages?.invalid, executionContext) ?? 'Invalid value',
     });
   }
 };
@@ -705,6 +712,9 @@ export const getNextAsyncValidatedField = <
 /**
  * Get the next validated field based on validation results and field errors.
  *
+ * @param executionContext - The execution context providing form-wide information,
+ *                           including field configurations, current form values,
+ *                           and helper functions for validation scheduling.
  * @param fieldErrors - The array of validation errors for the field.
  * @param validationResult - The result of the field validation.
  * @param formField - The form field being validated.
@@ -717,12 +727,13 @@ const getNextValidatedField = <
   FieldName extends keyof Form,
   FormContext,
 >(
+  executionContext: HoneyFormBaseExecutionContext<Form, FormContext>,
   fieldErrors: HoneyFormFieldError[],
   validationResult: Nullable<HoneyFormFieldValidationResult>,
   formField: HoneyFormField<Form, FieldName, FormContext>,
   cleanValue: Form[FieldName] | undefined,
 ): HoneyFormField<Form, FieldName, FormContext> => {
-  handleFieldValidationResult(fieldErrors, formField.config, validationResult);
+  handleFieldValidationResult(executionContext, fieldErrors, formField.config, validationResult);
 
   if (fieldErrors.length) {
     return getNextErredField(formField, fieldErrors);
@@ -848,6 +859,9 @@ const executeInternalFieldValidators = <
  * to the form field based on the resolved value of the promise. If the promise is rejected, it adds an error with the
  * rejection reason.
  *
+ * @param executionContext - The execution context providing form-wide information,
+ *                           including field configurations, current form values,
+ *                           and helper functions for validation scheduling.
  * @param formField - The form field being validated.
  * @param validationResponse - The promise representing the result of the validation.
  */
@@ -856,6 +870,7 @@ const handleFieldAsyncValidationResult = <
   FieldName extends keyof Form,
   FormContext,
 >(
+  executionContext: HoneyFormBaseExecutionContext<Form, FormContext>,
   formField: HoneyFormField<Form, FieldName, FormContext>,
   validationResponse: Promise<HoneyFormFieldValidationResult>,
 ): Promise<void> =>
@@ -874,7 +889,9 @@ const handleFieldAsyncValidationResult = <
       } else if (validationResult === false) {
         formField.addError({
           type: 'invalid',
-          message: formField.config.errorMessages?.invalid ?? 'Invalid value',
+          message:
+            invokeIfFunction(formField.config.errorMessages?.invalid, executionContext) ??
+            'Invalid value',
         });
       }
     })
@@ -884,7 +901,9 @@ const handleFieldAsyncValidationResult = <
       } else {
         formField.addError({
           type: 'invalid',
-          message: formField.config.errorMessages?.invalid ?? validationResult.message,
+          message:
+            invokeIfFunction(formField.config.errorMessages?.invalid, executionContext) ??
+            validationResult.message,
         });
       }
     });
@@ -1002,7 +1021,7 @@ export const executeFieldValidator = <
       if (isPromise(validationResponse)) {
         nextFormField = getNextAsyncValidatingField(nextFormField);
 
-        handleFieldAsyncValidationResult(nextFormField, validationResponse)
+        handleFieldAsyncValidationResult(executionContext, nextFormField, validationResponse)
           .catch(noop)
           .finally(() => finishFieldAsyncValidation(fieldName));
 
@@ -1013,7 +1032,13 @@ export const executeFieldValidator = <
     }
   }
 
-  return getNextValidatedField(fieldErrors, validationResult, nextFormField, cleanValue);
+  return getNextValidatedField(
+    executionContext,
+    fieldErrors,
+    validationResult,
+    nextFormField,
+    cleanValue,
+  );
 };
 
 /**
@@ -1141,7 +1166,13 @@ export const executeFieldValidatorAsync = async <
   if (shouldSetErrors) {
     return {
       fieldErrors,
-      nextField: getNextValidatedField(fieldErrors, validationResult, formField, sanitizedValue),
+      nextField: getNextValidatedField(
+        executionContext,
+        fieldErrors,
+        validationResult,
+        formField,
+        sanitizedValue,
+      ),
     };
   }
 
@@ -1182,7 +1213,7 @@ export const processSkippableFields = <
   parentField,
 }: ProcessSkippableFieldsOptions<ParentForm, ParentFieldName, Form, FormContext>) =>
   mapFormFields(executionContext.formFields, (fieldName, formField) => {
-    const shouldSkipField = checkShouldSkipField({
+    const shouldSkipField = isSkipField({
       executionContext,
       parentField,
       fieldName,
@@ -1345,7 +1376,7 @@ const processScheduledFieldsValidation = <
 
     // Check if validation is scheduled for the field
     if (formField.__meta__.validationScheduled) {
-      const shouldSkipField = checkShouldSkipField({
+      const shouldSkipField = isSkipField({
         executionContext,
         parentField,
         fieldName: fieldName,

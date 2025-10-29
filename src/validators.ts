@@ -1,6 +1,6 @@
 import {
+  invokeIfFunction,
   isBool,
-  isFunction,
   isNilOrEmptyString,
   isNumber,
   isString,
@@ -23,7 +23,10 @@ export const INTERACTIVE_FIELD_TYPE_VALIDATORS_MAP: Record<
   HoneyFormInteractiveFieldValidator<any, any, any>
 > = {
   string: () => true,
-  numeric: (value: string | undefined, { fieldConfig: { errorMessages = {} } }) => {
+  numeric: (
+    value: string | undefined,
+    { formFields, formValues, formContext, fieldConfig: { errorMessages = {} } },
+  ) => {
     if (value === '' || value === undefined) {
       return true;
     }
@@ -34,14 +37,24 @@ export const INTERACTIVE_FIELD_TYPE_VALIDATORS_MAP: Record<
       isValidNumber || [
         {
           type: 'invalid',
-          message: errorMessages.invalid ?? 'Invalid format',
+          message:
+            invokeIfFunction(errorMessages.invalid, {
+              formFields,
+              formValues,
+              formContext,
+            }) ?? 'Invalid format',
         },
       ]
     );
   },
   number: (
     value: string | undefined,
-    { fieldConfig: { errorMessages = {}, decimal = false, negative = true, maxFraction = 2 } },
+    {
+      formFields,
+      formValues,
+      formContext,
+      fieldConfig: { errorMessages = {}, decimal = false, negative = true, maxFraction = 2 },
+    },
   ) => {
     if (value === '' || value === undefined) {
       return true;
@@ -56,7 +69,11 @@ export const INTERACTIVE_FIELD_TYPE_VALIDATORS_MAP: Record<
         {
           type: 'invalid',
           message:
-            errorMessages.invalid ??
+            invokeIfFunction(errorMessages.invalid, {
+              formFields,
+              formValues,
+              formContext,
+            }) ??
             `Only ${negative ? '' : 'positive '}${
               decimal ? `decimals with max fraction ${maxFraction}` : 'numerics'
             } are allowed`,
@@ -64,7 +81,10 @@ export const INTERACTIVE_FIELD_TYPE_VALIDATORS_MAP: Record<
       ]
     );
   },
-  email: (value: string | undefined, { fieldConfig: { errorMessages = {} } }) => {
+  email: (
+    value: string | undefined,
+    { formFields, formValues, formContext, fieldConfig: { errorMessages = {} } },
+  ) => {
     if (value === '' || value === undefined) {
       return true;
     }
@@ -78,7 +98,12 @@ export const INTERACTIVE_FIELD_TYPE_VALIDATORS_MAP: Record<
       isValidEmail || [
         {
           type: 'invalid',
-          message: errorMessages.invalid ?? 'Invalid email format',
+          message:
+            invokeIfFunction(errorMessages.invalid, {
+              formFields,
+              formValues,
+              formContext,
+            }) ?? 'Invalid email format',
         },
       ]
     );
@@ -136,13 +161,13 @@ export const requiredBuiltInFieldValidator: HoneyFormFieldBuiltInValidator = ({
 
   const { required, errorMessages } = fieldConfig;
 
-  const requiredResult = isFunction(required) ? required(executionContext) : required;
+  const requiredResult = invokeIfFunction(required, executionContext);
 
   if (requiredResult) {
     const message = isString(required)
       ? required
       : isBool(requiredResult)
-        ? (errorMessages?.required ?? 'The value is required')
+        ? (invokeIfFunction(errorMessages?.required, executionContext) ?? 'The value is required')
         : requiredResult;
 
     fieldErrors.push({
@@ -171,15 +196,14 @@ export const minValueBuiltInFieldValidator: HoneyFormInteractiveFieldBuiltInVali
     return;
   }
 
-  const minValue = isFunction(fieldConfig.min)
-    ? fieldConfig.min(executionContext)
-    : fieldConfig.min;
+  const minValue = invokeIfFunction(fieldConfig.min, executionContext);
 
   if (fieldValue < minValue) {
     fieldErrors.push({
       type: 'min',
       message:
-        fieldConfig.errorMessages?.min ?? `The value must be greater than or equal to ${minValue}`,
+        invokeIfFunction(fieldConfig.errorMessages?.min, minValue, executionContext) ??
+        `The value must be greater than or equal to ${minValue}`,
     });
   }
 };
@@ -203,15 +227,14 @@ export const maxValueBuiltInFieldValidator: HoneyFormInteractiveFieldBuiltInVali
     return;
   }
 
-  const maxValue = isFunction(fieldConfig.max)
-    ? fieldConfig.max(executionContext)
-    : fieldConfig.max;
+  const maxValue = invokeIfFunction(fieldConfig.max, executionContext);
 
   if (fieldValue > maxValue) {
     fieldErrors.push({
       type: 'max',
       message:
-        fieldConfig.errorMessages?.max ?? `The value must be less than or equal to ${maxValue}`,
+        invokeIfFunction(fieldConfig.errorMessages?.max, maxValue, executionContext) ??
+        `The value must be less than or equal to ${maxValue}`,
     });
   }
 };
@@ -235,20 +258,21 @@ export const minMaxValueBuiltInFieldValidator: HoneyFormInteractiveFieldBuiltInV
     return;
   }
 
-  const minValue = isFunction(fieldConfig.min)
-    ? fieldConfig.min(executionContext)
-    : fieldConfig.min;
-
-  const maxValue = isFunction(fieldConfig.max)
-    ? fieldConfig.max(executionContext)
-    : fieldConfig.max;
+  const minValue = invokeIfFunction(fieldConfig.min, executionContext);
+  const maxValue = invokeIfFunction(fieldConfig.max, executionContext);
 
   if (fieldValue < minValue || fieldValue > maxValue) {
     fieldErrors.push({
       type: 'minMax',
       message:
-        fieldConfig.errorMessages?.minMax ??
-        `The value must be between ${minValue} and ${maxValue}`,
+        invokeIfFunction(
+          fieldConfig.errorMessages?.minMax,
+          {
+            min: minValue,
+            max: maxValue,
+          },
+          executionContext,
+        ) ?? `The value must be between ${minValue} and ${maxValue}`,
     });
   }
 };
@@ -274,15 +298,13 @@ export const minLengthBuiltInFieldValidator: HoneyFormInteractiveFieldBuiltInVal
     return;
   }
 
-  const minLength = isFunction(fieldConfig.min)
-    ? fieldConfig.min(executionContext)
-    : fieldConfig.min;
+  const minLength = invokeIfFunction(fieldConfig.min, executionContext);
 
   if (fieldValue.length < minLength) {
     fieldErrors.push({
       type: 'min',
       message:
-        fieldConfig.errorMessages?.min ??
+        invokeIfFunction(fieldConfig.errorMessages?.min, minLength, executionContext) ??
         `The length must be greater than or equal to ${minLength} characters`,
     });
   }
@@ -309,15 +331,13 @@ export const maxLengthBuiltInFieldValidator: HoneyFormInteractiveFieldBuiltInVal
     return;
   }
 
-  const maxLength = isFunction(fieldConfig.max)
-    ? fieldConfig.max(executionContext)
-    : fieldConfig.max;
+  const maxLength = invokeIfFunction(fieldConfig.max, executionContext);
 
   if (fieldValue.length > maxLength) {
     fieldErrors.push({
       type: 'max',
       message:
-        fieldConfig.errorMessages?.max ??
+        invokeIfFunction(fieldConfig.errorMessages?.max, maxLength, executionContext) ??
         `The length must be less than or equal to ${maxLength} characters`,
     });
   }
@@ -344,20 +364,22 @@ export const minMaxLengthBuiltInFieldValidator: HoneyFormInteractiveFieldBuiltIn
     return;
   }
 
-  const minLength = isFunction(fieldConfig.min)
-    ? fieldConfig.min(executionContext)
-    : fieldConfig.min;
-
-  const maxLength = isFunction(fieldConfig.max)
-    ? fieldConfig.max(executionContext)
-    : fieldConfig.max;
+  const minLength = invokeIfFunction(fieldConfig.min, executionContext);
+  const maxLength = invokeIfFunction(fieldConfig.max, executionContext);
 
   if (fieldValue.length < minLength || fieldValue.length > maxLength) {
     if (minLength === maxLength) {
       fieldErrors.push({
         type: 'minMax',
         message:
-          fieldConfig.errorMessages?.minMax ?? `The length must be exactly ${minLength} characters`,
+          invokeIfFunction(
+            fieldConfig.errorMessages?.minMax,
+            {
+              min: maxLength,
+              max: maxLength,
+            },
+            executionContext,
+          ) ?? `The length must be exactly ${minLength} characters`,
       });
       //
       return;
@@ -366,8 +388,14 @@ export const minMaxLengthBuiltInFieldValidator: HoneyFormInteractiveFieldBuiltIn
     fieldErrors.push({
       type: 'minMax',
       message:
-        fieldConfig.errorMessages?.minMax ??
-        `The length must be between ${minLength} and ${maxLength} characters`,
+        invokeIfFunction(
+          fieldConfig.errorMessages?.minMax,
+          {
+            min: maxLength,
+            max: maxLength,
+          },
+          executionContext,
+        ) ?? `The length must be between ${minLength} and ${maxLength} characters`,
     });
   }
 };

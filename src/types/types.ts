@@ -7,7 +7,7 @@ import type {
   HoneyFormObjectFieldType,
   HoneyFormPassiveFieldType,
   HoneyFormFieldErrorMessage,
-  HoneyFormFieldErrorMessages,
+  HoneyFormFieldCustomErrorMessages,
   HoneyFormFieldMode,
   HoneyFormFieldError,
   HoneyFormFieldValidationResult,
@@ -477,7 +477,7 @@ interface BaseFieldConfig<
   /**
    * Custom error messages for this field.
    */
-  errorMessages?: HoneyFormFieldErrorMessages;
+  errorMessages?: HoneyFormFieldCustomErrorMessages<Form, FormContext>;
   /**
    * Additional properties for configuring the field's HTML input element.
    *
@@ -1033,13 +1033,18 @@ export type HoneyFormDefaultsRef<Form extends HoneyFormBaseForm> = RefObject<
   HoneyFormDefaultValues<Form>
 >;
 
+interface HoneyFormDefaultsContext<FormContext> {
+  formContext: FormContext;
+  signal: AbortSignal;
+}
+
 /**
  * Represents the possible values for form defaults. It can either be an object containing default values
  * for the form fields or a function that returns a promise resolving to such an object.
  */
-export type HoneyFormDefaults<Form extends HoneyFormBaseForm> =
+export type HoneyFormDefaults<Form extends HoneyFormBaseForm, FormContext = undefined> =
   | HoneyFormDefaultValues<Form>
-  | (() => Promise<HoneyFormDefaultValues<Form>>);
+  | ((context: HoneyFormDefaultsContext<FormContext>) => Promise<HoneyFormDefaultValues<Form>>);
 
 /**
  * Context object passed to the `onAfterValidate` callback function.
@@ -1218,13 +1223,19 @@ export interface FormOptions<
    *
    * @default {}
    */
-  defaults?: HoneyFormDefaults<Form>;
+  defaults?: HoneyFormDefaults<Form, FormContext>;
   /**
    * Indicates whether to read default values from storage.
    *
    * @default false
    */
   readDefaultsFromStorage?: boolean;
+  /**
+   * Indicates whether to refetch the defaults when the form context is changed.
+   *
+   * @default true
+   */
+  refetchDefaultsOnContextChange?: boolean;
   /**
    * External values that can be provided to the form to synchronize its values.
    * If provided, the form will stay in sync with these external values.

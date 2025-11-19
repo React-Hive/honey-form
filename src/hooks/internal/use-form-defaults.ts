@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { isFunction } from '@react-hive/honey-utils';
 
-import { deserializeFormFromQueryString, error } from '../../helpers';
+import { error, readFormFromStorage } from '../../helpers';
 import type {
   Nullable,
   HoneyFormBaseForm,
@@ -41,11 +41,11 @@ export const useFormDefaults = <Form extends HoneyFormBaseForm, FormContext = un
 
   const [formDefaults] = useState<HoneyFormDefaultValues<Form>>(() => {
     if (readFromStorage && formName) {
-      if (storage === 'qs') {
+      if (storage) {
         // Defaults from storage can extend/override the defaults which were set via property
         return {
           ...defaults,
-          ...deserializeFormFromQueryString(fields, formName),
+          ...readFormFromStorage(storage, fields, formName),
         };
       }
     }

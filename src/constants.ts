@@ -14,3 +14,5 @@ export const HONEY_FORM_ERRORS = {
   submitHandlerOrOnSubmit:
     '[@react-hive/honey-form]: To submit the form, either provide a `submitHandler` function or implement an `onSubmit` callback function',
 };
+
+export const HONEY_FORM_LS_PREFIX = 'honey-form-';

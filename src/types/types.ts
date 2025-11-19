@@ -512,24 +512,14 @@ interface BaseFieldConfig<
 }
 
 /**
- * Defines the minimum allowable value for an interactive form field.
+ * Defines the minimum/maximum allowable value for an interactive form field.
  *
  * This can either be a fixed number or a function that dynamically determines
- * the minimum value based on the form's execution context.
+ * the minimum or maximum value based on the form's execution context.
  */
-type HoneyFormInteractiveFieldMin<Form extends HoneyFormBaseForm, FormContext> =
+type HoneyFormInteractiveFieldMinMax<Form extends HoneyFormBaseForm, FormContext> =
   | number
-  | ((executionContext: HoneyFormBaseExecutionContext<Form, FormContext>) => number);
-
-/**
- * Defines the maximum allowable value for an interactive form field.
- *
- * This can either be a fixed number or a function that dynamically determines
- * the maximum value based on the form's execution context.
- */
-type HoneyFormInteractiveFieldMax<Form extends HoneyFormBaseForm, FormContext> =
-  | number
-  | ((executionContext: HoneyFormBaseExecutionContext<Form, FormContext>) => number);
+  | ((executionContext: HoneyFormBaseExecutionContext<Form, FormContext>) => number | undefined);
 
 /**
  * Represents the configuration for an interactive form field within the context of a specific form.
@@ -560,7 +550,7 @@ export interface HoneyFormInteractiveFieldConfig<
    *
    * @default undefined
    */
-  min?: HoneyFormInteractiveFieldMin<Form, FormContext>;
+  min?: HoneyFormInteractiveFieldMinMax<Form, FormContext>;
   /**
    * Specifies the maximum allowable value or length for the field.
    *
@@ -571,7 +561,7 @@ export interface HoneyFormInteractiveFieldConfig<
    *
    * @default undefined
    */
-  max?: HoneyFormInteractiveFieldMax<Form, FormContext>;
+  max?: HoneyFormInteractiveFieldMinMax<Form, FormContext>;
   /**
    * Indicates if decimal values are allowed.
    *

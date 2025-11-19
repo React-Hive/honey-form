@@ -4,6 +4,7 @@ import {
   isNilOrEmptyString,
   isNumber,
   isString,
+  isUndefined,
 } from '@react-hive/honey-utils';
 
 import { checkIsObjectField } from './helpers';
@@ -27,7 +28,7 @@ export const INTERACTIVE_FIELD_TYPE_VALIDATORS_MAP: Record<
     value: string | undefined,
     { formFields, formValues, formContext, fieldConfig: { errorMessages = {} } },
   ) => {
-    if (value === '' || value === undefined) {
+    if (value === '' || isUndefined(value)) {
       return true;
     }
 
@@ -56,7 +57,7 @@ export const INTERACTIVE_FIELD_TYPE_VALIDATORS_MAP: Record<
       fieldConfig: { errorMessages = {}, decimal = false, negative = true, maxFraction = 2 },
     },
   ) => {
-    if (value === '' || value === undefined) {
+    if (value === '' || isUndefined(value)) {
       return true;
     }
 
@@ -85,7 +86,7 @@ export const INTERACTIVE_FIELD_TYPE_VALIDATORS_MAP: Record<
     value: string | undefined,
     { formFields, formValues, formContext, fieldConfig: { errorMessages = {} } },
   ) => {
-    if (value === '' || value === undefined) {
+    if (value === '' || isUndefined(value)) {
       return true;
     }
 
@@ -188,8 +189,8 @@ export const minValueBuiltInFieldValidator: HoneyFormInteractiveFieldBuiltInVali
 }) => {
   if (
     fieldConfig.type !== 'number' ||
-    fieldConfig.min === undefined ||
-    fieldConfig.max !== undefined ||
+    isUndefined(fieldConfig.min) ||
+    !isUndefined(fieldConfig.max) ||
     Number.isNaN(fieldValue) ||
     !isNumber(fieldValue)
   ) {
@@ -198,7 +199,7 @@ export const minValueBuiltInFieldValidator: HoneyFormInteractiveFieldBuiltInVali
 
   const minValue = invokeIfFunction(fieldConfig.min, executionContext);
 
-  if (fieldValue < minValue) {
+  if (!isUndefined(minValue) && fieldValue < minValue) {
     fieldErrors.push({
       type: 'min',
       message:
@@ -219,8 +220,8 @@ export const maxValueBuiltInFieldValidator: HoneyFormInteractiveFieldBuiltInVali
 }) => {
   if (
     fieldConfig.type !== 'number' ||
-    fieldConfig.max === undefined ||
-    fieldConfig.min !== undefined ||
+    isUndefined(fieldConfig.max) ||
+    !isUndefined(fieldConfig.min) ||
     Number.isNaN(fieldValue) ||
     !isNumber(fieldValue)
   ) {
@@ -229,7 +230,7 @@ export const maxValueBuiltInFieldValidator: HoneyFormInteractiveFieldBuiltInVali
 
   const maxValue = invokeIfFunction(fieldConfig.max, executionContext);
 
-  if (fieldValue > maxValue) {
+  if (!isUndefined(maxValue) && fieldValue > maxValue) {
     fieldErrors.push({
       type: 'max',
       message:
@@ -250,8 +251,8 @@ export const minMaxValueBuiltInFieldValidator: HoneyFormInteractiveFieldBuiltInV
 }) => {
   if (
     fieldConfig.type !== 'number' ||
-    fieldConfig.min === undefined ||
-    fieldConfig.max === undefined ||
+    isUndefined(fieldConfig.min) ||
+    isUndefined(fieldConfig.max) ||
     Number.isNaN(fieldValue) ||
     !isNumber(fieldValue)
   ) {
@@ -261,7 +262,10 @@ export const minMaxValueBuiltInFieldValidator: HoneyFormInteractiveFieldBuiltInV
   const minValue = invokeIfFunction(fieldConfig.min, executionContext);
   const maxValue = invokeIfFunction(fieldConfig.max, executionContext);
 
-  if (fieldValue < minValue || fieldValue > maxValue) {
+  if (
+    (!isUndefined(minValue) && fieldValue < minValue) ||
+    (!isUndefined(minValue) && fieldValue > maxValue)
+  ) {
     fieldErrors.push({
       type: 'minMax',
       message:
@@ -290,8 +294,8 @@ export const minLengthBuiltInFieldValidator: HoneyFormInteractiveFieldBuiltInVal
     (fieldConfig.type !== 'string' &&
       fieldConfig.type !== 'email' &&
       fieldConfig.type !== 'numeric') ||
-    fieldConfig.min === undefined ||
-    fieldConfig.max !== undefined ||
+    isUndefined(fieldConfig.min) ||
+    !isUndefined(fieldConfig.max) ||
     !isString(fieldValue) ||
     !fieldValue
   ) {
@@ -300,7 +304,7 @@ export const minLengthBuiltInFieldValidator: HoneyFormInteractiveFieldBuiltInVal
 
   const minLength = invokeIfFunction(fieldConfig.min, executionContext);
 
-  if (fieldValue.length < minLength) {
+  if (!isUndefined(minLength) && fieldValue.length < minLength) {
     fieldErrors.push({
       type: 'min',
       message:
@@ -323,8 +327,8 @@ export const maxLengthBuiltInFieldValidator: HoneyFormInteractiveFieldBuiltInVal
     (fieldConfig.type !== 'string' &&
       fieldConfig.type !== 'email' &&
       fieldConfig.type !== 'numeric') ||
-    fieldConfig.max === undefined ||
-    fieldConfig.min !== undefined ||
+    isUndefined(fieldConfig.max) ||
+    !isUndefined(fieldConfig.min) ||
     !isString(fieldValue) ||
     !fieldValue
   ) {
@@ -333,7 +337,7 @@ export const maxLengthBuiltInFieldValidator: HoneyFormInteractiveFieldBuiltInVal
 
   const maxLength = invokeIfFunction(fieldConfig.max, executionContext);
 
-  if (fieldValue.length > maxLength) {
+  if (!isUndefined(maxLength) && fieldValue.length > maxLength) {
     fieldErrors.push({
       type: 'max',
       message:
@@ -356,8 +360,8 @@ export const minMaxLengthBuiltInFieldValidator: HoneyFormInteractiveFieldBuiltIn
     (fieldConfig.type !== 'string' &&
       fieldConfig.type !== 'email' &&
       fieldConfig.type !== 'numeric') ||
-    fieldConfig.min === undefined ||
-    fieldConfig.max === undefined ||
+    isUndefined(fieldConfig.min) ||
+    isUndefined(fieldConfig.max) ||
     !isString(fieldValue) ||
     !fieldValue
   ) {
@@ -367,7 +371,10 @@ export const minMaxLengthBuiltInFieldValidator: HoneyFormInteractiveFieldBuiltIn
   const minLength = invokeIfFunction(fieldConfig.min, executionContext);
   const maxLength = invokeIfFunction(fieldConfig.max, executionContext);
 
-  if (fieldValue.length < minLength || fieldValue.length > maxLength) {
+  if (
+    (!isUndefined(minLength) && fieldValue.length < minLength) ||
+    (!isUndefined(maxLength) && fieldValue.length > maxLength)
+  ) {
     if (minLength === maxLength) {
       fieldErrors.push({
         type: 'minMax',

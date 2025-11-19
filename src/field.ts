@@ -880,7 +880,7 @@ const handleFieldAsyncValidationResult = <
         if (Array.isArray(validationResult)) {
           formField.addErrors(validationResult);
           //
-        } else if (typeof validationResult !== 'boolean') {
+        } else if (!isBool(validationResult)) {
           formField.addError({
             type: 'invalid',
             message: validationResult,

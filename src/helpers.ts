@@ -1,5 +1,5 @@
 import React from 'react';
-import { assert, isString, runParallel } from '@react-hive/honey-utils';
+import { assert, isObject, isString, isUndefined, runParallel } from '@react-hive/honey-utils';
 import type {
   Nullable,
   JSONValue,
@@ -24,8 +24,9 @@ import type {
   HoneyFormExtractChildForm,
   HoneyFormBaseChildForm,
   HoneyFormBaseExecutionContext,
+  HoneyFormStorage,
 } from './types';
-import { __DEV__, HONEY_FORM_ERRORS } from './constants';
+import { __DEV__, HONEY_FORM_ERRORS, HONEY_FORM_LS_PREFIX } from './constants';
 
 export const genericMemo: <T>(component: T) => T = React.memo;
 
@@ -579,7 +580,7 @@ const serializeForm = <Form extends HoneyFormBaseForm>(
       (value as JSONValue);
 
     // Store nested objects as JSON strings
-    if (processedValue !== null && typeof processedValue === 'object') {
+    if (processedValue !== null && isObject(processedValue)) {
       return JSON.stringify(processedValue);
     }
 
@@ -621,21 +622,25 @@ const deserializeForm = <Form extends HoneyFormBaseForm>(
 };
 
 /**
- * Serializes form data and stores it in the query string under the specified form name.
+ * Saves form values into the browser's query string under a specific key (`formName`).
+ * The resulting state is stored using  `history.replaceState`, ensuring no page reload occurs.
  *
- * @param fieldsConfig - Configuration object for the form fields, including serializer functions.
- * @param formName - The name to use as the key in the query string.
- * @param form - The form object to serialize and store in the query string.
+ * This is useful for:
+ * - Persisting form state across navigation
+ * - Sharing pre-filled forms via URL
+ * - Restoring form state on page refresh
+ *
+ * @param fieldsConfig - Definitions for each field, including serializer logic.
+ * @param formName - The key under which the serialized form will be stored in the query string.
+ * @param form - The form values to serialize and persist.
  */
-export const serializeFormToQueryString = <Form extends HoneyFormBaseForm, FormContext = undefined>(
+const saveFormToQs = <Form extends HoneyFormBaseForm, FormContext = undefined>(
   fieldsConfig: HoneyFormFieldsConfig<Form, FormContext>,
   formName: string,
   form: Form,
 ) => {
-  const serializedFormData = serializeForm(form, fieldsConfig);
-
   const searchParams = new URLSearchParams(window.location.search);
-  searchParams.set(formName, serializedFormData);
+  searchParams.set(formName, serializeForm(form, fieldsConfig));
 
   if (__DEV__) {
     checkQueryStringLimit(searchParams);
@@ -645,17 +650,17 @@ export const serializeFormToQueryString = <Form extends HoneyFormBaseForm, FormC
 };
 
 /**
- * Deserializes a form from a query string.
+ * Reads a previously saved form from the query string. If the key
+ * (`formName`) is not present, the function returns `undefined`.
  *
- * @param fieldsConfig - Configuration object for the form fields, including deserializer functions.
- * @param formName - The name of the form to deserialize.
+ * Use this to pre-populate a form from URL parameters.
  *
- * @returns The deserialized form object, or undefined if the form data is not found in the query string.
+ * @param fieldsConfig - Field definitions including deserializer logic.
+ * @param formName - The key used to locate serialized form data in the query string.
+ *
+ * @returns The deserialized form object, or undefined if no saved form exists.
  */
-export const deserializeFormFromQueryString = <
-  Form extends HoneyFormBaseForm,
-  FormContext = undefined,
->(
+const readFormValuesFromQs = <Form extends HoneyFormBaseForm, FormContext = undefined>(
   fieldsConfig: HoneyFormFieldsConfig<Form, FormContext>,
   formName: string,
 ): Form | undefined => {
@@ -667,4 +672,93 @@ export const deserializeFormFromQueryString = <
   }
 
   return deserializeForm(rawFormData, fieldsConfig);
+};
+
+/**
+ * Saves form values to the `localStorage`.
+ *
+ * This is useful when you need durable client-side persistence
+ * without exposing form state in the URL.
+ *
+ * @param fieldsConfig - Field definitions including serializer logic.
+ * @param formName - The key under which the serialized form will be stored in localStorage.
+ * @param form - The form values to serialize and save.
+ */
+const saveFormToLs = <Form extends HoneyFormBaseForm, FormContext = undefined>(
+  fieldsConfig: HoneyFormFieldsConfig<Form, FormContext>,
+  formName: string,
+  form: Form,
+) => {
+  localStorage.setItem(`${HONEY_FORM_LS_PREFIX}${formName}`, serializeForm(form, fieldsConfig));
+};
+
+/**
+ * Reads a previously saved form from `localStorage`. If the data is not
+ * found or has been cleared, the function returns `undefined`.
+ *
+ * @param fieldsConfig - Field definitions including deserializer logic.
+ * @param formName - The localStorage key prefix identifying the stored form.
+ *
+ * @returns The deserialized form object, or undefined if no entry exists.
+ */
+const readFormValuesFromLs = <Form extends HoneyFormBaseForm, FormContext = undefined>(
+  fieldsConfig: HoneyFormFieldsConfig<Form, FormContext>,
+  formName: string,
+): Form | undefined => {
+  if (isUndefined(localStorage)) {
+    return undefined;
+  }
+
+  const rawFormData = localStorage.getItem(`${HONEY_FORM_LS_PREFIX}${formName}`);
+
+  if (!rawFormData) {
+    return undefined;
+  }
+
+  return deserializeForm(rawFormData, fieldsConfig);
+};
+
+/**
+ * Saves form data to either the query string (`qs`) or localStorage (`ls`)
+ * depending on the configured storage mode.
+ *
+ * @param storage - The storage provider.
+ * @param fieldsConfig - Field definitions with serialization logic.
+ * @param formName - The key used to store/restore the serialized form.
+ * @param values - The form values to serialize and persist.
+ */
+export const saveFormToStorage = <Form extends HoneyFormBaseForm, FormContext = undefined>(
+  storage: HoneyFormStorage,
+  fieldsConfig: HoneyFormFieldsConfig<Form, FormContext>,
+  formName: string,
+  values: Form,
+) => {
+  if (storage === 'qs') {
+    saveFormToQs(fieldsConfig, formName, values);
+    //
+  } else if (storage === 'ls') {
+    saveFormToLs(fieldsConfig, formName, values);
+  }
+};
+
+/**
+ * Reads a previously saved form from the specified storage provider.
+ *
+ * @param storage - The storage provider.
+ * @param fieldsConfig - Field definitions containing deserializer logic.
+ * @param formName - The unique key under which the form was previously stored.
+ *
+ * @returns The restored form object, or `undefined` if no matching entry exists.
+ */
+export const readFormFromStorage = <Form extends HoneyFormBaseForm, FormContext = undefined>(
+  storage: HoneyFormStorage,
+  fieldsConfig: HoneyFormFieldsConfig<Form, FormContext>,
+  formName: string,
+): Form | undefined => {
+  if (storage === 'qs') {
+    return readFormValuesFromQs(fieldsConfig, formName);
+    //
+  } else if (storage === 'ls') {
+    return readFormValuesFromLs(fieldsConfig, formName);
+  }
 };

@@ -27,8 +27,8 @@ import {
   iterateFormFields,
   convertServerErrors,
   runChildFormsValidation,
-  serializeFormToQueryString,
   mapFormFieldsAsync,
+  saveFormToStorage,
 } from '../../helpers';
 import { useFormDefaults } from './use-form-defaults';
 import type {
@@ -150,10 +150,10 @@ export const useForm = <
     const nextFormFields = fn();
 
     if (!parentField) {
-      if (storage === 'qs') {
+      if (storage) {
         const formValues = getFormSubmitValues(parentField, formContextRef.current, nextFormFields);
 
-        serializeFormToQueryString(fieldsConfig, formName, formValues);
+        saveFormToStorage(storage, fieldsConfig, formName, formValues);
       }
     }
 
@@ -882,9 +882,7 @@ export const useForm = <
 
           totalFormSubmissionsRef.current += 1;
 
-          if (storage === 'qs') {
-            serializeFormToQueryString(fieldsConfig, formName, submitValues);
-          }
+          saveFormToStorage(storage, fieldsConfig, formName, submitValues);
         }
       } finally {
         updateFormState({

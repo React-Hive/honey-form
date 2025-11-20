@@ -608,12 +608,12 @@ const deserializeForm = <Form extends HoneyFormBaseForm>(
   const jsonDecodedForm = decodeURI(window.atob(rawFormData));
 
   return JSON.parse(jsonDecodedForm, (key: keyof Form, value: JSONValue) => {
-    // Skip processing for the root object
-    if (key === '') {
+    // Skip processing for the root object or non-existent key
+    if (key === '' || !(key in fieldsConfig)) {
       return value;
     }
 
-    if (isString(value) && (value[0] === '{' || value[0] === '[')) {
+    if (isString(value) && (value.startsWith('{') || value.startsWith('['))) {
       value = JSON.parse(value) as JSONValue;
     }
 
@@ -665,8 +665,8 @@ const readFormValuesFromQs = <Form extends HoneyFormBaseForm, FormContext = unde
   formName: string,
 ): Form | undefined => {
   const searchParams = new URLSearchParams(window.location.search);
-  const rawFormData = searchParams.get(formName);
 
+  const rawFormData = searchParams.get(formName);
   if (!rawFormData) {
     return undefined;
   }
@@ -710,7 +710,6 @@ const readFormValuesFromLs = <Form extends HoneyFormBaseForm, FormContext = unde
   }
 
   const rawFormData = localStorage.getItem(`${HONEY_FORM_LS_PREFIX}${formName}`);
-
   if (!rawFormData) {
     return undefined;
   }

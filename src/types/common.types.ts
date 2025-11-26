@@ -2,6 +2,12 @@ export type HoneyFormId = string;
 
 export type HoneyFormFieldName = string;
 
+/**
+ * Represents the storage location for form data.
+ *
+ * - `qs` - Store form data in the query string of the URL.
+ * - `ls` - Store form data in `localStorage`.
+ */
 export type HoneyFormStorage = 'qs' | 'ls';
 
 /**

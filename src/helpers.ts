@@ -26,16 +26,16 @@ import type {
   HoneyFormBaseExecutionContext,
   HoneyFormStorage,
 } from './types';
-import { __DEV__, HONEY_FORM_ERRORS, HONEY_FORM_LS_PREFIX } from './constants';
+import { __DEV__, GITHUB_PACKAGE_NAME, HONEY_FORM_ERRORS, HONEY_FORM_LS_PREFIX } from './constants';
 
 export const genericMemo: <T>(component: T) => T = React.memo;
 
 export const warning = (message: string) => {
-  console.warn(`[honey-form]: ${message}`);
+  console.warn(`[${GITHUB_PACKAGE_NAME}]: ${message}`);
 };
 
 export const error = (message: string) => {
-  console.error(`[honey-form]: ${message}`);
+  console.error(`[${GITHUB_PACKAGE_NAME}]: ${message}`);
 };
 
 /**
@@ -674,6 +674,8 @@ const readFormValuesFromQs = <Form extends HoneyFormBaseForm, FormContext = unde
   return deserializeForm(rawFormData, fieldsConfig);
 };
 
+const getFormLsKey = (formName: string) => `${HONEY_FORM_LS_PREFIX}${formName}`;
+
 /**
  * Saves form values to the `localStorage`.
  *
@@ -689,8 +691,27 @@ const saveFormToLs = <Form extends HoneyFormBaseForm, FormContext = undefined>(
   formName: string,
   form: Form,
 ) => {
-  localStorage.setItem(`${HONEY_FORM_LS_PREFIX}${formName}`, serializeForm(form, fieldsConfig));
+  localStorage.setItem(getFormLsKey(formName), serializeForm(form, fieldsConfig));
 };
+
+/**
+ * Removes all stored data for the specified form from `localStorage`.
+ *
+ * @param formName - The name of the form whose data should be removed.
+ */
+export const removeFormFromLs = (formName: string) => {
+  localStorage.removeItem(getFormLsKey(formName));
+};
+
+/**
+ * Checks whether a form has previously been saved to `localStorage`.
+ *
+ * @param formName - The name of the form to check.
+ *
+ * @returns `true` if the form exists in `localStorage`, otherwise `false`.
+ */
+export const isFormSavedToLs = (formName: string) =>
+  localStorage.getItem(getFormLsKey(formName)) !== null;
 
 /**
  * Reads a previously saved form from `localStorage`. If the data is not
@@ -701,7 +722,7 @@ const saveFormToLs = <Form extends HoneyFormBaseForm, FormContext = undefined>(
  *
  * @returns The deserialized form object, or undefined if no entry exists.
  */
-const readFormValuesFromLs = <Form extends HoneyFormBaseForm, FormContext = undefined>(
+export const readFormValuesFromLs = <Form extends HoneyFormBaseForm, FormContext = undefined>(
   fieldsConfig: HoneyFormFieldsConfig<Form, FormContext>,
   formName: string,
 ): Form | undefined => {
@@ -709,7 +730,7 @@ const readFormValuesFromLs = <Form extends HoneyFormBaseForm, FormContext = unde
     return undefined;
   }
 
-  const rawFormData = localStorage.getItem(`${HONEY_FORM_LS_PREFIX}${formName}`);
+  const rawFormData = localStorage.getItem(getFormLsKey(formName));
   if (!rawFormData) {
     return undefined;
   }

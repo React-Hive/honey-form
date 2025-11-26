@@ -1215,7 +1215,13 @@ export interface FormOptions<
    */
   defaults?: HoneyFormDefaults<Form, FormContext>;
   /**
-   * Indicates whether to read default values from storage.
+   * Determines whether the form should automatically populate its fields
+   * with default values retrieved from the configured storage (`qs` or `ls`)
+   * when the form is initialized.
+   *
+   * - If `true`, the form fields are filled from storage automatically.
+   * - If `false`, the form does not read defaults from storage, allowing
+   *   manual restoration of unsubmitted form using `restoreUnsubmittedForm`.
    *
    * @default false
    */
@@ -1577,9 +1583,9 @@ export type HoneyFormReset<Form extends HoneyFormBaseForm> = (
 ) => void;
 
 /**
- * Restore unfinished form from the storage if detected.
+ * Restore unsubmitted form from the storage.
  */
-export type HoneyFormRestoreUnfinishedForm = () => void;
+export type HoneyFormRestoreUnsubmittedForm = () => void;
 
 export interface HoneyFormState {
   isValidating: boolean;

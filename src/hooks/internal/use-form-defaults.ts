@@ -94,7 +94,9 @@ export const useFormDefaults = <Form extends HoneyFormBaseForm, FormContext = un
         }
       })
       .catch(e => {
-        if (e.name === 'AbortError') {
+        const err = e as Error;
+
+        if (err.name === 'AbortError') {
           return;
         }
 

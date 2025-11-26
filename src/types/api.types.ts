@@ -8,7 +8,7 @@ import type {
   HoneyFormFields,
   HoneyFormRemoveFormField,
   HoneyFormReset,
-  HoneyFormRestoreUnfinishedForm,
+  HoneyFormRestoreUnsubmittedForm,
   HoneyFormSetFormErrors,
   HoneyFormSetFormValues,
   HoneyFormSubmit,
@@ -131,6 +131,18 @@ export interface HoneyFormApi<Form extends HoneyFormBaseForm, FormContext = unde
    */
   readonly isFormSubmitAllowed: boolean;
   /**
+   * A boolean value that becomes `true` when an unsubmitted version of the form
+   * is detected in the configured storage (e.g., localStorage).
+   *
+   * This allows the application to offer the user an option to restore previously
+   * entered - but not submitted form.
+   *
+   * The value remains `false` when no such stored data is found.
+   *
+   * @default false
+   */
+  readonly hasUnsubmittedForm: boolean;
+  /**
    * Sets the values of the form fields.
    */
   setFormValues: HoneyFormSetFormValues<Form>;
@@ -171,9 +183,15 @@ export interface HoneyFormApi<Form extends HoneyFormBaseForm, FormContext = unde
    */
   resetForm: HoneyFormReset<Form>;
   /**
-   * Restores the form to an unfinished state.
+   * Restores the form to its previous, unfinished state using values
+   * saved in local storage (`ls`). This allows users to continue filling
+   * out a form they had started but not submitted.
+   *
+   * - Only works when the form was previously saved in local storage.
+   * - Throws an error if no unsubmitted form is found or if storage is not `ls`.
+   * - Sets `hasUnsubmittedForm` to `true` after successful restoration.
    */
-  restoreUnfinishedForm: HoneyFormRestoreUnfinishedForm;
+  restoreUnsubmittedForm: HoneyFormRestoreUnsubmittedForm;
 }
 
 /**

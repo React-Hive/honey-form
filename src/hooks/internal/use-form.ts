@@ -29,8 +29,10 @@ import {
   runChildFormsValidation,
   mapFormFieldsAsync,
   saveFormToStorage,
+  removeFormFromLs,
 } from '../../helpers';
 import { useFormDefaults } from './use-form-defaults';
+import { useUnsubmittedForm } from './use-unsubmitted-form';
 import type {
   Nullable,
   KeysWithArrayValues,
@@ -55,7 +57,6 @@ import type {
   HoneyFormSubmit,
   HoneyFormValidate,
   HoneyFormErrors,
-  HoneyFormRestoreUnfinishedForm,
   HoneyFormFieldsValidationController,
   HoneyFormBaseExecutionContext,
   HoneyFormField,
@@ -112,7 +113,6 @@ export const useForm = <
   const formFieldsValidationControllerRef = useRef<HoneyFormFieldsValidationController<Form>>({});
   const isFormDirtyRef = useRef(false);
   const isFormValidRef = useRef(false);
-  const isUnfinishedFormDetected = useRef(false);
   const isFormSubmittedRef = useRef(false);
   const totalFormSubmissionsRef = useRef(0);
   const onChangeFormTimeoutIdRef = useRef<Nullable<number>>(null);
@@ -595,6 +595,16 @@ export const useForm = <
     },
   });
 
+  const { hasUnsubmittedForm, restoreUnsubmittedForm } = useUnsubmittedForm({
+    formName,
+    storage,
+    readDefaultsFromStorage,
+    fields: fieldsConfig,
+    onRestore: values => {
+      setFormValues(values);
+    },
+  });
+
   const addFormField = useCallback<HoneyFormAddFormField<Form, FormContext>>(
     (fieldName, fieldConfig) => {
       const formFields = resolveFormFields();
@@ -826,13 +836,10 @@ export const useForm = <
     if (parentField) {
       parentField.validate();
     }
-  }, []);
 
-  const restoreUnfinishedForm = useCallback<HoneyFormRestoreUnfinishedForm>(() => {
-    isUnfinishedFormDetected.current = false;
-
-    // TODO: restoring saved form values
-    setFormValues({});
+    if (formName && storage === 'ls') {
+      removeFormFromLs(formName);
+    }
   }, []);
 
   const submitForm = useCallback<HoneyFormSubmit<Form, FormContext>>(
@@ -873,16 +880,20 @@ export const useForm = <
                 })),
               ),
             );
-          } else if (resetAfterSubmit) {
-            return resetForm();
+          } else {
+            isFormDirtyRef.current = false;
+            isFormSubmittedRef.current = true;
+
+            if (resetAfterSubmit) {
+              return resetForm();
+            } else {
+              if (formName && storage === 'ls') {
+                removeFormFromLs(formName);
+              }
+            }
           }
 
-          isFormDirtyRef.current = false;
-          isFormSubmittedRef.current = true;
-
           totalFormSubmissionsRef.current += 1;
-
-          saveFormToStorage(storage, fieldsConfig, formName, submitValues);
         }
       } finally {
         updateFormState({
@@ -974,6 +985,7 @@ export const useForm = <
     },
     isFormDefaultsFetching,
     isFormDefaultsFetchingErred,
+    hasUnsubmittedForm,
     // Functions
     setFormValues,
     setFormErrors,
@@ -985,6 +997,6 @@ export const useForm = <
     validateForm: outerValidateForm,
     submitForm,
     resetForm,
-    restoreUnfinishedForm,
+    restoreUnsubmittedForm,
   };
 };

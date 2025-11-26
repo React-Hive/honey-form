@@ -2,17 +2,18 @@ const ENV = process.env.NODE_ENV || 'development';
 
 export const __DEV__ = ENV !== 'production';
 
+export const GITHUB_PACKAGE_NAME = '@react-hive/honey-form';
+
 if (__DEV__ && typeof window !== 'undefined' && !process.env.JEST_WORKER_ID) {
   console.info(
-    '[@react-hive/honey-form]: You are running in development mode. ' +
+    `[${GITHUB_PACKAGE_NAME}]: You are running in development mode. ` +
       'This build is not optimized for production and may include extra checks or logs.',
   );
 }
 
 export const HONEY_FORM_ERRORS = {
-  emptyFormFieldsRef: '[@react-hive/honey-form]: The `formFieldsRef` value is null',
-  submitHandlerOrOnSubmit:
-    '[@react-hive/honey-form]: To submit the form, either provide a `submitHandler` function or implement an `onSubmit` callback function',
+  emptyFormFieldsRef: `[${GITHUB_PACKAGE_NAME}]: The \`formFieldsRef\` value is null`,
+  submitHandlerOrOnSubmit: `[${GITHUB_PACKAGE_NAME}]: To submit the form, either provide a \`submitHandler\` function or implement an \`onSubmit\` callback function`,
 };
 
 export const HONEY_FORM_LS_PREFIX = 'honey-form-';

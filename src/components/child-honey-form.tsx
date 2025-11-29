@@ -8,7 +8,7 @@ import { ChildHoneyFormProvider } from './child-honey-form.provider';
 import { genericMemo } from '../helpers';
 import { ChildHoneyFormForm } from './child-honey-form.form';
 
-interface ChildHoneyFormProps<
+export interface ChildHoneyFormProps<
   ParentForm extends HoneyFormBaseForm,
   ParentFieldName extends KeysWithArrayValues<ParentForm>,
   FormContext = undefined,

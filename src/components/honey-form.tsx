@@ -8,7 +8,7 @@ import type { HoneyFormBaseForm } from '../types';
 import type { HoneyFormProviderProps } from './honey-form.provider';
 import type { HoneyFormFormProps, HoneyFormFormContent } from './honey-form.form';
 
-interface HoneyFormProps<Form extends HoneyFormBaseForm, FormContext = undefined>
+export interface HoneyFormProps<Form extends HoneyFormBaseForm, FormContext = undefined>
   extends RefAttributes<HTMLFormElement>,
     HoneyFormProviderProps<Form, FormContext> {
   children?: HoneyFormFormContent<Form, FormContext>;

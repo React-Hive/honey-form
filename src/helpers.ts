@@ -1,5 +1,12 @@
 import React from 'react';
-import { assert, isObject, isString, isUndefined, runParallel } from '@react-hive/honey-utils';
+import {
+  assert,
+  getLocalStorageCapabilities,
+  isObject,
+  isString,
+  isUndefined,
+  runParallel,
+} from '@react-hive/honey-utils';
 import type {
   Nullable,
   JSONValue,
@@ -27,6 +34,8 @@ import type {
   HoneyFormStorage,
 } from './types';
 import { __DEV__, GITHUB_PACKAGE_NAME, HONEY_FORM_ERRORS, HONEY_FORM_LS_PREFIX } from './constants';
+
+const localStorageCapabilities = getLocalStorageCapabilities();
 
 export const genericMemo: <T>(component: T) => T = React.memo;
 
@@ -711,7 +720,7 @@ export const removeFormFromLs = (formName: string) => {
  * @returns `true` if the form exists in `localStorage`, otherwise `false`.
  */
 export const isFormSavedToLs = (formName: string) =>
-  localStorage.getItem(getFormLsKey(formName)) !== null;
+  localStorageCapabilities.readable && localStorage.getItem(getFormLsKey(formName)) !== null;
 
 /**
  * Reads a previously saved form from `localStorage`. If the data is not
@@ -779,6 +788,10 @@ export const readFormFromStorage = <Form extends HoneyFormBaseForm, FormContext 
     return readFormValuesFromQs(fieldsConfig, formName);
     //
   } else if (storage === 'ls') {
-    return readFormValuesFromLs(fieldsConfig, formName);
+    if (localStorageCapabilities.readable) {
+      return readFormValuesFromLs(fieldsConfig, formName);
+    } else {
+      warning('Local storage is not available.');
+    }
   }
 };

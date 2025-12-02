@@ -12,8 +12,8 @@ importers:
         specifier: 3.1.1
         version: 3.1.1(@types/react@19.2.7)(react@19.2.0)
       '@react-hive/honey-utils':
-        specifier: 3.4.0
-        version: 3.4.0
+        specifier: 3.5.0
+        version: 3.5.0
       react:
         specifier: ^19.0.0
         version: 19.2.0
@@ -424,8 +424,8 @@ packages:
       '@types/react': '>=16'
       react: '>=16'
 
-  '@react-hive/honey-utils@3.4.0':
-    resolution: {integrity: sha512-CgUUKEOJgWXZV9r+xG4m/BK8rLMW4k0/iie0HqwCThQcEdN4Tz5dDF0evDRYSVPJ6PmAoULpLc7WRMIieipwmQ==}
+  '@react-hive/honey-utils@3.5.0':
+    resolution: {integrity: sha512-c8toT1rf1JjpGUN+PNLXxAfQES7t2dx4gMev3b5KFw1NcN6Un4wmk12iEEf7/RdjmPRC05Ublj9hihNkq4DWaQ==}
 
   '@sinclair/typebox@0.27.8':
     resolution: {integrity: sha512-+Fj43pSMwJs4KRrH/938Uf+uAELIgVBmQzg/q1YG10djyfA3TnrU8N8XzqCh/okZdszqBQTZf96idMfE5lnwTA==}
@@ -3504,7 +3504,7 @@ snapshots:
       '@types/react': 19.2.7
       react: 19.2.0
 
-  '@react-hive/honey-utils@3.4.0': {}
+  '@react-hive/honey-utils@3.5.0': {}
 
   '@sinclair/typebox@0.27.8': {}
 

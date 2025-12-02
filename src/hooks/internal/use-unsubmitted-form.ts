@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { assert, getLocalStorageCapabilities } from '@react-hive/honey-utils';
+import { assert } from '@react-hive/honey-utils';
 
 import { GITHUB_PACKAGE_NAME } from '../../constants';
+import { localStorageCapabilities } from '../../init';
 import { isFormSavedToLs, readFormValuesFromLs } from '../../helpers';
 import type {
   HoneyFormBaseForm,
@@ -36,7 +37,7 @@ export const useUnsubmittedForm = <Form extends HoneyFormBaseForm, FormContext>(
       `[${GITHUB_PACKAGE_NAME}]: Restoring unsubmitted form is only supported for local storage.`,
     );
     assert(
-      getLocalStorageCapabilities().readable,
+      localStorageCapabilities.readable,
       `[${GITHUB_PACKAGE_NAME}]: Local storage is not available.`,
     );
 

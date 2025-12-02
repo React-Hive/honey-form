@@ -1,12 +1,5 @@
 import React from 'react';
-import {
-  assert,
-  getLocalStorageCapabilities,
-  isObject,
-  isString,
-  isUndefined,
-  runParallel,
-} from '@react-hive/honey-utils';
+import { assert, isObject, isString, isUndefined, runParallel } from '@react-hive/honey-utils';
 import type {
   Nullable,
   JSONValue,
@@ -34,8 +27,7 @@ import type {
   HoneyFormStorage,
 } from './types';
 import { __DEV__, GITHUB_PACKAGE_NAME, HONEY_FORM_ERRORS, HONEY_FORM_LS_PREFIX } from './constants';
-
-const localStorageCapabilities = getLocalStorageCapabilities();
+import { localStorageCapabilities } from './init';
 
 export const genericMemo: <T>(component: T) => T = React.memo;
 

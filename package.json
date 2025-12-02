@@ -1,6 +1,6 @@
 {
   "name": "@react-hive/honey-form",
-  "version": "7.6.0",
+  "version": "7.7.0",
   "description": "The TS library to build the fully customized forms using React framework",
   "keywords": [
     "react",
@@ -42,7 +42,7 @@
     "react-dom": "^19.0.0"
   },
   "dependencies": {
-    "@react-hive/honey-utils": "3.5.0"
+    "@react-hive/honey-utils": "3.6.0"
   },
   "devDependencies": {
     "@eslint/js": "9.39.1",

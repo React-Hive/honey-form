@@ -15,12 +15,10 @@ import type {
 } from '../types';
 import type { MultiHoneyFormsContextValue } from '../components';
 
-type CreateInitialFormFieldsOptions<
-  Form extends HoneyFormBaseForm,
-  FormContext,
-> = InitialFormFieldsStateResolverOptions<Form, FormContext> & {
+interface CreateInitialFormFieldsOptions<Form extends HoneyFormBaseForm, FormContext>
+  extends InitialFormFieldsStateResolverOptions<Form, FormContext> {
   fieldsConfig: HoneyFormFieldsConfig<Form, FormContext>;
-};
+}
 
 const createInitialFormFields = <Form extends HoneyFormBaseForm, FormContext>({
   formContext,
@@ -45,7 +43,10 @@ const createInitialFormFields = <Form extends HoneyFormBaseForm, FormContext>({
       fieldName,
       {
         ...fieldConfig,
-        defaultValue: formDefaultsRef.current[fieldName] ?? fieldConfig.defaultValue,
+        defaultValue:
+          fieldName in formDefaultsRef.current
+            ? formDefaultsRef.current[fieldName]
+            : fieldConfig.defaultValue,
       },
       {
         executionContext,

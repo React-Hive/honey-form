@@ -1127,9 +1127,9 @@ export const executeFieldValidatorAsync = async <
   if (validationResult === null || validationResult === true) {
     executeInternalFieldValidators({
       executionContext,
+      fieldErrors,
       fieldValue: sanitizedValue,
       fieldConfig: formField.config,
-      fieldErrors,
     });
 
     if (formField.config.validator) {

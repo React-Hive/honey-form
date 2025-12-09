@@ -77,7 +77,7 @@ export const useForm = <
 >({
   initialFormFieldsStateResolver,
   mode = 'change',
-  fields: fieldsConfig,
+  fields,
   name: formName,
   parentField,
   defaults = FORM_DEFAULTS,
@@ -153,7 +153,7 @@ export const useForm = <
       if (storage) {
         const formValues = getFormSubmitValues(parentField, formContextRef.current, nextFormFields);
 
-        saveFormToStorage(storage, fieldsConfig, formName, formValues);
+        saveFormToStorage(storage, fields, formName, formValues);
       }
     }
 
@@ -423,8 +423,8 @@ export const useForm = <
           executionContext,
           formFieldsValidationControllerRef,
           parentField,
+          format,
           validate: isValidateField,
-          format: format,
           finishFieldAsyncValidation,
         });
 
@@ -582,8 +582,8 @@ export const useForm = <
     defaults,
     formName,
     storage,
+    fields,
     formContext: formContextRef.current,
-    fields: fieldsConfig,
     readFromStorage: readDefaultsFromStorage,
     refetchOnContextChange: refetchDefaultsOnContextChange,
     onFetchSucceed: values => {
@@ -598,8 +598,8 @@ export const useForm = <
   const { hasUnsubmittedForm, restoreUnsubmittedForm } = useUnsubmittedForm({
     formName,
     storage,
+    fields,
     readDefaultsFromStorage,
-    fields: fieldsConfig,
     onRestore: values => {
       setFormValues(values);
     },

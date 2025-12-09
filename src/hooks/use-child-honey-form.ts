@@ -69,7 +69,10 @@ const createInitialFormFields = <
       {
         ...fieldConfig,
         defaultValue:
-          childFormFieldValue ?? formDefaultsRef.current[fieldName] ?? fieldConfig.defaultValue,
+          childFormFieldValue ??
+          (fieldName in formDefaultsRef.current
+            ? formDefaultsRef.current[fieldName]
+            : fieldConfig.defaultValue),
       },
       {
         executionContext,

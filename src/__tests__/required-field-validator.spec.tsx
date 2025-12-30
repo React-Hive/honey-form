@@ -50,7 +50,7 @@ describe('Required field validator', () => {
 
     await act(() => result.current.submitForm());
 
-    expect(result.current.formFields.category.value).toBeUndefined();
+    expect(result.current.formFields.category.displayValue).toBeUndefined();
     expect(result.current.formFields.category.errors).toStrictEqual([
       {
         type: 'required',
@@ -81,7 +81,7 @@ describe('Required field validator', () => {
 
     await act(() => result.current.submitForm());
 
-    expect(result.current.formFields.name.value).toBeUndefined();
+    expect(result.current.formFields.name.displayValue).toBeUndefined();
     expect(result.current.formFields.name.errors).toStrictEqual([
       {
         type: 'required',
@@ -111,7 +111,7 @@ describe('Required field validator', () => {
 
     await act(() => result.current.submitForm());
 
-    expect(result.current.formFields.names.value).toStrictEqual([]);
+    expect(result.current.formFields.names.displayValue).toStrictEqual([]);
     expect(result.current.formFields.names.errors).toStrictEqual([
       {
         type: 'required',
@@ -141,7 +141,7 @@ describe('Required field validator', () => {
 
     await act(() => result.current.submitForm());
 
-    expect(result.current.formFields.names.value).toStrictEqual([]);
+    expect(result.current.formFields.names.displayValue).toStrictEqual([]);
     expect(result.current.formFields.names.errors).toStrictEqual([]);
 
     expect(onSubmit).toHaveBeenCalled();
@@ -165,7 +165,7 @@ describe('Required field validator', () => {
 
     await act(() => result.current.submitForm());
 
-    expect(result.current.formFields.names.value).toStrictEqual([null]);
+    expect(result.current.formFields.names.displayValue).toStrictEqual([null]);
     expect(result.current.formFields.names.errors).toStrictEqual([
       {
         type: 'required',
@@ -195,7 +195,7 @@ describe('Required field validator', () => {
 
     await act(() => result.current.submitForm());
 
-    expect(result.current.formFields.names.value).toStrictEqual([null]);
+    expect(result.current.formFields.names.displayValue).toStrictEqual([null]);
     expect(result.current.formFields.names.errors).toStrictEqual([]);
 
     expect(onSubmit).toHaveBeenCalled();

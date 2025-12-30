@@ -31,8 +31,8 @@ describe('Skip form fields', () => {
       result.current.formFields.price.setValue(10);
     });
 
-    expect(result.current.formFields.name.value).toBe('Apple');
-    expect(result.current.formFields.price.value).toBe(10);
+    expect(result.current.formFields.name.displayValue).toBe('Apple');
+    expect(result.current.formFields.price.displayValue).toBe(10);
 
     await act(() => result.current.submitForm());
 
@@ -62,7 +62,7 @@ describe('Skip form fields', () => {
           },
           price: {
             type: 'number',
-            skip: ({ formFields }) => formFields.name.value === 'Pear',
+            skip: ({ formFields }) => formFields.name.displayValue === 'Pear',
           },
         },
         onSubmit,
@@ -90,7 +90,7 @@ describe('Skip form fields', () => {
 
     await act(() => result.current.submitForm());
 
-    expect(result.current.formFields.price.value).toBe(15);
+    expect(result.current.formFields.price.displayValue).toBe(15);
 
     await waitFor(() =>
       expect(onSubmit).toHaveBeenCalledWith(

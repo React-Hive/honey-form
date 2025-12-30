@@ -82,7 +82,7 @@ export type HoneyFormFieldsValidationController<Form extends HoneyFormBaseForm> 
  * This type represents a handler function called when the value of a form field changes.
  * It receives the cleaned value of the field and a context object containing all form fields.
  *
- * @param cleanValue - The cleaned value of the field, or `undefined` if the value is not set.
+ * @param normalizedValue - The cleaned value of the field, or `undefined` if the value is not set.
  * @param context - The context object.
  *
  * @returns This function does not return a value.
@@ -93,7 +93,7 @@ export type HoneyFormFieldOnChange<
   FormContext,
   FieldValue extends Form[FieldName] = Form[FieldName],
 > = (
-  cleanValue: FieldValue | undefined,
+  normalizedValue: FieldValue | undefined,
   executionContext: HoneyFormBaseExecutionContext<Form, FormContext>,
 ) => void;
 
@@ -610,7 +610,7 @@ export interface HoneyFormInteractiveFieldConfig<
    */
   formatOnBlur?: boolean;
   /**
-   * Set as `true` when formatted field value should be submitted instead of clean value.
+   * Set as `true` when formatted field value should be submitted instead of a normalized value.
    *
    * @default false
    */
@@ -729,9 +729,8 @@ export type ChildHoneyFormFieldConfig<
   ParentFieldName extends KeysWithArrayValues<ParentForm>,
   FieldName extends keyof ChildForm,
   FormContext,
-  ChildForm extends HoneyFormExtractChildForm<
-    ParentForm[ParentFieldName]
-  > = HoneyFormExtractChildForm<ParentForm[ParentFieldName]>,
+  ChildForm extends HoneyFormExtractChildForm<ParentForm[ParentFieldName]> =
+    HoneyFormExtractChildForm<ParentForm[ParentFieldName]>,
   FieldValue extends ChildForm[FieldName] = ChildForm[FieldName],
 > =
   | HoneyFormInteractiveFieldConfig<ChildForm, FieldName, FormContext, FieldValue>
@@ -873,19 +872,19 @@ interface BaseHoneyFormField<
    */
   readonly rawValue: FieldValue | undefined;
   /**
-   * The initial clean value of the field.
+   * The initial normalized value of the field.
    *
    * @default undefined
    */
-  readonly initialCleanValue: FieldValue | undefined;
+  readonly initialNormalizedValue: FieldValue | undefined;
   /**
    * The processed value after filtering and formatting. If there are errors, this is set as `undefined`.
    */
-  readonly cleanValue: FieldValue | undefined;
+  readonly normalizedValue: FieldValue | undefined;
   /**
    * The final, formatted value ready to be displayed to the user.
    */
-  readonly value: FieldValue | undefined;
+  readonly displayValue: FieldValue | undefined;
   /**
    * An array of errors associated with this field.
    *
@@ -946,8 +945,8 @@ export interface HoneyFormField<
   FieldName extends keyof Form,
   FormContext = undefined,
   FieldValue extends Form[FieldName] = Form[FieldName],
-> extends BaseHoneyFormField<Form, FieldName, FormContext, FieldValue>,
-    HoneyFormFieldProps {
+>
+  extends BaseHoneyFormField<Form, FieldName, FormContext, FieldValue>, HoneyFormFieldProps {
   /**
    * A function to add a new value to a parent field that can have child forms.
    */
@@ -997,9 +996,8 @@ export type ChildHoneyFormFieldsConfig<
   ParentForm extends HoneyFormBaseForm,
   ParentFieldName extends KeysWithArrayValues<ParentForm>,
   FormContext = undefined,
-  ChildForm extends HoneyFormExtractChildForm<
-    ParentForm[ParentFieldName]
-  > = HoneyFormExtractChildForm<ParentForm[ParentFieldName]>,
+  ChildForm extends HoneyFormExtractChildForm<ParentForm[ParentFieldName]> =
+    HoneyFormExtractChildForm<ParentForm[ParentFieldName]>,
 > = {
   [FieldName in keyof ChildForm]: ChildHoneyFormFieldConfig<
     ParentForm,
@@ -1042,8 +1040,10 @@ export type HoneyFormDefaults<Form extends HoneyFormBaseForm, FormContext = unde
  * This type defines the context that is provided to the `onAfterValidate` callback after the
  * form fields have been validated, allowing access to the validated form fields and context.
  */
-interface HoneyFormAfterValidateContext<Form extends HoneyFormBaseForm, FormContext>
-  extends HoneyFormBaseExecutionContext<Form, FormContext> {
+interface HoneyFormAfterValidateContext<
+  Form extends HoneyFormBaseForm,
+  FormContext,
+> extends HoneyFormBaseExecutionContext<Form, FormContext> {
   /**
    * A summary of validation errors for the entire form, organized by field.
    */
@@ -1146,7 +1146,7 @@ interface HoneyFormOnChangeContext<
 /**
  * Represents a callback function triggered when any form field value changes.
  *
- * @param cleanFormValues - The current clean form field values.
+ * @param submitValues - The submit form field values.
  * @param context - The context object providing additional information about the change, such as form field errors.
  */
 export type HoneyFormOnChange<
@@ -1155,7 +1155,7 @@ export type HoneyFormOnChange<
   Form extends HoneyFormBaseForm,
   FormContext,
 > = (
-  cleanFormValues: Form,
+  submitValues: Form,
   context: HoneyFormOnChangeContext<ParentForm, ParentFieldName, Form, FormContext>,
 ) => void;
 
@@ -1335,8 +1335,10 @@ type BaseHoneyFormOptions<
   'initialFormFieldsStateResolver' | 'fields' | 'parentField'
 >;
 
-export interface HoneyFormOptions<Form extends HoneyFormBaseForm, FormContext = undefined>
-  extends Omit<BaseHoneyFormOptions<Form, never, never, FormContext>, 'alwaysValidateParentField'> {
+export interface HoneyFormOptions<
+  Form extends HoneyFormBaseForm,
+  FormContext = undefined,
+> extends Omit<BaseHoneyFormOptions<Form, never, never, FormContext>, 'alwaysValidateParentField'> {
   /**
    * Configuration for the form fields.
    */
@@ -1350,13 +1352,12 @@ export interface ChildHoneyFormOptions<
   ParentForm extends HoneyFormBaseForm,
   ParentFieldName extends KeysWithArrayValues<ParentForm>,
   FormContext = undefined,
-  ChildForm extends HoneyFormExtractChildForm<
-    ParentForm[ParentFieldName]
-  > = HoneyFormExtractChildForm<ParentForm[ParentFieldName]>,
+  ChildForm extends HoneyFormExtractChildForm<ParentForm[ParentFieldName]> =
+    HoneyFormExtractChildForm<ParentForm[ParentFieldName]>,
 > extends Omit<
-    BaseHoneyFormOptions<ChildForm, ParentForm, ParentFieldName, FormContext>,
-    'name' | 'storage' | 'readDefaultsFromStorage'
-  > {
+  BaseHoneyFormOptions<ChildForm, ParentForm, ParentFieldName, FormContext>,
+  'name' | 'storage' | 'readDefaultsFromStorage'
+> {
   /**
    * A reference to a parent form field.
    * Use this to create nested forms where the parent field can have child forms.

@@ -56,9 +56,9 @@ const createInitialFormFields = <
     let childFormFieldValue: Nullable<ChildForm[keyof ChildForm] | undefined> = null;
 
     if (formIndex !== undefined && parentField) {
-      const childForm = Array.isArray(parentField.value)
-        ? (parentField.value[formIndex] as ChildForm)
-        : parentField.value;
+      const childForm = Array.isArray(parentField.displayValue)
+        ? (parentField.displayValue[formIndex] as ChildForm)
+        : parentField.displayValue;
 
       // @ts-expect-error
       childFormFieldValue = childForm?.[fieldName];
@@ -105,9 +105,8 @@ export const useChildHoneyForm = <
   ParentForm extends HoneyFormBaseForm,
   ParentFieldName extends KeysWithArrayValues<ParentForm>,
   FormContext = undefined,
-  ChildForm extends HoneyFormExtractChildForm<
-    ParentForm[ParentFieldName]
-  > = HoneyFormExtractChildForm<ParentForm[ParentFieldName]>,
+  ChildForm extends HoneyFormExtractChildForm<ParentForm[ParentFieldName]> =
+    HoneyFormExtractChildForm<ParentForm[ParentFieldName]>,
 >({
   formIndex,
   parentField,

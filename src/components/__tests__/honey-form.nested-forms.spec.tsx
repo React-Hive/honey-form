@@ -106,7 +106,7 @@ describe('Component [HoneyForm]: Nested forms', () => {
       <HoneyForm fields={fields} onSubmit={onSubmit}>
         {({ formFields }) => (
           <>
-            {formFields.items.value.map((itemForm, itemFormIndex) => (
+            {formFields.items.displayValue.map((itemForm, itemFormIndex) => (
               <ItemLineForm key={itemForm.id} formIndex={itemFormIndex} />
             ))}
 
@@ -202,7 +202,7 @@ describe('Component [HoneyForm]: Nested forms', () => {
       <HoneyForm fields={fields} onSubmit={onSubmit}>
         {({ formFields }) => (
           <>
-            {formFields.items.value.map((itemForm, itemFormIndex) => (
+            {formFields.items.displayValue.map((itemForm, itemFormIndex) => (
               <ItemLineForm key={itemForm.id} formIndex={itemFormIndex} />
             ))}
 
@@ -394,7 +394,7 @@ describe('Component [HoneyForm]: Nested forms', () => {
       <HoneyForm fields={fields} onSubmit={onSubmit}>
         {({ formFields }) => (
           <>
-            {formFields.items.value.map((itemForm, itemFormIndex) => (
+            {formFields.items.displayValue.map((itemForm, itemFormIndex) => (
               <ItemLineForm key={itemForm.id} formIndex={itemFormIndex} />
             ))}
 
@@ -470,7 +470,7 @@ describe('Component [HoneyForm]: Nested forms', () => {
       <HoneyForm fields={fields} onSubmit={onSubmit}>
         {({ formFields }) => (
           <>
-            {formFields.items.value.map((itemForm, itemFormIndex) => (
+            {formFields.items.displayValue.map((itemForm, itemFormIndex) => (
               <ItemLineForm key={itemForm.id} formIndex={itemFormIndex} />
             ))}
 
@@ -606,7 +606,7 @@ describe('Component [HoneyForm]: Nested forms', () => {
 
           return (
             <>
-              {formFields.items.value.map((itemForm, itemFormIndex) => (
+              {formFields.items.displayValue.map((itemForm, itemFormIndex) => (
                 <ItemLineForm key={itemForm.id} formIndex={itemFormIndex} />
               ))}
 

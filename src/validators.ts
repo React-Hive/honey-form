@@ -471,7 +471,7 @@ export const createHoneyFormDateFromValidator =
       return true;
     }
 
-    const dateTo = formFields[dateToKey].value;
+    const dateTo = formFields[dateToKey].displayValue;
 
     // If ignoring time, reset hours, minutes, seconds, and milliseconds
     if (ignoreTime) {
@@ -554,7 +554,7 @@ export const createHoneyFormDateToValidator =
       return true;
     }
 
-    const dateFrom = formFields[dateFromKey].value;
+    const dateFrom = formFields[dateFromKey].displayValue;
 
     // If ignoring time, reset hours, minutes, seconds, and milliseconds
     if (ignoreTime) {

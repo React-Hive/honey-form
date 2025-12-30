@@ -26,8 +26,8 @@ describe('Form defaults', () => {
       }),
     );
 
-    expect(result.current.formFields.name.value).toBe('Alex');
-    expect(result.current.formFields.age.value).toBe(45);
+    expect(result.current.formFields.name.displayValue).toBe('Alex');
+    expect(result.current.formFields.age.displayValue).toBe(45);
 
     expect(result.current.formValues).toStrictEqual({
       name: 'Alex',
@@ -55,8 +55,8 @@ describe('Form defaults', () => {
 
     expect(result.current.formDefaultValues.name).toBe('banana');
 
-    expect(result.current.formFields.name.value).toBe('banana');
-    expect(result.current.formFields.name.cleanValue).toBe('banana');
+    expect(result.current.formFields.name.displayValue).toBe('banana');
+    expect(result.current.formFields.name.normalizedValue).toBe('banana');
     expect(result.current.formFields.name.props.value).toBe('banana');
   });
 
@@ -81,8 +81,8 @@ describe('Form defaults', () => {
 
     expect(result.current.formDefaultValues.name).toBeUndefined();
 
-    expect(result.current.formFields.name.value).toBeUndefined();
-    expect(result.current.formFields.name.cleanValue).toBeUndefined();
+    expect(result.current.formFields.name.displayValue).toBeUndefined();
+    expect(result.current.formFields.name.normalizedValue).toBeUndefined();
     expect(result.current.formFields.name.props.value).toBe('');
 
     await waitFor(() => expect(result.current.isFormDefaultsFetching).toBeTruthy());
@@ -90,9 +90,9 @@ describe('Form defaults', () => {
 
     expect(result.current.isFormDefaultsFetchingErred).toBeFalsy();
 
-    expect(result.current.formFields.name.value).toBe('apple');
+    expect(result.current.formFields.name.displayValue).toBe('apple');
     // Clean value should be undefined because the validation should not be run for defaults
-    expect(result.current.formFields.name.cleanValue).toBeUndefined();
+    expect(result.current.formFields.name.normalizedValue).toBeUndefined();
     expect(result.current.formFields.name.props.value).toBe('apple');
 
     expect(result.current.formDefaultValues.name).toBe('apple');

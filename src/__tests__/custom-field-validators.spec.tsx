@@ -57,18 +57,18 @@ describe('Custom field validators', () => {
           age1: {
             type: 'number',
             defaultValue: 1,
-            validator: (value, { formFields }) => value < formFields.age2.value,
+            validator: (value, { formFields }) => value < formFields.age2.displayValue,
           },
           age2: {
             type: 'number',
             defaultValue: 2,
             validator: (value, { formFields }) =>
-              value > formFields.age1.value && value < formFields.age3.value,
+              value > formFields.age1.displayValue && value < formFields.age3.displayValue,
           },
           age3: {
             type: 'number',
             defaultValue: 3,
-            validator: (value, { formFields }) => value > formFields.age2.value,
+            validator: (value, { formFields }) => value > formFields.age2.displayValue,
           },
         },
         onSubmit,
@@ -81,9 +81,9 @@ describe('Custom field validators', () => {
       result.current.formFields.age3.setValue(4);
     });
 
-    expect(result.current.formFields.age1.value).toBe(2);
-    expect(result.current.formFields.age2.value).toBe(3);
-    expect(result.current.formFields.age3.value).toBe(4);
+    expect(result.current.formFields.age1.displayValue).toBe(2);
+    expect(result.current.formFields.age2.displayValue).toBe(3);
+    expect(result.current.formFields.age3.displayValue).toBe(4);
 
     await act(() => result.current.submitForm());
 

@@ -96,7 +96,7 @@ const DEFAULT_FIELD_VALUE_CONVERTORS_MAP: Partial<
  * If a convertor for the provided field type exists in the default map, it uses it to convert the value.
  * If a convertor does not exist, it returns the original value.
  */
-const sanitizeFieldValue = <
+const normalizeFieldValue = <
   Form extends HoneyFormBaseForm,
   FieldName extends keyof Form,
   FieldValue extends Form[FieldName],
@@ -440,17 +440,17 @@ export const createFormField = <
     fieldConfig: resultFieldConfig,
   });
 
-  const cleanValue = sanitizeFieldValue(resultFieldConfig.type, filteredValue);
+  const normalizedValue = normalizeFieldValue(resultFieldConfig.type, filteredValue);
 
   return {
     ...fieldProps,
-    cleanValue,
+    normalizedValue,
     config: resultFieldConfig,
     errors: [],
     defaultValue: resultFieldConfig.defaultValue,
     rawValue: filteredValue,
-    initialCleanValue: cleanValue,
-    value: resultValue,
+    initialNormalizedValue: normalizedValue,
+    displayValue: resultValue,
     isDirty: false,
     isValidating: false,
     // TODO: try to fix the next error
@@ -489,7 +489,7 @@ export const createFormField = <
  *
  * This function processes the form field to reset its error-related properties,
  * ensuring that the field is marked as valid by setting the `aria-invalid` attribute to `false`
- * and clearing any existing error messages. It also resets the `cleanValue` property to `undefined`.
+ * and clearing any existing error messages. It also resets the `normalizedValue` property to `undefined`.
  *
  * @param formField - The current state of the form field to be updated.
  *
@@ -522,7 +522,7 @@ export const getNextErrorsFreeField = <
     ...formField,
     props,
     passiveProps,
-    cleanValue: undefined,
+    normalizedValue: undefined,
     errors: [],
   };
 };
@@ -566,8 +566,8 @@ export const getNextErredField = <
     props,
     passiveProps,
     errors: fieldErrors,
-    // Set clean value as `undefined` if any error is present
-    cleanValue: fieldErrors.length ? undefined : formField.cleanValue,
+    // Set a normalized value as `undefined` if any error is present
+    normalizedValue: fieldErrors.length ? undefined : formField.normalizedValue,
   };
 };
 
@@ -613,9 +613,9 @@ export const getNextResetField = <
     ...errorsFreeField,
     props,
     passiveProps,
-    value: nextFieldValue,
+    displayValue: nextFieldValue,
     rawValue: nextFieldValue,
-    cleanValue: nextFieldValue,
+    normalizedValue: nextFieldValue,
   };
 };
 
@@ -718,7 +718,7 @@ export const getNextAsyncValidatedField = <
  * @param fieldErrors - The array of validation errors for the field.
  * @param validationResult - The result of the field validation.
  * @param formField - The form field being validated.
- * @param cleanValue - The cleaned value of the field.
+ * @param normalizedValue - The cleaned value of the field.
  *
  * @returns The next form field state after validation.
  */
@@ -731,7 +731,7 @@ const getNextValidatedField = <
   fieldErrors: HoneyFormFieldError[],
   validationResult: Nullable<HoneyFormFieldValidationResult>,
   formField: HoneyFormField<Form, FieldName, FormContext>,
-  cleanValue: Form[FieldName] | undefined,
+  normalizedValue: Form[FieldName] | undefined,
 ): HoneyFormField<Form, FieldName, FormContext> => {
   handleFieldValidationResult(executionContext, fieldErrors, formField.config, validationResult);
 
@@ -743,7 +743,7 @@ const getNextValidatedField = <
 
   return {
     ...errorsFreeField,
-    cleanValue,
+    normalizedValue,
   };
 };
 
@@ -989,16 +989,20 @@ export const executeFieldValidator = <
 
   const fieldErrors: HoneyFormFieldError[] = [];
 
-  const cleanValue = sanitizeFieldValue(nextFormField.config.type, fieldValue);
+  const normalizedValue = normalizeFieldValue(nextFormField.config.type, fieldValue);
 
-  let validationResult = executeFieldTypeValidator(executionContext, nextFormField, cleanValue);
+  let validationResult = executeFieldTypeValidator(
+    executionContext,
+    nextFormField,
+    normalizedValue,
+  );
 
   // Don't run additional validators if the default field type validator failed
   if (validationResult === null || validationResult === true) {
     executeInternalFieldValidators({
       executionContext,
       fieldErrors,
-      fieldValue: cleanValue,
+      fieldValue: normalizedValue,
       fieldConfig: nextFormField.config,
     });
 
@@ -1009,7 +1013,7 @@ export const executeFieldValidator = <
         fieldName,
       );
 
-      const validationResponse = nextFormField.config.validator(cleanValue, {
+      const validationResponse = nextFormField.config.validator(normalizedValue, {
         ...executionContext,
         // @ts-expect-error
         fieldConfig: nextFormField.config,
@@ -1037,7 +1041,7 @@ export const executeFieldValidator = <
     fieldErrors,
     validationResult,
     nextFormField,
-    cleanValue,
+    normalizedValue,
   );
 };
 
@@ -1119,7 +1123,7 @@ export const executeFieldValidatorAsync = async <
     filteredValue = formField.getChildFormsValues() as Form[FieldName];
   }
 
-  const sanitizedValue = sanitizeFieldValue(formField.config.type, filteredValue);
+  const sanitizedValue = normalizeFieldValue(formField.config.type, filteredValue);
 
   let validationResult = executeFieldTypeValidator(executionContext, formField, sanitizedValue);
 
@@ -1276,7 +1280,7 @@ export const resetDependentFields = <
     } else if (isFunction(dependsOn)) {
       isDependent = dependsOn(
         initiatorFieldName,
-        nextFormFields[otherFieldName].cleanValue,
+        nextFormFields[otherFieldName].normalizedValue,
         executionContext,
       );
     } else {
@@ -1472,7 +1476,7 @@ export const getNextFormFieldState = <
     props,
     passiveProps,
     rawValue: fieldValue,
-    value: formattedValue,
+    displayValue: formattedValue,
   };
 };
 
@@ -1585,7 +1589,7 @@ export const getNextFieldsState = <
 
   nextFormFields[fieldName] = {
     ...nextFormFields[fieldName],
-    isDirty: nextFormFields[fieldName].initialCleanValue !== nextFormField.cleanValue,
+    isDirty: nextFormFields[fieldName].initialNormalizedValue !== nextFormField.normalizedValue,
   };
 
   const formValues = getFormValues(nextFormFields);

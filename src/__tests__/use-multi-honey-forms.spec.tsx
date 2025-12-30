@@ -94,7 +94,7 @@ describe('General', () => {
     act(() => formApi.current.formFields.name.setValue('Orange'));
 
     expect(formApi.current.formValues.name).toBe('Orange');
-    expect(multiFormsApi.current.forms[0].formFields.name.value).toBe('Orange');
+    expect(multiFormsApi.current.forms[0].formFields.name.displayValue).toBe('Orange');
     expect(multiFormsApi.current.forms[0].formValues.name).toBe('Orange');
 
     act(() => multiFormsApi.current.resetForms());

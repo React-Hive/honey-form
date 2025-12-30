@@ -22,7 +22,7 @@ describe('Fields', () => {
       } as ChangeEvent<HTMLInputElement>),
     );
 
-    expect(result.current.formFields.name.value).toBe('Peter');
+    expect(result.current.formFields.name.displayValue).toBe('Peter');
   });
 
   it('should use custom boolean field validator', () => {

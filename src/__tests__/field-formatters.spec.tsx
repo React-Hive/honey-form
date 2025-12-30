@@ -20,8 +20,8 @@ describe('Formatter function', () => {
     act(() => result.current.formFields.price.setValue('5'));
 
     expect(result.current.formFields.price.rawValue).toBe('5');
-    expect(result.current.formFields.price.value).toBe('$5');
-    expect(result.current.formFields.price.cleanValue).toBe('5');
+    expect(result.current.formFields.price.displayValue).toBe('$5');
+    expect(result.current.formFields.price.normalizedValue).toBe('5');
   });
 
   it('should send filtered value, but not formatted value when submitting', async () => {
@@ -45,13 +45,13 @@ describe('Formatter function', () => {
     await act(() => result.current.submitForm(onSubmit));
 
     expect(result.current.formFields.price.rawValue).toBe('5');
-    expect(result.current.formFields.price.value).toBe('$5');
-    expect(result.current.formFields.price.cleanValue).toBe('5');
+    expect(result.current.formFields.price.displayValue).toBe('$5');
+    expect(result.current.formFields.price.normalizedValue).toBe('5');
 
     expect(onSubmit).toHaveBeenCalledWith({ price: '5' }, { context: undefined });
   });
 
-  test('submit form with clean values, but not formatted', async () => {
+  test('submit form with normalized and not displayed values', async () => {
     const onSubmit = jest.fn();
 
     const { result } = renderHook(() =>
@@ -75,8 +75,8 @@ describe('Formatter function', () => {
     });
 
     expect(result.current.formFields.price.rawValue).toBe('15');
-    expect(result.current.formFields.price.cleanValue).toBe(15);
-    expect(result.current.formFields.price.value).toBe('$15');
+    expect(result.current.formFields.price.normalizedValue).toBe(15);
+    expect(result.current.formFields.price.displayValue).toBe('$15');
 
     await act(() => result.current.submitForm());
 
@@ -102,7 +102,7 @@ describe('Formatter function', () => {
 
     act(() => result.current.formFields.cardExpirationDate.setValue('10/29'));
 
-    expect(result.current.formFields.cardExpirationDate.value).toBe('10/29');
+    expect(result.current.formFields.cardExpirationDate.displayValue).toBe('10/29');
 
     await act(() => result.current.submitForm());
 
@@ -125,23 +125,23 @@ describe('Use predefined string formatter for segments', () => {
 
     act(() => result.current.formFields.cardNumber.setValue(''));
 
-    expect(result.current.formFields.cardNumber.value).toBe('');
+    expect(result.current.formFields.cardNumber.displayValue).toBe('');
 
     act(() => result.current.formFields.cardNumber.setValue('1'));
 
-    expect(result.current.formFields.cardNumber.value).toBe('1');
+    expect(result.current.formFields.cardNumber.displayValue).toBe('1');
 
     act(() => result.current.formFields.cardNumber.setValue('1111'));
 
-    expect(result.current.formFields.cardNumber.value).toBe('1111');
+    expect(result.current.formFields.cardNumber.displayValue).toBe('1111');
 
     act(() => result.current.formFields.cardNumber.setValue('11111'));
 
-    expect(result.current.formFields.cardNumber.value).toBe('1111 1');
+    expect(result.current.formFields.cardNumber.displayValue).toBe('1111 1');
 
     act(() => result.current.formFields.cardNumber.setValue('1111111111111111'));
 
-    expect(result.current.formFields.cardNumber.value).toBe('1111 1111 1111 1111');
+    expect(result.current.formFields.cardNumber.displayValue).toBe('1111 1111 1111 1111');
   });
 });
 
@@ -160,46 +160,46 @@ describe('Use predefined number formatter', () => {
 
     act(() => result.current.formFields.amount.setValue(''));
 
-    expect(result.current.formFields.amount.value).toBe('');
+    expect(result.current.formFields.amount.displayValue).toBe('');
 
     act(() => result.current.formFields.amount.setValue('1.'));
 
-    expect(result.current.formFields.amount.value).toBe('1.00');
+    expect(result.current.formFields.amount.displayValue).toBe('1.00');
 
     act(() => result.current.formFields.amount.setValue('.'));
 
-    expect(result.current.formFields.amount.value).toBe('');
+    expect(result.current.formFields.amount.displayValue).toBe('');
 
     act(() => result.current.formFields.amount.setValue('.0'));
 
-    expect(result.current.formFields.amount.value).toBe('.00');
+    expect(result.current.formFields.amount.displayValue).toBe('.00');
 
     act(() => result.current.formFields.amount.setValue('1'));
 
-    expect(result.current.formFields.amount.value).toBe('1.00');
+    expect(result.current.formFields.amount.displayValue).toBe('1.00');
 
     act(() => result.current.formFields.amount.setValue('1.0'));
 
-    expect(result.current.formFields.amount.value).toBe('1.00');
+    expect(result.current.formFields.amount.displayValue).toBe('1.00');
 
     act(() => result.current.formFields.amount.setValue('1.00'));
 
-    expect(result.current.formFields.amount.value).toBe('1.00');
+    expect(result.current.formFields.amount.displayValue).toBe('1.00');
 
     act(() => result.current.formFields.amount.setValue('1.0013'));
 
-    expect(result.current.formFields.amount.value).toBe('1.00');
+    expect(result.current.formFields.amount.displayValue).toBe('1.00');
 
     act(() => result.current.formFields.amount.setValue('1.2'));
 
-    expect(result.current.formFields.amount.value).toBe('1.20');
+    expect(result.current.formFields.amount.displayValue).toBe('1.20');
 
     act(() => result.current.formFields.amount.setValue('1.23'));
 
-    expect(result.current.formFields.amount.value).toBe('1.23');
+    expect(result.current.formFields.amount.displayValue).toBe('1.23');
 
     act(() => result.current.formFields.amount.setValue('-12'));
 
-    expect(result.current.formFields.amount.value).toBe('-12.00');
+    expect(result.current.formFields.amount.displayValue).toBe('-12.00');
   });
 });

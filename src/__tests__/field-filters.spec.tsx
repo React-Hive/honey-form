@@ -17,20 +17,20 @@ describe('Builtin filtering', () => {
     act(() => result.current.formFields.name.setValue(' '));
 
     expect(result.current.formFields.name.rawValue).toBe('');
-    expect(result.current.formFields.name.value).toBe('');
-    expect(result.current.formFields.name.cleanValue).toBe('');
+    expect(result.current.formFields.name.displayValue).toBe('');
+    expect(result.current.formFields.name.normalizedValue).toBe('');
 
     act(() => result.current.formFields.name.setValue(' a'));
 
     expect(result.current.formFields.name.rawValue).toBe('a');
-    expect(result.current.formFields.name.value).toBe('a');
-    expect(result.current.formFields.name.cleanValue).toBe('a');
+    expect(result.current.formFields.name.displayValue).toBe('a');
+    expect(result.current.formFields.name.normalizedValue).toBe('a');
 
     act(() => result.current.formFields.name.setValue(' a '));
 
     expect(result.current.formFields.name.rawValue).toBe('a ');
-    expect(result.current.formFields.name.value).toBe('a ');
-    expect(result.current.formFields.name.cleanValue).toBe('a ');
+    expect(result.current.formFields.name.displayValue).toBe('a ');
+    expect(result.current.formFields.name.normalizedValue).toBe('a ');
   });
 });
 
@@ -48,8 +48,8 @@ describe('Filter as a function', () => {
       }),
     );
 
-    expect(result.current.formFields.age.value).toBe('13');
-    expect(result.current.formFields.age.cleanValue).toBe('13');
+    expect(result.current.formFields.age.displayValue).toBe('13');
+    expect(result.current.formFields.age.normalizedValue).toBe('13');
   });
 
   it('should filter the field value when updated', () => {
@@ -66,8 +66,8 @@ describe('Filter as a function', () => {
 
     act(() => result.current.formFields.age.setValue('a12b'));
 
-    expect(result.current.formFields.age.value).toBe('12');
-    expect(result.current.formFields.age.cleanValue).toBe('12');
+    expect(result.current.formFields.age.displayValue).toBe('12');
+    expect(result.current.formFields.age.normalizedValue).toBe('12');
   });
 
   it('should send filtered value when submitting', async () => {
@@ -89,8 +89,8 @@ describe('Filter as a function', () => {
 
     await act(() => result.current.submitForm(onSubmit));
 
-    expect(result.current.formFields.name.value).toBe('Apple');
-    expect(result.current.formFields.name.cleanValue).toBe('Apple');
+    expect(result.current.formFields.name.displayValue).toBe('Apple');
+    expect(result.current.formFields.name.normalizedValue).toBe('Apple');
 
     expect(onSubmit).toHaveBeenCalledWith({ name: 'Apple' }, { context: undefined });
   });
@@ -111,27 +111,27 @@ describe('Use predefined numeric filter', () => {
 
     act(() => result.current.formFields.price.setValue(''));
 
-    expect(result.current.formFields.price.value).toBe('');
+    expect(result.current.formFields.price.displayValue).toBe('');
 
     act(() => result.current.formFields.price.setValue('11'));
 
-    expect(result.current.formFields.price.value).toBe('11');
+    expect(result.current.formFields.price.displayValue).toBe('11');
 
     act(() => result.current.formFields.price.setValue('a'));
 
-    expect(result.current.formFields.price.value).toBe('');
+    expect(result.current.formFields.price.displayValue).toBe('');
 
     act(() => result.current.formFields.price.setValue(' -.!g%$#*&@'));
 
-    expect(result.current.formFields.price.value).toBe('');
+    expect(result.current.formFields.price.displayValue).toBe('');
 
     act(() => result.current.formFields.price.setValue('123456789'));
 
-    expect(result.current.formFields.price.value).toBe('12345');
+    expect(result.current.formFields.price.displayValue).toBe('12345');
 
     act(() => result.current.formFields.price.setValue('00'));
 
-    expect(result.current.formFields.price.value).toBe('00');
+    expect(result.current.formFields.price.displayValue).toBe('00');
   });
 });
 
@@ -150,40 +150,40 @@ describe('Use predefined number filter', () => {
 
     act(() => result.current.formFields.amount.setValue(''));
 
-    expect(result.current.formFields.amount.value).toBe('');
+    expect(result.current.formFields.amount.displayValue).toBe('');
 
     act(() => result.current.formFields.amount.setValue('1'));
 
-    expect(result.current.formFields.amount.value).toBe('1');
+    expect(result.current.formFields.amount.displayValue).toBe('1');
 
     act(() => result.current.formFields.amount.setValue('a'));
 
-    expect(result.current.formFields.amount.value).toBe('');
+    expect(result.current.formFields.amount.displayValue).toBe('');
 
     act(() => result.current.formFields.amount.setValue(' -.!g%$#*&@'));
 
     // Allow negative values (char "-")
-    expect(result.current.formFields.amount.value).toBe('-.');
+    expect(result.current.formFields.amount.displayValue).toBe('-.');
 
     act(() => result.current.formFields.amount.setValue('123456789'));
 
-    expect(result.current.formFields.amount.value).toBe('12345');
+    expect(result.current.formFields.amount.displayValue).toBe('12345');
 
     act(() => result.current.formFields.amount.setValue('-123456789'));
 
-    expect(result.current.formFields.amount.value).toBe('-12345');
+    expect(result.current.formFields.amount.displayValue).toBe('-12345');
 
     act(() => result.current.formFields.amount.setValue('00'));
 
-    expect(result.current.formFields.amount.value).toBe('0');
+    expect(result.current.formFields.amount.displayValue).toBe('0');
 
     act(() => result.current.formFields.amount.setValue('-00'));
 
-    expect(result.current.formFields.amount.value).toBe('-0');
+    expect(result.current.formFields.amount.displayValue).toBe('-0');
 
     act(() => result.current.formFields.amount.setValue('002'));
 
-    expect(result.current.formFields.amount.value).toBe('2');
+    expect(result.current.formFields.amount.displayValue).toBe('2');
   });
 
   it('should correctly format and filter decimal numbers', () => {
@@ -244,7 +244,7 @@ describe('Use predefined number filter', () => {
 
     act(() => result.current.formFields.amount.setValue('0003.5'));
 
-    expect(result.current.formFields.amount.value).toBe('3.5');
+    expect(result.current.formFields.amount.displayValue).toBe('3.5');
 
     act(() => result.current.formFields.amount.setValue('1--'));
 
@@ -336,31 +336,31 @@ describe('Use predefined number filter', () => {
     act(() => result.current.formFields.amount.setValue(''));
 
     expect(result.current.formValues.amount).toBe('');
-    expect(result.current.formFields.amount.cleanValue).toBe(undefined);
+    expect(result.current.formFields.amount.normalizedValue).toBe(undefined);
 
     act(() => result.current.formFields.amount.setValue('1'));
 
     expect(result.current.formValues.amount).toBe('1');
-    expect(result.current.formFields.amount.cleanValue).toBe(1);
+    expect(result.current.formFields.amount.normalizedValue).toBe(1);
 
     act(() => result.current.formFields.amount.setValue('1000'));
 
     expect(result.current.formValues.amount).toBe('1,000');
-    expect(result.current.formFields.amount.cleanValue).toBe(1000);
+    expect(result.current.formFields.amount.normalizedValue).toBe(1000);
 
     act(() => result.current.formFields.amount.setValue('100000'));
 
     expect(result.current.formValues.amount).toBe('100,000');
-    expect(result.current.formFields.amount.cleanValue).toBe(100000);
+    expect(result.current.formFields.amount.normalizedValue).toBe(100000);
 
     act(() => result.current.formFields.amount.setValue('1000000'));
 
     expect(result.current.formValues.amount).toBe('1,000,000');
-    expect(result.current.formFields.amount.cleanValue).toBe(1000000);
+    expect(result.current.formFields.amount.normalizedValue).toBe(1000000);
 
     act(() => result.current.formFields.amount.setValue('-1000'));
 
     expect(result.current.formValues.amount).toBe('-1,000');
-    expect(result.current.formFields.amount.cleanValue).toBe(-1000);
+    expect(result.current.formFields.amount.normalizedValue).toBe(-1000);
   });
 });

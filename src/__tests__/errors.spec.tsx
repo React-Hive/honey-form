@@ -37,8 +37,8 @@ describe('Work with errors', () => {
 
     act(() => result.current.formFields.age.setValue(1.5));
 
-    expect(result.current.formFields.age.value).toBe(1.5);
-    expect(result.current.formFields.age.cleanValue).toBeUndefined();
+    expect(result.current.formFields.age.displayValue).toBe(1.5);
+    expect(result.current.formFields.age.normalizedValue).toBeUndefined();
 
     expect(result.current.isFormErred).toBeTruthy();
     expect(result.current.formErrors).toStrictEqual({
@@ -65,8 +65,8 @@ describe('Work with errors', () => {
 
     act(() => result.current.formFields.age.setValue(1.5));
 
-    expect(result.current.formFields.age.value).toBe(1.5);
-    expect(result.current.formFields.age.cleanValue).toBeUndefined();
+    expect(result.current.formFields.age.displayValue).toBe(1.5);
+    expect(result.current.formFields.age.normalizedValue).toBeUndefined();
 
     expect(result.current.formErrors).toStrictEqual({
       age: [
@@ -100,8 +100,8 @@ describe('Work with errors', () => {
 
     act(() => result.current.formFields.age.setValue(43));
 
-    expect(result.current.formFields.age.value).toBe(43);
-    expect(result.current.formFields.age.cleanValue).toBeUndefined();
+    expect(result.current.formFields.age.displayValue).toBe(43);
+    expect(result.current.formFields.age.normalizedValue).toBeUndefined();
 
     expect(result.current.formFields.age.errors).toStrictEqual([
       {
@@ -112,8 +112,8 @@ describe('Work with errors', () => {
 
     act(() => result.current.formFields.age.setValue(46));
 
-    expect(result.current.formFields.age.value).toBe(46);
-    expect(result.current.formFields.age.cleanValue).toBe(46);
+    expect(result.current.formFields.age.displayValue).toBe(46);
+    expect(result.current.formFields.age.normalizedValue).toBe(46);
 
     expect(result.current.formFields.age.errors).toStrictEqual([]);
   });

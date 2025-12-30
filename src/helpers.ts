@@ -220,7 +220,7 @@ export const forEachFormError = <Form extends HoneyFormBaseForm>(
  */
 export const getFormValues = <Form extends HoneyFormBaseForm, FormContext>(
   formFields: Nullable<HoneyFormFields<Form, FormContext>>,
-): Form => iterateFormFields(formFields, (_, formField) => formField.value) as Form;
+): Form => iterateFormFields(formFields, (_, formField) => formField.displayValue) as Form;
 
 /**
  * Checks if the given form field configuration is interactive.
@@ -384,24 +384,24 @@ export const getFormSubmitValues = <
     formFields,
     (_, formField) => {
       if (formField.__meta__.childForms) {
-        const childFormsCleanValues: HoneyFormBaseChildForm[] = [];
+        const childFormsSubmitValues: HoneyFormBaseChildForm[] = [];
 
         formField.__meta__.childForms.forEach(childForm => {
           const childFormFields = childForm.formFieldsRef.current;
           assert(childFormFields, HONEY_FORM_ERRORS.emptyFormFieldsRef);
 
-          childFormsCleanValues.push(
+          childFormsSubmitValues.push(
             getFormSubmitValues(parentField, formContext, childFormFields),
           );
         });
 
-        return childFormsCleanValues;
+        return childFormsSubmitValues;
       }
 
-      const isReturnActualValue =
+      const isReturnDisplayValue =
         !checkIsInteractiveField(formField.config) || formField.config.submitFormattedValue;
 
-      return isReturnActualValue ? formField.value : formField.cleanValue;
+      return isReturnDisplayValue ? formField.displayValue : formField.normalizedValue;
     },
     fieldName =>
       !isSkipField({
@@ -442,9 +442,8 @@ export const registerChildForm = <
   ParentForm extends HoneyFormBaseForm,
   ParentFieldName extends KeysWithArrayValues<ParentForm>,
   FormContext,
-  ChildForm extends HoneyFormExtractChildForm<
-    ParentForm[ParentFieldName]
-  > = HoneyFormExtractChildForm<ParentForm[ParentFieldName]>,
+  ChildForm extends HoneyFormExtractChildForm<ParentForm[ParentFieldName]> =
+    HoneyFormExtractChildForm<ParentForm[ParentFieldName]>,
 >(
   parentField: HoneyFormParentField<ParentForm, ParentFieldName>,
   childFormContext: HoneyFormChildFormContext<ParentForm, ChildForm, ParentFieldName, FormContext>,

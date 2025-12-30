@@ -27,16 +27,16 @@ describe('Dependent fields', () => {
       result.current.formFields.address.setValue('71st Queens');
     });
 
-    expect(result.current.formFields.city.value).toBe('New York');
-    expect(result.current.formFields.address.value).toBe('71st Queens');
+    expect(result.current.formFields.city.displayValue).toBe('New York');
+    expect(result.current.formFields.address.displayValue).toBe('71st Queens');
 
     act(() => result.current.formFields.city.setValue('New Jersey'));
 
-    expect(result.current.formFields.city.value).toBe('New Jersey');
+    expect(result.current.formFields.city.displayValue).toBe('New Jersey');
 
-    expect(result.current.formFields.address.value).toBeUndefined();
+    expect(result.current.formFields.address.displayValue).toBeUndefined();
     expect(result.current.formFields.address.rawValue).toBeUndefined();
-    expect(result.current.formFields.address.cleanValue).toBeUndefined();
+    expect(result.current.formFields.address.normalizedValue).toBeUndefined();
     expect(result.current.formFields.address.props.value).toBe('');
   });
 
@@ -65,8 +65,8 @@ describe('Dependent fields', () => {
       result.current.formFields.address.setValue('71st Queens');
     });
 
-    expect(result.current.formFields.city.value).toBe('New York');
-    expect(result.current.formFields.address.value).toBe('71st Queens');
+    expect(result.current.formFields.city.displayValue).toBe('New York');
+    expect(result.current.formFields.address.displayValue).toBe('71st Queens');
 
     act(() =>
       result.current.setFormValues({
@@ -74,16 +74,16 @@ describe('Dependent fields', () => {
       }),
     );
 
-    expect(result.current.formFields.city.value).toBe('New Jersey');
+    expect(result.current.formFields.city.displayValue).toBe('New Jersey');
 
-    expect(result.current.formFields.address.value).toBeUndefined();
+    expect(result.current.formFields.address.displayValue).toBeUndefined();
     expect(result.current.formFields.address.rawValue).toBeUndefined();
-    expect(result.current.formFields.address.cleanValue).toBeUndefined();
+    expect(result.current.formFields.address.normalizedValue).toBeUndefined();
     expect(result.current.formFields.address.props.value).toBe('');
 
     act(() => result.current.formFields.address.setValue('53rd King'));
 
-    expect(result.current.formFields.address.value).toBe('53rd King');
+    expect(result.current.formFields.address.displayValue).toBe('53rd King');
 
     act(() =>
       result.current.setFormValues(
@@ -96,7 +96,7 @@ describe('Dependent fields', () => {
       ),
     );
 
-    expect(result.current.formFields.address.value).toBe('53rd King');
+    expect(result.current.formFields.address.displayValue).toBe('53rd King');
   });
 
   it('should reset the field to its default value when a dependency changes and `resetOnDependencyToDefault` is true', () => {
@@ -126,16 +126,16 @@ describe('Dependent fields', () => {
       result.current.formFields.state.setValue('New York');
     });
 
-    expect(result.current.formFields.country.value).toBe('USA');
-    expect(result.current.formFields.state.value).toBe('New York');
+    expect(result.current.formFields.country.displayValue).toBe('USA');
+    expect(result.current.formFields.state.displayValue).toBe('New York');
 
     act(() => result.current.formFields.country.setValue('Canada'));
 
-    expect(result.current.formFields.country.value).toBe('Canada');
+    expect(result.current.formFields.country.displayValue).toBe('Canada');
 
-    expect(result.current.formFields.state.value).toBe('Select a state');
+    expect(result.current.formFields.state.displayValue).toBe('Select a state');
     expect(result.current.formFields.state.rawValue).toBe('Select a state');
-    expect(result.current.formFields.state.cleanValue).toBe('Select a state');
+    expect(result.current.formFields.state.normalizedValue).toBe('Select a state');
     expect(result.current.formFields.state.props.value).toBe('Select a state');
   });
 
@@ -163,8 +163,8 @@ describe('Dependent fields', () => {
 
     act(() => result.current.formFields.building.setValue('101st Brooklyn Road'));
 
-    expect(result.current.formFields.building.value).toBe('101st Brooklyn Road');
-    expect(result.current.formFields.unit.value).toBe('10A');
+    expect(result.current.formFields.building.displayValue).toBe('101st Brooklyn Road');
+    expect(result.current.formFields.unit.displayValue).toBe('10A');
   });
 
   it('should reset dependent fields in chain when parent field changes', () => {
@@ -198,22 +198,22 @@ describe('Dependent fields', () => {
       result.current.formFields.apt.setValue('341a');
     });
 
-    expect(result.current.formFields.city.value).toBe('New Jersey');
-    expect(result.current.formFields.address.value).toBe('53st Dockland');
-    expect(result.current.formFields.apt.value).toBe('341a');
+    expect(result.current.formFields.city.displayValue).toBe('New Jersey');
+    expect(result.current.formFields.address.displayValue).toBe('53st Dockland');
+    expect(result.current.formFields.apt.displayValue).toBe('341a');
 
     act(() => result.current.formFields.city.setValue('New York'));
 
-    expect(result.current.formFields.city.value).toBe('New York');
+    expect(result.current.formFields.city.displayValue).toBe('New York');
 
-    expect(result.current.formFields.address.value).toBeUndefined();
+    expect(result.current.formFields.address.displayValue).toBeUndefined();
     expect(result.current.formFields.address.rawValue).toBeUndefined();
-    expect(result.current.formFields.address.cleanValue).toBeUndefined();
+    expect(result.current.formFields.address.normalizedValue).toBeUndefined();
     expect(result.current.formFields.address.props.value).toBe('');
 
-    expect(result.current.formFields.apt.value).toBeUndefined();
+    expect(result.current.formFields.apt.displayValue).toBeUndefined();
     expect(result.current.formFields.apt.rawValue).toBeUndefined();
-    expect(result.current.formFields.apt.cleanValue).toBeUndefined();
+    expect(result.current.formFields.apt.normalizedValue).toBeUndefined();
     expect(result.current.formFields.apt.props.value).toBe('');
   });
 
@@ -281,16 +281,16 @@ describe('Dependent fields', () => {
       result.current.formFields.address2.setValue('71st Queens');
     });
 
-    expect(result.current.formFields.address1.value).toBeUndefined();
+    expect(result.current.formFields.address1.displayValue).toBeUndefined();
     expect(result.current.formFields.address1.props.value).toBe('');
 
-    expect(result.current.formFields.address2.value).toBe('71st Queens');
+    expect(result.current.formFields.address2.displayValue).toBe('71st Queens');
 
     act(() => result.current.formFields.address1.setValue('132st Rich-Port'));
 
-    expect(result.current.formFields.address1.value).toBe('132st Rich-Port');
+    expect(result.current.formFields.address1.displayValue).toBe('132st Rich-Port');
 
-    expect(result.current.formFields.address2.value).toBeUndefined();
+    expect(result.current.formFields.address2.displayValue).toBeUndefined();
     expect(result.current.formFields.address2.props.value).toBe('');
   });
 
@@ -324,13 +324,13 @@ describe('Dependent fields', () => {
       result.current.formFields.category.setValue('fruits');
     });
 
-    expect(result.current.formFields.name.value).toBe('apple');
-    expect(result.current.formFields.category.value).toBe('fruits');
+    expect(result.current.formFields.name.displayValue).toBe('apple');
+    expect(result.current.formFields.category.displayValue).toBe('fruits');
 
     act(() => result.current.formFields.customCategory.setValue('my-fruits'));
 
-    expect(result.current.formFields.name.value).toBe('apple');
-    expect(result.current.formFields.category.value).toBeUndefined();
-    expect(result.current.formFields.customCategory.value).toBe('my-fruits');
+    expect(result.current.formFields.name.displayValue).toBe('apple');
+    expect(result.current.formFields.category.displayValue).toBeUndefined();
+    expect(result.current.formFields.customCategory.displayValue).toBe('my-fruits');
   });
 });

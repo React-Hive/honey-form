@@ -29,7 +29,7 @@ describe('Form context', () => {
       result.current.formFields.name.setValue('Apple');
     });
 
-    expect(result.current.formFields.name.value).toBe('Apple');
+    expect(result.current.formFields.name.displayValue).toBe('Apple');
     expect(result.current.formErrors).toStrictEqual({});
   });
 
@@ -60,7 +60,7 @@ describe('Form context', () => {
       result.current.formFields.name.setValue('Apple123');
     });
 
-    expect(result.current.formFields.name.value).toBe('Apple');
+    expect(result.current.formFields.name.displayValue).toBe('Apple');
     expect(result.current.formErrors).toStrictEqual({});
   });
 
@@ -91,7 +91,7 @@ describe('Form context', () => {
       result.current.formFields.price.setValue('15');
     });
 
-    expect(result.current.formFields.price.value).toBe('$15');
+    expect(result.current.formFields.price.displayValue).toBe('$15');
     expect(result.current.formErrors).toStrictEqual({});
   });
 });

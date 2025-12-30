@@ -17,7 +17,7 @@ describe('Dynamic fields', () => {
       });
     });
 
-    expect(result.current.formFields.gender?.value).toBe('female');
+    expect(result.current.formFields.gender?.displayValue).toBe('female');
   });
 
   it('should submit dynamically added a form field with other fields', async () => {
@@ -58,10 +58,10 @@ describe('Dynamic fields', () => {
         },
       }),
     );
-    expect(result.current.formFields.age?.value).toBe(10);
+    expect(result.current.formFields.age?.displayValue).toBe(10);
 
     act(() => result.current.removeFormField('age'));
 
-    expect(result.current.formFields.age?.value).toBeUndefined();
+    expect(result.current.formFields.age?.displayValue).toBeUndefined();
   });
 });

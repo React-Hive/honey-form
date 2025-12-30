@@ -121,8 +121,8 @@ describe('Number field type', () => {
       }),
     );
 
-    expect(result.current.formFields.age.value).toBeUndefined();
-    expect(result.current.formFields.age.cleanValue).toBeUndefined();
+    expect(result.current.formFields.age.displayValue).toBeUndefined();
+    expect(result.current.formFields.age.normalizedValue).toBeUndefined();
   });
 
   it('string value should be converted to number using number type', () => {
@@ -142,8 +142,8 @@ describe('Number field type', () => {
       } as ChangeEvent<HTMLInputElement>),
     );
 
-    expect(result.current.formFields.age.value).toBe('35');
-    expect(result.current.formFields.age.cleanValue).toBe(35);
+    expect(result.current.formFields.age.displayValue).toBe('35');
+    expect(result.current.formFields.age.normalizedValue).toBe(35);
   });
 
   it('empty string value should be converted to `undefined` using number type', () => {
@@ -163,8 +163,8 @@ describe('Number field type', () => {
       } as ChangeEvent<HTMLInputElement>),
     );
 
-    expect(result.current.formFields.age.value).toBe('');
-    expect(result.current.formFields.age.cleanValue).toBeUndefined();
+    expect(result.current.formFields.age.displayValue).toBe('');
+    expect(result.current.formFields.age.normalizedValue).toBeUndefined();
   });
 
   it('negative value should be allowed by default for number field type', () => {
@@ -180,8 +180,8 @@ describe('Number field type', () => {
 
     act(() => result.current.formFields.age.setValue(-5));
 
-    expect(result.current.formFields.age.value).toBe(-5);
-    expect(result.current.formFields.age.cleanValue).toBe(-5);
+    expect(result.current.formFields.age.displayValue).toBe(-5);
+    expect(result.current.formFields.age.normalizedValue).toBe(-5);
     expect(result.current.formFields.age.errors).toStrictEqual([]);
   });
 });

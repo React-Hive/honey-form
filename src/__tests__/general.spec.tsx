@@ -171,22 +171,22 @@ describe('General tests', () => {
       }),
     );
 
-    expect(result.current.formFields.name.value).toBe('banana');
-    expect(result.current.formFields.name.cleanValue).toBe('banana');
+    expect(result.current.formFields.name.displayValue).toBe('banana');
+    expect(result.current.formFields.name.normalizedValue).toBe('banana');
     expect(result.current.formFields.name.props.value).toBe('banana');
 
-    expect(result.current.formFields.kind.value).toBe('fruit');
-    expect(result.current.formFields.kind.cleanValue).toBe('fruit');
+    expect(result.current.formFields.kind.displayValue).toBe('fruit');
+    expect(result.current.formFields.kind.normalizedValue).toBe('fruit');
     expect(result.current.formFields.kind.props.value).toBe('fruit');
 
     act(() => result.current.setFormValues({ name: 'apple' }));
 
-    expect(result.current.formFields.name.value).toBe('apple');
-    expect(result.current.formFields.name.cleanValue).toBe('apple');
+    expect(result.current.formFields.name.displayValue).toBe('apple');
+    expect(result.current.formFields.name.normalizedValue).toBe('apple');
     expect(result.current.formFields.name.props.value).toBe('apple');
 
-    expect(result.current.formFields.kind.value).toBe('fruit');
-    expect(result.current.formFields.kind.cleanValue).toBe('fruit');
+    expect(result.current.formFields.kind.displayValue).toBe('fruit');
+    expect(result.current.formFields.kind.normalizedValue).toBe('fruit');
     expect(result.current.formFields.kind.props.value).toBe('fruit');
   });
 
@@ -208,15 +208,15 @@ describe('General tests', () => {
 
     act(() => result.current.formFields.kind.setValue('vegetable'));
 
-    expect(result.current.formFields.kind.value).toBe('vegetable');
+    expect(result.current.formFields.kind.displayValue).toBe('vegetable');
 
     act(() => result.current.setFormValues({ name: 'orange' }, { clearAll: true }));
 
-    expect(result.current.formFields.name.value).toBe('orange');
+    expect(result.current.formFields.name.displayValue).toBe('orange');
 
-    expect(result.current.formFields.kind.value).toBe('fruit');
+    expect(result.current.formFields.kind.displayValue).toBe('fruit');
     expect(result.current.formFields.kind.rawValue).toBe('fruit');
-    expect(result.current.formFields.kind.cleanValue).toBe('fruit');
+    expect(result.current.formFields.kind.normalizedValue).toBe('fruit');
     expect(result.current.formFields.kind.props.value).toBe('fruit');
   });
 
@@ -237,7 +237,7 @@ describe('General tests', () => {
       }),
     );
 
-    expect(result.current.formFields.name.value).toBe('apple');
+    expect(result.current.formFields.name.displayValue).toBe('apple');
   });
 
   it('should synchronize form values with external values', () => {
@@ -257,12 +257,12 @@ describe('General tests', () => {
       }),
     );
 
-    expect(result.current.formFields.name.value).toBe('banana');
+    expect(result.current.formFields.name.displayValue).toBe('banana');
 
     externalFormValues = { name: 'apple' };
     rerender();
 
-    expect(result.current.formFields.name.value).toBe('apple');
+    expect(result.current.formFields.name.displayValue).toBe('apple');
   });
 
   it('should not synchronize form values with external values for dirty fields', () => {
@@ -291,7 +291,7 @@ describe('General tests', () => {
       }),
     );
 
-    expect(result.current.formFields.nameA.value).toBe('banana');
+    expect(result.current.formFields.nameA.displayValue).toBe('banana');
 
     act(() => result.current.formFields.nameA.setValue('pear'));
 
@@ -302,7 +302,7 @@ describe('General tests', () => {
 
     rerender();
 
-    expect(result.current.formFields.nameA.value).toBe('pear');
-    expect(result.current.formFields.nameB.value).toBe('mango');
+    expect(result.current.formFields.nameA.displayValue).toBe('pear');
+    expect(result.current.formFields.nameB.displayValue).toBe('mango');
   });
 });

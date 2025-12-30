@@ -45,6 +45,12 @@ export interface HoneyFormApi<Form extends HoneyFormBaseForm, FormContext = unde
    */
   readonly formValues: HoneyFormValues<Form>;
   /**
+   * Provides quick access to the normalized values of all form fields.
+   *
+   * @default {}
+   */
+  readonly formSubmitValues: HoneyFormValues<Form>;
+  /**
    * Provides quick access to the default values of all form fields.
    *
    * @default {}

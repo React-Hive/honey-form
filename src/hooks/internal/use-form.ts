@@ -108,7 +108,6 @@ export const useForm = <
   formContextRef.current = formContext;
 
   const formFieldsRef = useRef<Nullable<HoneyFormFields<Form, FormContext>>>(null);
-  const formValuesRef = useRef<Nullable<Form>>(null);
   const formErrorsRef = useRef<Nullable<HoneyFormErrors<Form>>>(null);
   const formFieldsValidationControllerRef = useRef<HoneyFormFieldsValidationController<Form>>({});
   const isFormDirtyRef = useRef(false);
@@ -151,9 +150,13 @@ export const useForm = <
 
     if (!parentField) {
       if (storage) {
-        const formValues = getFormSubmitValues(parentField, formContextRef.current, nextFormFields);
+        const submitValues = getFormSubmitValues(
+          parentField,
+          formContextRef.current,
+          nextFormFields,
+        );
 
-        saveFormToStorage(storage, fields, formName, formValues);
+        saveFormToStorage(storage, fields, formName, submitValues);
       }
     }
 
@@ -166,11 +169,7 @@ export const useForm = <
     }
 
     const initiateOnChange = () => {
-      const cleanFormValues = getFormSubmitValues(
-        parentField,
-        formContextRef.current,
-        nextFormFields,
-      );
+      const submitValues = getFormSubmitValues(parentField, formContextRef.current, nextFormFields);
 
       const formValues = getFormValues(nextFormFields);
 
@@ -182,7 +181,7 @@ export const useForm = <
 
       const formErrors = getFormErrors(nextFormFields);
 
-      onChange(cleanFormValues, {
+      onChange(submitValues, {
         ...executionContext,
         parentField,
         formErrors,
@@ -224,11 +223,11 @@ export const useForm = <
     const initiateOnChange = () => {
       const formValues = getFormValues(nextFormFields);
 
-      const cleanValue = checkIsNestedFormsField(fieldConfig)
+      const normalizedValue = checkIsNestedFormsField(fieldConfig)
         ? (nextFormFields[fieldName].getChildFormsValues() as Form[typeof fieldName])
-        : nextFormFields[fieldName].cleanValue;
+        : nextFormFields[fieldName].normalizedValue;
 
-      fieldConfig.onChange(cleanValue, {
+      fieldConfig.onChange(normalizedValue, {
         formValues,
         formContext: formContextRef.current,
         formFields: nextFormFields,
@@ -491,7 +490,7 @@ export const useForm = <
 
     setFieldValue(
       fieldName,
-      [...(formFields[fieldName].value as []), value] as Form[typeof fieldName],
+      [...(formFields[fieldName].displayValue as []), value] as Form[typeof fieldName],
       {
         shouldSetChildFormsValues: false,
       },
@@ -750,7 +749,7 @@ export const useForm = <
 
       isFormValidRef.current = !isFormErred;
 
-      // Set the new `nextFormFields` value to the ref to access it at getting clean values at submitting
+      // Set the new `nextFormFields` value to the ref to access it at getting normalized values at submitting
       formFieldsRef.current = nextFormFields;
       setFormFields(nextFormFields);
 
@@ -925,9 +924,6 @@ export const useForm = <
   const checkIsAnyFormFieldValidating = () =>
     Object.keys(formFieldsRef.current).some(fieldName => formFields[fieldName].isValidating);
 
-  const formValues = useMemo(() => getFormValues(formFields), [formFields]);
-  formValuesRef.current = formValues;
-
   const formErrors = useMemo(() => getFormErrors(formFields), [formFields]);
   formErrorsRef.current = formErrors;
 
@@ -943,7 +939,10 @@ export const useForm = <
       return formFieldsRef.current;
     },
     get formValues() {
-      return formValuesRef.current;
+      return getFormValues(formFieldsRef.current);
+    },
+    get formSubmitValues() {
+      return getFormSubmitValues(parentField, formContext, formFieldsRef.current);
     },
     get formErrors() {
       return formErrorsRef.current;

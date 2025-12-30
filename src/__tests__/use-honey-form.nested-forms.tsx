@@ -45,7 +45,7 @@ describe('Nested forms', () => {
 
     act(() => result.current.formFields.items.setValue([]));
 
-    expect(result.current.formFields.items.value).toStrictEqual([]);
+    expect(result.current.formFields.items.displayValue).toStrictEqual([]);
   });
 
   it('should populate the parent field with default values from the child form initially', () => {

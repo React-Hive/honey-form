@@ -12,7 +12,7 @@ describe('Scheduled field validation', () => {
             validator: (value, { formFields, scheduleValidation }) => {
               scheduleValidation('amountTo');
 
-              if (value > formFields.amountTo.value) {
+              if (value > formFields.amountTo.displayValue) {
                 return 'The `amountFrom` field value must be less than `amountTo`';
               }
 
@@ -24,7 +24,7 @@ describe('Scheduled field validation', () => {
             validator: (value, { formFields, scheduleValidation }) => {
               scheduleValidation('amountFrom');
 
-              if (value < formFields.amountFrom.value) {
+              if (value < formFields.amountFrom.displayValue) {
                 return 'The `amountTo` field value must be greater than `amountFrom`';
               }
 

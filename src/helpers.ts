@@ -229,7 +229,7 @@ export const getFormValues = <Form extends HoneyFormBaseForm, FormContext>(
  *
  * @returns A boolean indicating whether the field is interactive.
  */
-export const checkIsInteractiveField = <
+export const isInteractiveField = <
   Form extends HoneyFormBaseForm,
   FieldName extends keyof Form,
   FormContext,
@@ -248,7 +248,7 @@ export const checkIsInteractiveField = <
  *
  * @returns A boolean indicating whether the field is of a passive type.
  */
-export const checkIsPassiveField = <
+export const isPassiveField = <
   Form extends HoneyFormBaseForm,
   FieldName extends keyof Form,
   FormContext,
@@ -264,7 +264,7 @@ export const checkIsPassiveField = <
  *
  * @returns A boolean indicating whether the field is of an object type.
  */
-export const checkIsObjectField = <
+export const isObjectField = <
   Form extends HoneyFormBaseForm,
   FieldName extends keyof Form,
   FormContext,
@@ -280,7 +280,7 @@ export const checkIsObjectField = <
  *
  * @returns A boolean indicating whether the field is nested forms.
  */
-export const checkIsNestedFormsField = <
+export const isNestedFormsField = <
   Form extends HoneyFormBaseForm,
   FieldName extends keyof Form,
   FormContext,
@@ -289,7 +289,7 @@ export const checkIsNestedFormsField = <
 ): fieldConfig is HoneyFormNestedFormsFieldConfig<Form, FieldName, FormContext> =>
   fieldConfig.type === 'nestedForms';
 
-export const checkIsPolymorphicField = <
+export const isPolymorphicField = <
   Form extends HoneyFormBaseForm,
   FieldName extends keyof Form,
   FormContext,
@@ -301,7 +301,7 @@ export const checkIsPolymorphicField = <
 /**
  * Options object for determining whether to skip a form field.
  */
-type CheckShouldSkipFieldOptions<
+type IsSkipFieldOptions<
   ParentForm extends HoneyFormBaseForm,
   ParentFieldName extends KeysWithArrayValues<ParentForm>,
   Form extends HoneyFormBaseForm,
@@ -333,13 +333,7 @@ export const isSkipField = <
   executionContext,
   fieldName,
   ...options
-}: CheckShouldSkipFieldOptions<
-  ParentForm,
-  ParentFieldName,
-  Form,
-  FieldName,
-  FormContext
->): boolean =>
+}: IsSkipFieldOptions<ParentForm, ParentFieldName, Form, FieldName, FormContext>): boolean =>
   executionContext.formFields[fieldName].config.skip?.({
     ...executionContext,
     ...options,
@@ -399,7 +393,7 @@ export const getFormSubmitValues = <
       }
 
       const isReturnDisplayValue =
-        !checkIsInteractiveField(formField.config) || formField.config.submitFormattedValue;
+        !isInteractiveField(formField.config) || formField.config.submitFormattedValue;
 
       return isReturnDisplayValue ? formField.displayValue : formField.normalizedValue;
     },

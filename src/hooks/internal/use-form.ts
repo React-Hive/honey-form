@@ -17,8 +17,8 @@ import {
 } from '../../field';
 import {
   warning,
-  checkIsInteractiveField,
-  checkIsNestedFormsField,
+  isInteractiveField,
+  isNestedFormsField,
   forEachFormError,
   getFormErrors,
   getFormValues,
@@ -108,6 +108,8 @@ export const useForm = <
   formContextRef.current = formContext;
 
   const formFieldsRef = useRef<Nullable<HoneyFormFields<Form, FormContext>>>(null);
+  const formValuesRef = useRef<Nullable<Form>>(null);
+  const formSubmitValuesRef = useRef<Nullable<Form>>(null);
   const formErrorsRef = useRef<Nullable<HoneyFormErrors<Form>>>(null);
   const formFieldsValidationControllerRef = useRef<HoneyFormFieldsValidationController<Form>>({});
   const isFormDirtyRef = useRef(false);
@@ -223,7 +225,7 @@ export const useForm = <
     const initiateOnChange = () => {
       const formValues = getFormValues(nextFormFields);
 
-      const normalizedValue = checkIsNestedFormsField(fieldConfig)
+      const normalizedValue = isNestedFormsField(fieldConfig)
         ? (nextFormFields[fieldName].getChildFormsValues() as Form[typeof fieldName])
         : nextFormFields[fieldName].normalizedValue;
 
@@ -302,7 +304,7 @@ export const useForm = <
             };
 
             const filteredValue =
-              checkIsInteractiveField(fieldConfig) && fieldConfig.filter
+              isInteractiveField(fieldConfig) && fieldConfig.filter
                 ? fieldConfig.filter(targetValues[fieldName], executionContext)
                 : targetValues[fieldName];
 
@@ -414,7 +416,7 @@ export const useForm = <
         const isFieldPreviouslyErred = formField.errors.length > 0;
         // Validation is deferred when the field's mode is `submit` (validation will only happen on form submission)
         const isValidateOnSubmit =
-          checkIsInteractiveField(formField.config) && formField.config.mode === 'submit';
+          isInteractiveField(formField.config) && formField.config.mode === 'submit';
 
         const isValidateField = !isValidateOnSubmit && (validate || isFieldPreviouslyErred);
 
@@ -441,7 +443,7 @@ export const useForm = <
         if (shouldSetChildFormsValues) {
           const fieldConfig = nextFormFields[fieldName].config;
 
-          if (checkIsNestedFormsField(fieldConfig)) {
+          if (isNestedFormsField(fieldConfig)) {
             const childForms = formField.__meta__.childForms ?? [];
 
             if (childForms.length) {
@@ -526,12 +528,12 @@ export const useForm = <
 
     let filteredValue: Form[typeof fieldName];
 
-    if (checkIsInteractiveField(formField.config)) {
+    if (isInteractiveField(formField.config)) {
       filteredValue = formField.config.filter
         ? formField.config.filter(formField.rawValue, executionContext)
         : formField.rawValue;
       //
-    } else if (checkIsNestedFormsField(formField.config)) {
+    } else if (isNestedFormsField(formField.config)) {
       filteredValue = formField.getChildFormsValues() as Form[typeof fieldName];
       //
     } else {
@@ -924,6 +926,15 @@ export const useForm = <
   const checkIsAnyFormFieldValidating = () =>
     Object.keys(formFieldsRef.current).some(fieldName => formFields[fieldName].isValidating);
 
+  const formValues = useMemo(() => getFormValues(formFields), [formFields]);
+  formValuesRef.current = formValues;
+
+  const formSubmitValues = useMemo(
+    () => getFormSubmitValues(parentField, formContext, formFields),
+    [formContext, formFields],
+  );
+  formSubmitValuesRef.current = formSubmitValues;
+
   const formErrors = useMemo(() => getFormErrors(formFields), [formFields]);
   formErrorsRef.current = formErrors;
 
@@ -939,10 +950,10 @@ export const useForm = <
       return formFieldsRef.current;
     },
     get formValues() {
-      return getFormValues(formFieldsRef.current);
+      return formValuesRef.current;
     },
     get formSubmitValues() {
-      return getFormSubmitValues(parentField, formContext, formFieldsRef.current);
+      return formSubmitValuesRef.current;
     },
     get formErrors() {
       return formErrorsRef.current;

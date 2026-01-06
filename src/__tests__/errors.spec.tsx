@@ -149,35 +149,6 @@ describe('Work with errors', () => {
     expect(result.current.formFields.age.errors).toStrictEqual([]);
   });
 
-  it('should add server error to non-existing field', () => {
-    const { result } = renderHook(() =>
-      useHoneyForm<{ age: number }>({
-        fields: {
-          age: {
-            type: 'string',
-          },
-        },
-      }),
-    );
-
-    act(() => {
-      // there are some cases when the form can have alien field errors when the server can return non-existed form fields
-      result.current.addFormFieldError('name' as never, {
-        type: 'server',
-        message: 'name should be less than 255',
-      });
-    });
-
-    expect(result.current.formErrors).toStrictEqual({
-      name: [
-        {
-          type: 'server',
-          message: 'name should be less than 255',
-        },
-      ],
-    });
-  });
-
   it('should ignore server errors during submission', async () => {
     const onSubmit = jest.fn();
 

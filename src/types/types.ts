@@ -785,7 +785,7 @@ export type HoneyFormInteractiveFieldBuiltInValidator = <
   validatorContext: HoneyFormInteractiveFieldBuiltInValidatorContext<Form, FieldName, FormContext>,
 ) => void;
 
-export type HoneyFormFieldValueConvertor<FieldValue> = (value: unknown) => FieldValue;
+export type HoneyFormFieldValueNormalizer<FieldValue> = (value: unknown) => FieldValue;
 
 export type HoneyFormFieldsRef<Form extends HoneyFormBaseChildForm, FormContext> = RefObject<
   Nullable<HoneyFormFields<Form, FormContext>>

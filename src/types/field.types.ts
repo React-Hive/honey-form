@@ -120,8 +120,10 @@ export type HoneyFormFieldCustomErrorMessages<Form extends HoneyFormBaseForm, Fo
  */
 export type HoneyFormFieldErrorType = keyof HoneyFormFieldCustomErrorMessages<any, any>;
 
-export interface HoneyFormFieldBaseHTMLAttributes<T>
-  extends Omit<InputHTMLAttributes<T>, 'children'> {
+export interface HoneyFormFieldBaseHTMLAttributes<T> extends Omit<
+  InputHTMLAttributes<T>,
+  'children'
+> {
   ref: RefObject<T>;
 }
 
@@ -129,8 +131,10 @@ export interface HoneyFormFieldBaseHTMLAttributes<T>
  * Represents the props for a form field component.
  * These props are typically used for input elements.
  */
-export interface HoneyFormInteractiveFieldProps
-  extends Omit<HoneyFormFieldBaseHTMLAttributes<any>, 'value'> {
+export interface HoneyFormInteractiveFieldProps extends Omit<
+  HoneyFormFieldBaseHTMLAttributes<any>,
+  'value'
+> {
   value: string | undefined;
 }
 

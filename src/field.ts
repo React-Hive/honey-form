@@ -484,7 +484,10 @@ export const createFormField = <
     setValue: (value, options) => setFieldValue(fieldName, value, options),
     pushValue: value => pushFieldValue(fieldName, value),
     removeValue: formIndex => removeFieldValue(fieldName, formIndex),
-    resetValue: () => setFieldValue(fieldName, formDefaultsRef.current[fieldName]),
+    resetValue: () =>
+      setFieldValue(fieldName, formDefaultsRef.current[fieldName], {
+        dirty: false,
+      }),
     addErrors: errors => addFormFieldErrors(fieldName, errors),
     addError: error => addFormFieldErrors(fieldName, [error]),
     clearErrors: () => clearFieldErrors(fieldName),

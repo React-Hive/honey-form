@@ -609,7 +609,7 @@ export const useForm = <
   const addFormField = useCallback<HoneyFormAddFormField<Form, FormContext>>(
     (fieldName, fieldConfig) => {
       const formFields = resolveFormFields();
-      if (formFields[fieldName]) {
+      if (fieldName in formFields) {
         warning(`Form field "${fieldName.toString()}" is already present.`);
       }
 
@@ -924,7 +924,9 @@ export const useForm = <
   }, [externalValues, validateExternalValues, skipSyncDirtyFields]);
 
   const checkIsAnyFormFieldValidating = () =>
-    Object.keys(formFieldsRef.current).some(fieldName => formFields[fieldName].isValidating);
+    Object.values(formFieldsRef.current).some(
+      (field: HoneyFormField<Form, keyof Form>) => field.isValidating,
+    );
 
   const formValues = useMemo(() => getFormValues(formFields), [formFields]);
   formValuesRef.current = formValues;
@@ -980,12 +982,12 @@ export const useForm = <
       return Object.keys(formErrorsRef.current).length > 0;
     },
     get isFormSubmitAllowed() {
-      const isAnyFormFieldValidating = checkIsAnyFormFieldValidating();
+      const isAnyFieldValidating = checkIsAnyFormFieldValidating();
 
       return (
         !isFormDefaultsFetching &&
         !isFormDefaultsFetchingErred &&
-        !isAnyFormFieldValidating &&
+        !isAnyFieldValidating &&
         !formState.isValidating &&
         !formState.isSubmitting
       );

@@ -1,6 +1,6 @@
 {
   "name": "@react-hive/honey-form",
-  "version": "8.1.0",
+  "version": "8.2.0",
   "description": "The TS library to build the fully customized forms using React framework",
   "keywords": [
     "react",
@@ -15,7 +15,7 @@
     "type": "git",
     "url": "git+ssh://git@github.com/React-Hive/honey-form.git"
   },
-  "author": "Mykhailo Aliinyk <m.aliynik@gmail.com>",
+  "author": "Mike Aliinyk <m.aliynik@gmail.com>",
   "license": "MIT",
   "scripts": {
     "build": "webpack --config webpack.config.mjs",
@@ -42,7 +42,7 @@
     "react-dom": "^19.0.0"
   },
   "dependencies": {
-    "@react-hive/honey-utils": "3.12.0"
+    "@react-hive/honey-utils": "3.15.0"
   },
   "devDependencies": {
     "@eslint/js": "9.39.2",
@@ -63,7 +63,7 @@
     "ts-jest": "29.4.5",
     "ts-loader": "9.5.4",
     "typescript": "5.9.3",
-    "typescript-eslint": "8.51.0",
+    "typescript-eslint": "8.52.0",
     "webpack": "5.104.1",
     "webpack-cli": "6.0.1"
   },

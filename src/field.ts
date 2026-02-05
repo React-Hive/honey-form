@@ -458,6 +458,7 @@ export const createFormField = <
   return {
     ...fieldProps,
     normalizedValue,
+    ref: formFieldRef,
     config: resultFieldConfig,
     errors: [],
     defaultValue: resultFieldConfig.defaultValue,

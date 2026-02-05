@@ -858,6 +858,10 @@ interface BaseHoneyFormField<
   FieldValue extends Form[FieldName] = Form[FieldName],
 > {
   /**
+   * A reference to the HTML element associated with the field.
+   */
+  readonly ref: RefObject<Nullable<HTMLElement>>;
+  /**
    * Configuration options for this field.
    */
   readonly config: HoneyFormFieldConfig<Form, FieldName, FormContext, FieldValue>;

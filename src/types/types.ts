@@ -856,11 +856,12 @@ interface BaseHoneyFormField<
   FieldName extends keyof Form,
   FormContext = undefined,
   FieldValue extends Form[FieldName] = Form[FieldName],
+  FieldRef extends HTMLElement = HTMLElement,
 > {
   /**
    * A reference to the HTML element associated with the field.
    */
-  readonly ref: RefObject<Nullable<HTMLElement>>;
+  readonly ref: RefObject<Nullable<FieldRef>>;
   /**
    * Configuration options for this field.
    */

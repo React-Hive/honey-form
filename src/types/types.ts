@@ -916,7 +916,7 @@ interface BaseHoneyFormField<
    */
   readonly removeValue: (formIndex: number) => void;
   /**
-   * Reset field value to default value and clear all errors.
+   * Reset the field value to the default value and clear all errors.
    */
   readonly resetValue: () => void;
   /**

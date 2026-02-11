@@ -488,6 +488,7 @@ export const createFormField = <
     resetValue: () =>
       setFieldValue(fieldName, formDefaultsRef.current[fieldName], {
         dirty: false,
+        shouldSetChildFormsValues: false,
       }),
     addErrors: errors => addFormFieldErrors(fieldName, errors),
     addError: error => addFormFieldErrors(fieldName, [error]),

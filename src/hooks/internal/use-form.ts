@@ -60,6 +60,7 @@ import type {
   HoneyFormFieldsValidationController,
   HoneyFormBaseExecutionContext,
   HoneyFormField,
+  HoneyFormServerErrors,
 } from '../../types';
 
 const FORM_DEFAULTS = {};
@@ -358,7 +359,11 @@ export const useForm = <
     const nextFormFields = { ...formFields };
 
     forEachFormError(formErrors, (fieldName, fieldErrors) => {
-      nextFormFields[fieldName] = getNextErredField(nextFormFields[fieldName], fieldErrors);
+      if (fieldName in nextFormFields) {
+        nextFormFields[fieldName] = getNextErredField(nextFormFields[fieldName], fieldErrors);
+      } else {
+        warning(`Attempted to set errors for unknown field "${fieldName.toString()}"`);
+      }
     });
 
     formFieldsRef.current = nextFormFields;
@@ -610,7 +615,7 @@ export const useForm = <
     (fieldName, fieldConfig) => {
       const formFields = resolveFormFields();
       if (fieldName in formFields) {
-        warning(`Form field "${fieldName.toString()}" is already present.`);
+        warning(`Form field "${fieldName.toString()}" is already present`);
       }
 
       const executionContext: HoneyFormBaseExecutionContext<Form, FormContext> = {
@@ -843,6 +848,19 @@ export const useForm = <
     }
   }, []);
 
+  const setFormServerErrors = (serverErrors: HoneyFormServerErrors<Form>) => {
+    if (Object.keys(serverErrors).length) {
+      setFormErrors(
+        convertServerErrors(serverErrors, (_, fieldErrors) =>
+          fieldErrors.map(errorMsg => ({
+            type: 'server',
+            message: errorMsg,
+          })),
+        ),
+      );
+    }
+  };
+
   const submitForm = useCallback<HoneyFormSubmit<Form, FormContext>>(
     async formSubmitHandler => {
       assert(formFieldsRef.current, HONEY_FORM_ERRORS.emptyFormFieldsRef);
@@ -870,17 +888,13 @@ export const useForm = <
 
           const submitHandler = formSubmitHandler || onSubmit;
 
-          const serverErrors = await submitHandler(submitValues, { formContext });
+          const serverErrors = await submitHandler(submitValues, {
+            formContext,
+            setFormServerErrors,
+          });
 
           if (serverErrors && Object.keys(serverErrors).length) {
-            setFormErrors(
-              convertServerErrors(serverErrors, (_, fieldErrors) =>
-                fieldErrors.map(errorMsg => ({
-                  type: 'server',
-                  message: errorMsg,
-                })),
-              ),
-            );
+            setFormServerErrors(serverErrors);
           } else {
             isFormDirtyRef.current = false;
             isFormSubmittedRef.current = true;

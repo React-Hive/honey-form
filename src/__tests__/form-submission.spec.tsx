@@ -26,7 +26,7 @@ describe('Form submission', () => {
 
     await act(() => result.current.submitForm());
 
-    expect(onSubmit).toHaveBeenCalledWith({ name: 'Peter', age: 23 }, { context: undefined });
+    expect(onSubmit).toHaveBeenCalledWith({ name: 'Peter', age: 23 }, expect.any(Object));
   });
 
   it('should update form states after successful submission', async () => {
@@ -114,10 +114,7 @@ describe('Form submission', () => {
 
     await act(() => result.current.submitForm(submitHandler));
 
-    expect(submitHandler).toHaveBeenCalledWith(
-      { name: 'Ken', age: undefined },
-      { context: undefined },
-    );
+    expect(submitHandler).toHaveBeenCalledWith({ name: 'Ken', age: undefined }, expect.any(Object));
   });
 
   it('should prevent form submission with errors', async () => {

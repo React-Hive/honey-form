@@ -44,7 +44,7 @@ describe('Dynamic fields', () => {
 
     await act(() => result.current.submitForm());
 
-    expect(onSubmit).toHaveBeenCalledWith({ age: 30, gender: 'female' }, { context: undefined });
+    expect(onSubmit).toHaveBeenCalledWith({ age: 30, gender: 'female' }, expect.any(Object));
   });
 
   it('should remove dynamically added the form field', () => {

@@ -48,7 +48,7 @@ describe('Formatter function', () => {
     expect(result.current.formFields.price.displayValue).toBe('$5');
     expect(result.current.formFields.price.normalizedValue).toBe('5');
 
-    expect(onSubmit).toHaveBeenCalledWith({ price: '5' }, { context: undefined });
+    expect(onSubmit).toHaveBeenCalledWith({ price: '5' }, expect.any(Object));
   });
 
   test('submit form with normalized and not displayed values', async () => {
@@ -80,7 +80,7 @@ describe('Formatter function', () => {
 
     await act(() => result.current.submitForm());
 
-    expect(onSubmit).toHaveBeenCalledWith({ name: 'apple', price: 15 }, { context: undefined });
+    expect(onSubmit).toHaveBeenCalledWith({ name: 'apple', price: 15 }, expect.any(Object));
   });
 
   test('submit formatted value when flag `submitFormattedValue: true`', async () => {
@@ -106,7 +106,7 @@ describe('Formatter function', () => {
 
     await act(() => result.current.submitForm());
 
-    expect(onSubmit).toHaveBeenCalledWith({ cardExpirationDate: '10/29' }, { context: undefined });
+    expect(onSubmit).toHaveBeenCalledWith({ cardExpirationDate: '10/29' }, expect.any(Object));
   });
 });
 

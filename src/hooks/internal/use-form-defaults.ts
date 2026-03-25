@@ -101,7 +101,7 @@ export const useFormDefaults = <Form extends HoneyFormBaseForm, FormContext = un
         }
 
         if (currentFetchId === fetchIdRef.current) {
-          error('Unable to fetch or process the form default values.');
+          error('Unable to fetch or process the form default values');
 
           setIsFormDefaultsFetchingErred(true);
         }

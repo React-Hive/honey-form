@@ -1089,16 +1089,35 @@ export type HoneyFormServerErrors<Form extends HoneyFormBaseForm> = {
 };
 
 /**
- * Context object passed to the form submission handler.
+ * Context object provided to the form-level `onSubmit` handler.
  *
- * This type defines the context that is provided to the `onSubmit` callback function, allowing
- * access to additional contextual information relevant to the form submission.
+ * This context is the primary bridge between client-side form state
+ * and server-side processing. It provides access to shared context
+ * and utilities for propagating server validation results back into the form.
  */
-interface HoneyFormOnSubmitContext<FormContext> {
+interface HoneyFormOnSubmitContext<Form extends HoneyFormBaseForm, FormContext> {
   /**
    * The contextual information for the form.
    */
   formContext: FormContext;
+  /**
+   * Assigns server-side validation errors to the form.
+   *
+   * @param errors - A mapping of field names to error messages.
+   *
+   * @example
+   * ```ts
+   * setFormServerErrors({
+   *   password: ['Password is too weak'],
+   * });
+   * ```
+   *
+   * @remarks
+   * - Does not stop execution or reject submission.
+   * - If both returning errors and calling this method are used,
+   *   ensure consistency to avoid duplicated state updates.
+   */
+  setFormServerErrors: (errors: HoneyFormServerErrors<Form>) => void;
 }
 
 /**
@@ -1121,7 +1140,7 @@ interface HoneyFormOnSubmitContext<FormContext> {
  */
 export type HoneyFormOnSubmit<Form extends HoneyFormBaseForm, FormContext = undefined> = (
   data: Form,
-  submitContext: HoneyFormOnSubmitContext<FormContext>,
+  submitContext: HoneyFormOnSubmitContext<Form, FormContext>,
 ) => Promise<HoneyFormServerErrors<Form> | void>;
 
 /**
@@ -1545,13 +1564,36 @@ export type HoneyFormValidate<Form extends HoneyFormBaseForm> = (
 ) => Promise<boolean>;
 
 /**
- * Represents a context object for the submit handler function.
+ * Context object provided to a custom submit handler passed to `form.submit(...)`.
+ *
+ * This is a lightweight version of the submission context, intended for
+ * programmatic or ad-hoc submissions where full `onSubmit` lifecycle handling
+ * is not required.
+ *
+ * @remarks
+ * - Typically used when overriding submission behavior at call time.
+ * - Mirrors a subset of `HoneyFormOnSubmitContext`.
  */
-interface HoneyFormSubmitHandlerContext<FormContext> {
+interface HoneyFormSubmitHandlerContext<Form extends HoneyFormBaseForm, FormContext> {
   /**
    * The contextual information for the form submission.
    */
   formContext: FormContext;
+  /**
+   * Assigns server-side validation errors to the form state.
+   *
+   * @example
+   * ```ts
+   * setFormServerErrors({
+   *   email: ['Email already exists'],
+   * });
+   * ```
+   *
+   * @remarks
+   * - This updates the form state without interrupting execution.
+   * - Prefer returning errors instead when using `onSubmit` for a cleaner flow.
+   */
+  setFormServerErrors: (errors: HoneyFormServerErrors<Form>) => void;
 }
 
 /**
@@ -1564,7 +1606,7 @@ interface HoneyFormSubmitHandlerContext<FormContext> {
  */
 export type HoneyFormSubmitHandler<Form extends HoneyFormBaseForm, FormContext> = (
   data: Form,
-  context: HoneyFormSubmitHandlerContext<FormContext>,
+  context: HoneyFormSubmitHandlerContext<Form, FormContext>,
 ) => Promise<HoneyFormServerErrors<Form> | void>;
 
 /**

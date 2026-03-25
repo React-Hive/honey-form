@@ -138,7 +138,7 @@ describe('Component [HoneyForm]: Nested forms', () => {
             },
           ],
         },
-        { context: undefined },
+        expect.any(Object),
       ),
     );
   });
@@ -237,7 +237,7 @@ describe('Component [HoneyForm]: Nested forms', () => {
           companyName: 'test',
           items: [],
         },
-        { context: undefined },
+        expect.any(Object),
       ),
     );
     onSubmit.mockClear();
@@ -267,7 +267,7 @@ describe('Component [HoneyForm]: Nested forms', () => {
             },
           ],
         },
-        { context: undefined },
+        expect.any(Object),
       ),
     );
     onSubmit.mockClear();
@@ -300,7 +300,7 @@ describe('Component [HoneyForm]: Nested forms', () => {
             },
           ],
         },
-        { context: undefined },
+        expect.any(Object),
       ),
     );
     onSubmit.mockClear();
@@ -324,7 +324,7 @@ describe('Component [HoneyForm]: Nested forms', () => {
             },
           ],
         },
-        { context: undefined },
+        expect.any(Object),
       ),
     );
   });
@@ -522,7 +522,7 @@ describe('Component [HoneyForm]: Nested forms', () => {
           companyName: 'test',
           items: [],
         },
-        { context: undefined },
+        expect.any(Object),
       ),
     );
 
@@ -552,7 +552,7 @@ describe('Component [HoneyForm]: Nested forms', () => {
             },
           ],
         },
-        { context: undefined },
+        expect.any(Object),
       ),
     );
   });
@@ -651,7 +651,7 @@ describe('Component [HoneyForm]: Nested forms', () => {
             },
           ],
         },
-        { context: undefined },
+        expect.any(Object),
       ),
     );
 
@@ -684,7 +684,7 @@ describe('Component [HoneyForm]: Nested forms', () => {
             },
           ],
         },
-        { context: undefined },
+        expect.any(Object),
       ),
     );
   });

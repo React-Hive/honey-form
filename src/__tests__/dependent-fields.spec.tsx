@@ -251,7 +251,7 @@ describe('Dependent fields', () => {
 
     expect(onSubmit).toHaveBeenCalledWith(
       { city: 'New Jersey', address: undefined },
-      { context: undefined },
+      expect.any(Object),
     );
   });
 

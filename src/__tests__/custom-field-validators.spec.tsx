@@ -93,7 +93,7 @@ describe('Custom field validators', () => {
         age2: 3,
         age3: 4,
       },
-      { context: undefined },
+      expect.any(Object),
     );
   });
 

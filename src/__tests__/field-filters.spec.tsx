@@ -92,7 +92,7 @@ describe('Filter as a function', () => {
     expect(result.current.formFields.name.displayValue).toBe('Apple');
     expect(result.current.formFields.name.normalizedValue).toBe('Apple');
 
-    expect(onSubmit).toHaveBeenCalledWith({ name: 'Apple' }, { context: undefined });
+    expect(onSubmit).toHaveBeenCalledWith({ name: 'Apple' }, expect.any(Object));
   });
 });
 

@@ -155,7 +155,7 @@ describe('Nested forms', () => {
           },
         ],
       },
-      { context: undefined },
+      expect.any(Object),
     );
   });
 

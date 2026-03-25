@@ -171,7 +171,7 @@ describe('Min/Max field validator', () => {
 
     await act(() => result.current.submitForm());
 
-    expect(onSubmit).toHaveBeenCalledWith({ weight: undefined }, { context: undefined });
+    expect(onSubmit).toHaveBeenCalledWith({ weight: undefined }, expect.any(Object));
   });
 
   it('should validate field value against both minimum and maximum value constraints', () => {
@@ -353,7 +353,7 @@ describe('Min/Max field validator', () => {
 
     await act(() => result.current.submitForm());
 
-    expect(onSubmit).toHaveBeenCalledWith({ name: undefined }, { context: undefined });
+    expect(onSubmit).toHaveBeenCalledWith({ name: undefined }, expect.any(Object));
   });
 
   it('should validate min and max length for string field', () => {

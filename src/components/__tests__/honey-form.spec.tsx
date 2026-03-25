@@ -113,7 +113,7 @@ describe('Component [HoneyForm]: Field mode usage', () => {
         {
           name: 'Apple',
         },
-        { context: undefined },
+        expect.any(Object),
       ),
     );
   });
@@ -163,7 +163,7 @@ describe('Component [HoneyForm]: File field type', () => {
         {
           images: [expect.any(Blob)],
         },
-        { context: undefined },
+        expect.any(Object),
       ),
     );
   });
@@ -192,7 +192,7 @@ describe('Component [HoneyFormDynamicField]', () => {
     fireEvent.click(getByTestId('save'));
 
     await waitFor(() =>
-      expect(onSubmit).toHaveBeenCalledWith({ product: 'apple' }, { context: undefined }),
+      expect(onSubmit).toHaveBeenCalledWith({ product: 'apple' }, expect.any(Object)),
     );
   });
 
@@ -225,7 +225,12 @@ describe('Component [HoneyFormDynamicField]', () => {
     fireEvent.click(getByTestId('save'));
 
     await waitFor(() =>
-      expect(onSubmit).toHaveBeenCalledWith({ gender: null }, { context: undefined }),
+      expect(onSubmit).toHaveBeenCalledWith(
+        {
+          gender: null,
+        },
+        expect.any(Object),
+      ),
     );
 
     // case 2
@@ -233,7 +238,12 @@ describe('Component [HoneyFormDynamicField]', () => {
     fireEvent.click(getByTestId('save'));
 
     await waitFor(() =>
-      expect(onSubmit).toHaveBeenCalledWith({ gender: 'female' }, { context: undefined }),
+      expect(onSubmit).toHaveBeenCalledWith(
+        {
+          gender: 'female',
+        },
+        expect.any(Object),
+      ),
     );
   });
 });

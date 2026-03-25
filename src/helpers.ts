@@ -481,7 +481,7 @@ export const unregisterChildForm = <
   const childFormIndex = getChildFormIndex(parentField, formId);
 
   if (childFormIndex === -1) {
-    warning('Child form index cannot be resolved.');
+    warning('Child form index cannot be resolved');
   } else {
     parentField.__meta__.childForms.splice(childFormIndex, 1);
   }
@@ -542,7 +542,7 @@ export const checkQueryStringLimit = (searchParams: URLSearchParams) => {
 
   if (queryStringLimit && searchParams.toString().length > queryStringLimit) {
     warning(
-      `The query string exceeds the limit of ${queryStringLimit} characters. This might cause unexpected behavior or errors. Please reduce the length of the query string.`,
+      `The query string exceeds the limit of ${queryStringLimit} characters. This might cause unexpected behavior or errors. Please reduce the length of the query string`,
     );
   }
 };
@@ -776,7 +776,7 @@ export const readFormFromStorage = <Form extends HoneyFormBaseForm, FormContext 
     if (localStorageCapabilities.readable) {
       return readFormValuesFromLs(fieldsConfig, formName);
     } else {
-      warning('Local storage is not available.');
+      warning('Local storage is not available');
     }
   }
 };

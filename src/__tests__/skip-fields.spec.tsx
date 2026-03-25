@@ -41,7 +41,7 @@ describe('Skip form fields', () => {
         {
           name: 'Apple',
         },
-        { context: undefined },
+        expect.any(Object),
       ),
     );
   });
@@ -82,7 +82,7 @@ describe('Skip form fields', () => {
           name: 'Orange',
           price: 15,
         },
-        { context: undefined },
+        expect.any(Object),
       ),
     );
 
@@ -97,7 +97,7 @@ describe('Skip form fields', () => {
         {
           name: 'Pear',
         },
-        { context: undefined },
+        expect.any(Object),
       ),
     );
   });

@@ -1085,7 +1085,7 @@ export type HoneyFormOnAfterValidate<Form extends HoneyFormBaseForm, FormContext
  * validation errors returned from the server. Each field can have multiple errors associated with it.
  */
 export type HoneyFormServerErrors<Form extends HoneyFormBaseForm> = {
-  [FieldName in keyof Form]: HoneyFormFieldErrorMessage[];
+  [FieldName in keyof Form]?: HoneyFormFieldErrorMessage[];
 };
 
 /**

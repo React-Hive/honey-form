@@ -1,12 +1,13 @@
 {
   "compilerOptions": {
-    "lib": ["dom", "ESNext"],
+    "rootDir": "./src",
+    "outDir": "./dist",
+    "lib": ["DOM", "ESNext"],
     "jsx": "react-jsx",
     "target": "ES2022",
     "module": "ESNext",
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "esModuleInterop": true,
-    "outDir": "./dist",
     "skipLibCheck": true,
     "isolatedModules": true,
     "allowSyntheticDefaultImports": true,

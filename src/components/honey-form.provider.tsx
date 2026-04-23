@@ -13,8 +13,10 @@ type HoneyFormContextValue<Form extends HoneyFormBaseForm, FormContext = undefin
 
 const HoneyFormContext = createContext<HoneyFormContextValue<any, any> | undefined>(undefined);
 
-export interface HoneyFormProviderProps<Form extends HoneyFormBaseForm, FormContext = undefined>
-  extends HoneyFormOptions<Form, FormContext> {
+export interface HoneyFormProviderProps<
+  Form extends HoneyFormBaseForm,
+  FormContext = undefined,
+> extends HoneyFormOptions<Form, FormContext> {
   children?: ReactNode | ((honeyFormApi: HoneyFormApi<Form, FormContext>) => ReactNode);
 }
 
@@ -38,7 +40,7 @@ export const useHoneyFormContext = <Form extends HoneyFormBaseForm, FormContext 
 
   assert(
     formContext,
-    '[honey-form]: The `useHoneyFormContext()` can be used only inside <HoneyFormProvider/> component!',
+    '[@react-hive/honey-form]: The `useHoneyFormContext()` can be used only inside <HoneyFormProvider/> component!',
   );
 
   return formContext;

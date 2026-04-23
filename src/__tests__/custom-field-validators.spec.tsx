@@ -5,7 +5,7 @@ import { useHoneyForm } from '../hooks';
 
 describe('Custom field validators', () => {
   it('should call the field validator function once when the field value is set', () => {
-    const validator = jest.fn().mockReturnValue(true);
+    const validator = vitest.fn().mockReturnValue(true);
 
     const { result } = renderHook(() =>
       useHoneyForm<{ name: string }>({
@@ -24,7 +24,7 @@ describe('Custom field validators', () => {
   });
 
   it('should call the field validator function every time the field value changes (with StrictMode)', () => {
-    const onValidate = jest.fn().mockReturnValue(true);
+    const onValidate = vitest.fn().mockReturnValue(true);
 
     const { result } = renderHook(
       () =>
@@ -49,7 +49,7 @@ describe('Custom field validators', () => {
   });
 
   it('should handle multiple field validators affecting each other', async () => {
-    const onSubmit = jest.fn();
+    const onSubmit = vitest.fn();
 
     const { result } = renderHook(() =>
       useHoneyForm<{ age1: number; age2: number; age3: number }>({
@@ -98,8 +98,8 @@ describe('Custom field validators', () => {
   });
 
   it('should validate the field only on form submission when mode is `submit`', async () => {
-    const onSubmit = jest.fn();
-    const validator = jest.fn().mockReturnValue(true);
+    const onSubmit = vitest.fn();
+    const validator = vitest.fn().mockReturnValue(true);
 
     const { result } = renderHook(() =>
       useHoneyForm<{ name: string }>({

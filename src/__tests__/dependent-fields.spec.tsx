@@ -223,7 +223,7 @@ describe('Dependent fields', () => {
       address: string;
     };
 
-    const onSubmit = jest.fn();
+    const onSubmit = vitest.fn();
 
     const { result } = renderHook(() =>
       useHoneyForm<Form>({

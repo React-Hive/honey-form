@@ -113,7 +113,7 @@ describe('Nested forms', () => {
       items: Item[];
     };
 
-    const onSubmit = jest.fn();
+    const onSubmit = vitest.fn();
 
     const { result: itemsResult } = renderHook(() =>
       useHoneyForm<Products>({

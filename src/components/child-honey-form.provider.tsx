@@ -17,9 +17,8 @@ type ChildHoneyFormContextValue<
   ParentForm extends HoneyFormBaseForm,
   ParentFieldName extends KeysWithArrayValues<ParentForm>,
   FormContext = undefined,
-  ChildForm extends HoneyFormExtractChildForm<
-    ParentForm[ParentFieldName]
-  > = HoneyFormExtractChildForm<ParentForm[ParentFieldName]>,
+  ChildForm extends HoneyFormExtractChildForm<ParentForm[ParentFieldName]> =
+    HoneyFormExtractChildForm<ParentForm[ParentFieldName]>,
 > = HoneyFormApi<ChildForm, FormContext>;
 
 const ChildHoneyFormContext = createContext<
@@ -49,9 +48,8 @@ export const useChildHoneyFormContext = <
   ParentForm extends HoneyFormBaseForm,
   ParentFieldName extends KeysWithArrayValues<ParentForm>,
   FormContext = undefined,
-  ChildForm extends HoneyFormExtractChildForm<
-    ParentForm[ParentFieldName]
-  > = HoneyFormExtractChildForm<ParentForm[ParentFieldName]>,
+  ChildForm extends HoneyFormExtractChildForm<ParentForm[ParentFieldName]> =
+    HoneyFormExtractChildForm<ParentForm[ParentFieldName]>,
 >() => {
   const childFormContext = useContext<
     ChildHoneyFormContextValue<ParentForm, ParentFieldName, FormContext, ChildForm> | undefined
@@ -59,7 +57,7 @@ export const useChildHoneyFormContext = <
 
   assert(
     childFormContext,
-    '[honey-form]: The `useChildHoneyFormContext()` can be used only inside <ChildHoneyFormProvider/> component!',
+    '[@react-hive/honey-form]: The `useChildHoneyFormContext()` can be used only inside <ChildHoneyFormProvider/> component!',
   );
 
   return childFormContext;

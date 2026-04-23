@@ -62,7 +62,7 @@ describe('Component [HoneyForm]: Nested forms', () => {
       },
     };
 
-    const onSubmit = jest.fn<Promise<void>, [ItemsForm]>();
+    const onSubmit = vitest.fn();
 
     const ItemLineForm = ({ formIndex }: ItemFormProps) => {
       const { formFields: itemsFormFields } = useHoneyFormContext<ItemsForm>();
@@ -160,7 +160,7 @@ describe('Component [HoneyForm]: Nested forms', () => {
       },
     };
 
-    const onSubmit = jest.fn<Promise<void>, [ItemsForm]>();
+    const onSubmit = vitest.fn();
 
     const ItemLineForm = ({ formIndex }: ItemFormProps) => {
       const { formFields: itemsFormFields } = useHoneyFormContext<ItemsForm>();
@@ -330,7 +330,7 @@ describe('Component [HoneyForm]: Nested forms', () => {
   });
 
   it('should remove an item from the list when remove button is clicked', () => {
-    const onSubmit = jest.fn<Promise<void>, [ItemsForm]>();
+    const onSubmit = vitest.fn();
 
     const ItemLineForm = ({ formIndex }: ItemFormProps) => {
       const { formFields: itemsFormFields } = useHoneyFormContext<ItemsForm>();
@@ -416,7 +416,7 @@ describe('Component [HoneyForm]: Nested forms', () => {
   });
 
   it('should remove items from the form and exclude them in the submitted data', async () => {
-    const onSubmit = jest.fn<Promise<void>, [ItemsForm]>();
+    const onSubmit = vitest.fn();
 
     const ItemLineForm = ({ formIndex }: ItemFormProps) => {
       const { formFields: itemsFormFields } = useHoneyFormContext<ItemsForm>();
@@ -567,7 +567,7 @@ describe('Component [HoneyForm]: Nested forms', () => {
       items: ItemForm[];
     };
 
-    const onSubmit = jest.fn<Promise<void>, [ItemsForm]>();
+    const onSubmit = vitest.fn();
 
     const ItemLineForm = ({ formIndex }: ItemFormProps) => {
       const { formFields: itemsFormFields } = useHoneyFormContext<ItemsForm>();

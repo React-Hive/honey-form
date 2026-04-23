@@ -21,7 +21,7 @@ describe('Dynamic fields', () => {
   });
 
   it('should submit dynamically added a form field with other fields', async () => {
-    const onSubmit = jest.fn();
+    const onSubmit = vitest.fn();
 
     const { result } = renderHook(() =>
       useHoneyForm<{ age: number; gender?: 'male' | 'female' }>({

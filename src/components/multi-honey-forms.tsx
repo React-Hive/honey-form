@@ -16,8 +16,10 @@ export const MultiHoneyFormsContext = createContext<
   MultiHoneyFormsContextValue<any, any> | undefined
 >(undefined);
 
-interface MultiHoneyFormsProps<Form extends HoneyFormBaseForm, FormContext = undefined>
-  extends MultiHoneyFormOptions<Form, FormContext> {
+interface MultiHoneyFormsProps<
+  Form extends HoneyFormBaseForm,
+  FormContext = undefined,
+> extends MultiHoneyFormOptions<Form, FormContext> {
   children?: ReactNode | ((multiHoneyFormsApi: MultiHoneyFormsApi<Form, FormContext>) => ReactNode);
   disableFormsManagement?: boolean;
 }
@@ -54,7 +56,7 @@ export const useMultiHoneyFormsContext = <
 
   assert(
     multiFormsContext,
-    '[honey-form]: The `useMultiHoneyFormsContext()` can be used only inside <MultiHoneyForms/> component!',
+    '[@react-hive/honey-form]: The `useMultiHoneyFormsContext()` can be used only inside <MultiHoneyForms/> component!',
   );
 
   return multiFormsContext;

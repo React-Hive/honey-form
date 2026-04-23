@@ -9,7 +9,7 @@ describe('Skip form fields', () => {
       price: number;
     };
 
-    const onSubmit = jest.fn<Promise<void>, [Form]>();
+    const onSubmit = vitest.fn();
 
     const { result } = renderHook(() =>
       useHoneyForm<Form>({
@@ -52,7 +52,7 @@ describe('Skip form fields', () => {
       price: number;
     };
 
-    const onSubmit = jest.fn<Promise<void>, [Form]>();
+    const onSubmit = vitest.fn();
 
     const { result } = renderHook(() =>
       useHoneyForm<Form>({

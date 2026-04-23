@@ -105,7 +105,7 @@ describe('General tests', () => {
   });
 
   it('should call `onChange` with form data when any field value is changed', async () => {
-    const onChange = jest.fn();
+    const onChange = vitest.fn();
 
     const { result } = renderHook(() =>
       useHoneyForm<{ name: string; kind: string }>({

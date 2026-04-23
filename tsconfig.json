@@ -1,17 +1,17 @@
 {
   "compilerOptions": {
+    "strict": false,
     "rootDir": "./src",
     "outDir": "./dist",
     "lib": ["DOM", "ESNext"],
     "jsx": "react-jsx",
     "target": "ES2022",
     "module": "ESNext",
-    "moduleResolution": "bundler",
     "esModuleInterop": true,
     "skipLibCheck": true,
     "isolatedModules": true,
     "allowSyntheticDefaultImports": true,
-    "strict": false
+    "types": ["vitest/globals"]
   },
   "include": ["src"],
   "files": ["src/global.d.ts"]

@@ -4,7 +4,7 @@ export const __DEV__ = ENV !== 'production';
 
 export const GITHUB_PACKAGE_NAME = '@react-hive/honey-form';
 
-if (__DEV__ && typeof window !== 'undefined' && !process.env.JEST_WORKER_ID) {
+if (__DEV__ && typeof window !== 'undefined' && !process.env.VITEST_WORKER_ID) {
   console.info(
     `[${GITHUB_PACKAGE_NAME}]: You are running in development mode. ` +
       'This build is not optimized for production and may include extra checks or logs.',

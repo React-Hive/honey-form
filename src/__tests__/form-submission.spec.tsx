@@ -4,7 +4,7 @@ import { useHoneyForm } from '../hooks';
 
 describe('Form submission', () => {
   it('should submit default fields values', async () => {
-    const onSubmit = jest.fn();
+    const onSubmit = vitest.fn();
 
     const { result } = renderHook(() =>
       useHoneyForm<{ name: string; age: number }>({
@@ -30,7 +30,7 @@ describe('Form submission', () => {
   });
 
   it('should update form states after successful submission', async () => {
-    const onSubmit = jest.fn();
+    const onSubmit = vitest.fn();
 
     const { result } = renderHook(() =>
       useHoneyForm<{ name: string }>({
@@ -62,7 +62,7 @@ describe('Form submission', () => {
   });
 
   it('should not update form states after unsuccessful submission', async () => {
-    const onSubmit = jest.fn();
+    const onSubmit = vitest.fn();
 
     const { result } = renderHook(() =>
       useHoneyForm<{ name: string }>({
@@ -92,7 +92,7 @@ describe('Form submission', () => {
   });
 
   it('should call custom submit form handler function', async () => {
-    const submitHandler = jest.fn();
+    const submitHandler = vitest.fn();
 
     const { result } = renderHook(() =>
       useHoneyForm<{ name: string; age: number }>({
@@ -118,7 +118,7 @@ describe('Form submission', () => {
   });
 
   it('should prevent form submission with errors', async () => {
-    const onSubmit = jest.fn();
+    const onSubmit = vitest.fn();
 
     const { result } = renderHook(() =>
       useHoneyForm<{ age: number }>({
@@ -148,7 +148,7 @@ describe('Form submission', () => {
   });
 
   it('should reset a form after successful submission when `resetAfterSubmit` is `true`', async () => {
-    const onSubmit = jest.fn();
+    const onSubmit = vitest.fn();
 
     const { result } = renderHook(() =>
       useHoneyForm<{ name: string }>({

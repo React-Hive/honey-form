@@ -155,7 +155,7 @@ describe('Min/Max field validator', () => {
       weight: number;
     };
 
-    const onSubmit = jest.fn();
+    const onSubmit = vitest.fn();
 
     const { result } = renderHook(() =>
       useHoneyForm<Form>({
@@ -337,7 +337,7 @@ describe('Min/Max field validator', () => {
       name: string;
     };
 
-    const onSubmit = jest.fn();
+    const onSubmit = vitest.fn();
 
     const { result } = renderHook(() =>
       useHoneyForm<Form>({
@@ -448,7 +448,7 @@ describe('Work with after form validate callback function', () => {
       name: string;
     };
 
-    const onAfterValidate = jest.fn().mockResolvedValue(null);
+    const onAfterValidate = vitest.fn().mockResolvedValue(null);
 
     const { result } = renderHook(() =>
       useHoneyForm<Form>({
@@ -458,7 +458,7 @@ describe('Work with after form validate callback function', () => {
           },
         },
         onAfterValidate,
-        onSubmit: jest.fn(),
+        onSubmit: vitest.fn(),
       }),
     );
 
@@ -473,7 +473,7 @@ describe('Work with after form validate callback function', () => {
       name: string;
     };
 
-    const onAfterValidate = jest.fn().mockResolvedValue(null);
+    const onAfterValidate = vitest.fn().mockResolvedValue(null);
 
     const { result } = renderHook(() =>
       useHoneyForm<Form>({
@@ -484,7 +484,7 @@ describe('Work with after form validate callback function', () => {
           },
         },
         onAfterValidate,
-        onSubmit: jest.fn(),
+        onSubmit: vitest.fn(),
       }),
     );
 

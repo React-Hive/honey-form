@@ -98,7 +98,7 @@ export const useForm = <
 }: FormOptions<ParentForm, ParentFieldName, Form, FormContext>) => {
   assert(
     !storage || formName,
-    '[honey-form]: The form name is required when any form data storage is used',
+    '[@react-hive/honey-form]: The form name is required when any form data storage is used',
   );
 
   const formId = useId();
@@ -278,7 +278,7 @@ export const useForm = <
           Object.keys(targetValues).forEach((fieldName: keyof Form) => {
             assert(
               fieldName in nextFormFields,
-              `[honey-form]: Attempted to set value for non-existent field "${fieldName.toString()}"`,
+              `[@react-hive/honey-form]: Attempted to set value for non-existent field "${fieldName.toString()}"`,
             );
 
             if (!updateDirtyValues && nextFormFields[fieldName].isDirty) {
@@ -454,13 +454,13 @@ export const useForm = <
             if (childForms.length) {
               assert(
                 Array.isArray(fieldValue),
-                '[honey-form]: Expected field value to be an array when setting values for child forms. Received type: ' +
+                '[@react-hive/honey-form]: Expected field value to be an array when setting values for child forms. Received type: ' +
                   typeof fieldValue,
               );
 
               assert(
                 childForms.length === fieldValue.length,
-                `[honey-form]: Mismatched length. The number of child forms "${childForms.length}" must match the length of "${fieldValue.length}".`,
+                `[@react-hive/honey-form]: Mismatched length. The number of child forms "${childForms.length}" must match the length of "${fieldValue.length}".`,
               );
 
               childForms.forEach((childForm, childFormIndex) => {

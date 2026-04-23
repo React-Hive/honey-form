@@ -4,7 +4,7 @@ import { useHoneyForm } from '../hooks';
 
 describe('Required field validator', () => {
   it('should check required string field type when submitting', async () => {
-    const onSubmit = jest.fn();
+    const onSubmit = vitest.fn();
 
     const { result } = renderHook(() =>
       useHoneyForm<{ name: string; age: number }>({
@@ -34,7 +34,7 @@ describe('Required field validator', () => {
   });
 
   it('should check required object field type when submitting', async () => {
-    const onSubmit = jest.fn();
+    const onSubmit = vitest.fn();
 
     const { result } = renderHook(() =>
       useHoneyForm<{ category: string }>({
@@ -62,7 +62,7 @@ describe('Required field validator', () => {
   });
 
   it('should handle custom required field error message during form submission', async () => {
-    const onSubmit = jest.fn();
+    const onSubmit = vitest.fn();
 
     const { result } = renderHook(() =>
       useHoneyForm<{ name: string }>({
@@ -93,7 +93,7 @@ describe('Required field validator', () => {
   });
 
   it('should have error when empty array is not allowed', async () => {
-    const onSubmit = jest.fn();
+    const onSubmit = vitest.fn();
 
     const { result } = renderHook(() =>
       useHoneyForm<{ names: string[] }>({
@@ -123,7 +123,7 @@ describe('Required field validator', () => {
   });
 
   it('should pass validation when empty array is allowed', async () => {
-    const onSubmit = jest.fn();
+    const onSubmit = vitest.fn();
 
     const { result } = renderHook(() =>
       useHoneyForm<{ names: string[] }>({
@@ -147,7 +147,7 @@ describe('Required field validator', () => {
     expect(onSubmit).toHaveBeenCalled();
   });
   it('should have error when array contains null and empty values are not allowed', async () => {
-    const onSubmit = jest.fn();
+    const onSubmit = vitest.fn();
 
     const { result } = renderHook(() =>
       useHoneyForm<{ names: string[] }>({
@@ -177,7 +177,7 @@ describe('Required field validator', () => {
   });
 
   it('should allow null in array when empty array values are allowed', async () => {
-    const onSubmit = jest.fn();
+    const onSubmit = vitest.fn();
 
     const { result } = renderHook(() =>
       useHoneyForm<{ names: string[] }>({
@@ -202,7 +202,7 @@ describe('Required field validator', () => {
   });
 
   it('should validate dynamically required fields based on form values during submission', async () => {
-    const onSubmit = jest.fn();
+    const onSubmit = vitest.fn();
 
     const { result } = renderHook(() =>
       useHoneyForm<{ isAddNote: boolean; note: string }>({
@@ -238,7 +238,7 @@ describe('Required field validator', () => {
   });
 
   it('should not submit and return dynamic required error message from function when name is empty', async () => {
-    const onSubmit = jest.fn();
+    const onSubmit = vitest.fn();
 
     const { result } = renderHook(() =>
       useHoneyForm<{ name: string }>({
@@ -265,7 +265,7 @@ describe('Required field validator', () => {
   });
 
   it('should not submit and return static required error message string when name is empty', async () => {
-    const onSubmit = jest.fn();
+    const onSubmit = vitest.fn();
 
     const { result } = renderHook(() =>
       useHoneyForm<{ name: string }>({

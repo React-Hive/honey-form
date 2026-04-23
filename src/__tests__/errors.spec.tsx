@@ -150,7 +150,7 @@ describe('Work with errors', () => {
   });
 
   it('should ignore server errors during submission', async () => {
-    const onSubmit = jest.fn();
+    const onSubmit = vitest.fn();
 
     const { result } = renderHook(() =>
       useHoneyForm<{ name: string }>({
@@ -191,7 +191,7 @@ describe('Work with errors', () => {
   });
 
   it('should set server errors as the result of form submission', async () => {
-    const onSubmit = jest
+    const onSubmit = vitest
       .fn()
       .mockResolvedValueOnce(
         Promise.resolve({

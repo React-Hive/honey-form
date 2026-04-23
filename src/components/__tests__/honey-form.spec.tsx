@@ -44,7 +44,7 @@ describe('Component [HoneyForm]: Basic usage', () => {
       name: string;
     };
 
-    const onSubmit = jest.fn<Promise<void>, [Form]>();
+    const onSubmit = vitest.fn();
 
     const fields: HoneyFormFieldsConfig<Form> = {
       name: {
@@ -74,7 +74,7 @@ describe('Component [HoneyForm]: Field mode usage', () => {
       name: string;
     };
 
-    const onSubmit = jest.fn<Promise<void>, [Form]>();
+    const onSubmit = vitest.fn();
 
     const fields: HoneyFormFieldsConfig<Form> = {
       name: {
@@ -125,7 +125,7 @@ describe('Component [HoneyForm]: File field type', () => {
       images: FileList;
     };
 
-    const onSubmit = jest.fn<Promise<void>, [Form]>();
+    const onSubmit = vitest.fn();
 
     const fields: HoneyFormFieldsConfig<Form> = {
       images: {
@@ -171,11 +171,7 @@ describe('Component [HoneyForm]: File field type', () => {
 
 describe('Component [HoneyFormDynamicField]', () => {
   it('set and submit the field value', async () => {
-    type Form = {
-      product: string;
-    };
-
-    const onSubmit = jest.fn<Promise<void>, [Form]>();
+    const onSubmit = vitest.fn();
 
     const { getByTestId } = render(
       <HoneyForm onSubmit={onSubmit}>
@@ -197,11 +193,7 @@ describe('Component [HoneyFormDynamicField]', () => {
   });
 
   it('should submit form with correct gender value for unselected and selected radio inputs', async () => {
-    type Form = {
-      gender: string;
-    };
-
-    const onSubmit = jest.fn<Promise<void>, [Form]>();
+    const onSubmit = vitest.fn();
 
     const { getByTestId } = render(
       <HoneyForm onSubmit={onSubmit}>

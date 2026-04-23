@@ -103,7 +103,7 @@ describe('Form defaults', () => {
       name: string;
     };
 
-    const abortHandler = jest.fn();
+    const abortHandler = vitest.fn();
     let capturedSignal: Nullable<AbortSignal> = null;
 
     const { result, unmount } = renderHook(() =>

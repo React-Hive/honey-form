@@ -25,7 +25,7 @@ describe('Formatter function', () => {
   });
 
   it('should send filtered value, but not formatted value when submitting', async () => {
-    const onSubmit = jest.fn();
+    const onSubmit = vitest.fn();
 
     const { result } = renderHook(() =>
       useHoneyForm<{ price: string }>({
@@ -52,7 +52,7 @@ describe('Formatter function', () => {
   });
 
   test('submit form with normalized and not displayed values', async () => {
-    const onSubmit = jest.fn();
+    const onSubmit = vitest.fn();
 
     const { result } = renderHook(() =>
       useHoneyForm<{ name: string; price: string }>({
@@ -84,7 +84,7 @@ describe('Formatter function', () => {
   });
 
   test('submit formatted value when flag `submitFormattedValue: true`', async () => {
-    const onSubmit = jest.fn();
+    const onSubmit = vitest.fn();
 
     const { result } = renderHook(() =>
       useHoneyForm<{ cardExpirationDate: string }>({

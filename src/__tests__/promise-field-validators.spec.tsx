@@ -125,7 +125,7 @@ describe('Promise field validators', () => {
   });
 
   it('should execute promise-based validator functions when submitting', async () => {
-    const onSubmit = jest.fn();
+    const onSubmit = vitest.fn();
 
     const { result } = renderHook(() =>
       useHoneyForm<{ name: string }>({

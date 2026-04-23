@@ -148,7 +148,7 @@ describe('General', () => {
       name: string;
     };
 
-    const onSubmit = jest.fn<Promise<void>, [Form[]]>();
+    const onSubmit = vitest.fn();
 
     const { result: multiFormsApi } = renderHook(() => useMultiHoneyForms<Form>({ onSubmit }));
 
@@ -188,7 +188,7 @@ describe('General', () => {
       name: string;
     };
 
-    const onSubmit = jest.fn<Promise<void>, [Form[]]>();
+    const onSubmit = vitest.fn();
 
     const { result: multiFormsApi } = renderHook(() => useMultiHoneyForms<Form>({ onSubmit }));
 

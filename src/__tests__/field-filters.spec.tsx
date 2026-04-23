@@ -71,7 +71,7 @@ describe('Filter as a function', () => {
   });
 
   it('should send filtered value when submitting', async () => {
-    const onSubmit = jest.fn();
+    const onSubmit = vitest.fn();
 
     const { result } = renderHook(() =>
       useHoneyForm<{ name: string }>({

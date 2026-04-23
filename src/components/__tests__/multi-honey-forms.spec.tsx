@@ -61,7 +61,7 @@ describe('Component [MultiHoneyForms]: Basic usage', () => {
       name: string;
     };
 
-    const onSubmit = jest.fn<Promise<void>, [Form[]]>();
+    const onSubmit = vitest.fn();
 
     const FruitForm = ({ formIndex }: { formIndex: number }) => {
       const fields: HoneyFormFieldsConfig<Form> = {

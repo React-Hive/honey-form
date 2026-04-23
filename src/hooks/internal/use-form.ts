@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
-import { assert } from '@react-hive/honey-utils';
+import { assert, invokeIfFunction } from '@react-hive/honey-utils';
 
 import { HONEY_FORM_ERRORS } from '../../constants';
 import {
@@ -960,7 +960,13 @@ export const useForm = <
     formFieldsRef,
     // Getters are needed to get the form fields, values and etc. using multi forms
     get formDefaultValues() {
-      return formDefaultsRef.current;
+      return Object.keys(formDefaultsRef.current).reduce(
+        (formDefaults, fieldName) => ({
+          ...formDefaults,
+          [fieldName]: invokeIfFunction(formDefaultsRef.current[fieldName]),
+        }),
+        {} as Partial<Form>,
+      );
     },
     get formFields() {
       return formFieldsRef.current;

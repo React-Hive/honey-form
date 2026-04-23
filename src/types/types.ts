@@ -429,6 +429,22 @@ type HoneyFormFieldDependsOn<
 > = keyof Form | (keyof Form)[] | HoneyFormFieldDependsOnFn<Form, FieldName, FormContext>;
 
 /**
+ * Represents a field-level default value.
+ *
+ * A default can be provided either as:
+ * - A direct value.
+ * - A lazy factory function that returns the value when defaults are resolved.
+ *
+ * @remarks
+ * - Use a function when creating the value is expensive or when a fresh value
+ *   should be produced for each initialization or reset.
+ * - Form-level defaults have priority over field-level `defaultValue`.
+ */
+type HoneyFormFieldDefaultValue<Form extends HoneyFormBaseForm, FieldName extends keyof Form> =
+  | Form[FieldName]
+  | (() => Form[FieldName]);
+
+/**
  * Represents the base configuration for a form field.
  */
 interface BaseFieldConfig<
@@ -457,7 +473,7 @@ interface BaseFieldConfig<
    *
    * @default undefined
    */
-  defaultValue?: FieldValue;
+  defaultValue?: HoneyFormFieldDefaultValue<Form, FieldName>;
   /**
    * Specifies dependency relationships between fields.
    *
@@ -1014,9 +1030,17 @@ export type ChildHoneyFormFieldsConfig<
 };
 
 /**
- * Represents the default values for a form.
+ * Represents sync default values for form fields.
+ *
+ * This type maps each form field to an optional default value or lazy default value factory.
+ *
+ * @remarks
+ * - Each field is optional, so defaults can be provided only for selected fields.
+ * - A value here overrides the corresponding field config `defaultValue`.
  */
-export type HoneyFormDefaultValues<Form extends HoneyFormBaseForm> = Partial<Form>;
+export type HoneyFormDefaultValues<Form extends HoneyFormBaseForm> = {
+  [FieldName in keyof Form]?: HoneyFormFieldDefaultValue<Form, FieldName>;
+};
 
 /**
  * A reference object for storing the default values of the form.
@@ -1025,18 +1049,42 @@ export type HoneyFormDefaultsRef<Form extends HoneyFormBaseForm> = RefObject<
   HoneyFormDefaultValues<Form>
 >;
 
-interface HoneyFormDefaultsContext<FormContext> {
+/**
+ * Context passed to the asynchronous form defaults resolver.
+ *
+ * Provides access to the current form context and an abort signal that can be used
+ * to cancel in-flight default loading when the form is unmounted, reset, or when
+ * defaults are refetched.
+ */
+export interface HoneyFormDefaultsContext<FormContext> {
   formContext: FormContext;
+  /**
+   * Abort signal for cancelling async default resolution.
+   *
+   * @remarks
+   * Use this signal in async operations such as `fetch` to avoid applying stale defaults.
+   */
   signal: AbortSignal;
 }
 
 /**
- * Represents the possible values for form defaults. It can either be an object containing default values
- * for the form fields or a function that returns a promise resolving to such an object.
+ * Represents the available ways to define form defaults.
+ *
+ * Defaults can be provided either as:
+ * - A synchronous object of field default values.
+ * - An asynchronous resolver that returns a promise with partial form values.
+ *
+ * @remarks
+ * - Form-level defaults have priority over field-level `defaultValue`.
+ * - The async resolver is useful when defaults depend on API data, storage,
+ *   or other async sources.
+ * - When async defaults are used, field-level `defaultValue` may still be used
+ *   as an initial fallback until the async defaults are resolved, depending on
+ *   the form initialization flow.
  */
 export type HoneyFormDefaults<Form extends HoneyFormBaseForm, FormContext = undefined> =
   | HoneyFormDefaultValues<Form>
-  | ((context: HoneyFormDefaultsContext<FormContext>) => Promise<HoneyFormDefaultValues<Form>>);
+  | ((context: HoneyFormDefaultsContext<FormContext>) => Promise<Partial<Form>>);
 
 /**
  * Context object passed to the `onAfterValidate` callback function.

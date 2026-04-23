@@ -3,7 +3,6 @@ import type { RefObject } from 'react';
 import type {
   HoneyFormAddFormField,
   HoneyFormClearErrors,
-  HoneyFormDefaultValues,
   HoneyFormErrors,
   HoneyFormFields,
   HoneyFormRemoveFormField,
@@ -55,7 +54,7 @@ export interface HoneyFormApi<Form extends HoneyFormBaseForm, FormContext = unde
    *
    * @default {}
    */
-  readonly formDefaultValues: HoneyFormDefaultValues<Form>;
+  readonly formDefaultValues: Partial<Form>;
   /**
    * @default {}
    */

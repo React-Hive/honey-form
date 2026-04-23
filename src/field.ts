@@ -415,8 +415,8 @@ export const createFormField = <
 
   const filteredValue =
     isInteractiveField(fieldConfig) && fieldConfig.filter
-      ? fieldConfig.filter(fieldConfig.defaultValue, executionContext)
-      : fieldConfig.defaultValue;
+      ? fieldConfig.filter(invokeIfFunction(fieldConfig.defaultValue), executionContext)
+      : invokeIfFunction(fieldConfig.defaultValue);
 
   const resultValue =
     isInteractiveField(fieldConfig) && fieldConfig.formatter
@@ -485,11 +485,14 @@ export const createFormField = <
     setValue: (value, options) => setFieldValue(fieldName, value, options),
     pushValue: value => pushFieldValue(fieldName, value),
     removeValue: formIndex => removeFieldValue(fieldName, formIndex),
-    resetValue: () =>
-      setFieldValue(fieldName, formDefaultsRef.current[fieldName], {
+    resetValue: () => {
+      const defaultValue = formDefaultsRef.current[fieldName];
+
+      setFieldValue(fieldName, isFunction(defaultValue) ? defaultValue() : defaultValue, {
         dirty: false,
         shouldSetChildFormsValues: false,
-      }),
+      });
+    },
     addErrors: errors => addFormFieldErrors(fieldName, errors),
     addError: error => addFormFieldErrors(fieldName, [error]),
     clearErrors: () => clearFieldErrors(fieldName),

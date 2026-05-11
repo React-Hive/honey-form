@@ -439,6 +439,7 @@ export const createFormField = <
       mode: 'change',
       formatOnBlur: false,
       submitFormattedValue: false,
+      trimStart: true,
     }),
     ...(isObjectField(fieldConfig) && {
       allowEmptyArray: false,
@@ -1124,10 +1125,11 @@ export const executeFieldValidatorAsync = async <
   let filteredValue: Form[FieldName] = formField.rawValue;
 
   if (isInteractiveField(formField.config)) {
-    filteredValue = isString(filteredValue)
-      ? // Use trimStart() to do not allow typing from a space
-        ((filteredValue as string).trimStart() as Form[FieldName])
-      : filteredValue;
+    filteredValue =
+      isString(filteredValue) && filteredValue.length > 0 && formField.config.trimStart
+        ? // Use trimStart() to do not allow typing from a space
+          ((filteredValue as string).trimStart() as Form[FieldName])
+        : filteredValue;
 
     if (formField.config.filter) {
       filteredValue = formField.config.filter(filteredValue, executionContext);
@@ -1564,9 +1566,10 @@ export const getNextFieldsState = <
   let filteredValue: Form[FieldName] = fieldValue;
 
   if (isInteractiveField(nextFormField.config)) {
-    filteredValue = isString(fieldValue)
-      ? ((fieldValue as string).trimStart() as Form[FieldName])
-      : fieldValue;
+    filteredValue =
+      isString(fieldValue) && fieldValue.length > 0 && nextFormField.config.trimStart
+        ? ((fieldValue as string).trimStart() as Form[FieldName])
+        : fieldValue;
 
     if (nextFormField.config.filter) {
       filteredValue = nextFormField.config.filter(filteredValue, executionContext);

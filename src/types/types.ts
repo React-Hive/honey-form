@@ -597,6 +597,15 @@ export interface HoneyFormInteractiveFieldConfig<
    */
   maxFraction?: number;
   /**
+   * Determines whether leading whitespace should be removed from the field value.
+   *
+   * When enabled, spaces at the beginning of the value are trimmed automatically.
+   * Set to `false` when leading spaces should be preserved.
+   *
+   * @default true
+   */
+  trimStart?: boolean;
+  /**
    * Custom validation function.
    */
   validator?: HoneyFormInteractiveFieldValidator<Form, FieldName, FormContext, FieldValue>;

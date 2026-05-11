@@ -3,7 +3,7 @@ import { useHoneyForm } from '../hooks';
 import { createHoneyFormNumberFilter, createHoneyFormNumericFilter } from '../filters';
 
 describe('Builtin filtering', () => {
-  it('should trim all spaces from the begging', () => {
+  it('should trim all spaces from the beginning', () => {
     const { result } = renderHook(() =>
       useHoneyForm<{ name: string }>({
         fields: {
@@ -31,6 +31,37 @@ describe('Builtin filtering', () => {
     expect(result.current.formFields.name.rawValue).toBe('a ');
     expect(result.current.formFields.name.displayValue).toBe('a ');
     expect(result.current.formFields.name.normalizedValue).toBe('a ');
+  });
+
+  it('should not trim spaces from the beginning when trimStart is false', () => {
+    const { result } = renderHook(() =>
+      useHoneyForm<{ name: string }>({
+        fields: {
+          name: {
+            type: 'string',
+            trimStart: false,
+          },
+        },
+      }),
+    );
+
+    act(() => result.current.formFields.name.setValue(' '));
+
+    expect(result.current.formFields.name.rawValue).toBe(' ');
+    expect(result.current.formFields.name.displayValue).toBe(' ');
+    expect(result.current.formFields.name.normalizedValue).toBe(' ');
+
+    act(() => result.current.formFields.name.setValue(' a'));
+
+    expect(result.current.formFields.name.rawValue).toBe(' a');
+    expect(result.current.formFields.name.displayValue).toBe(' a');
+    expect(result.current.formFields.name.normalizedValue).toBe(' a');
+
+    act(() => result.current.formFields.name.setValue(' a '));
+
+    expect(result.current.formFields.name.rawValue).toBe(' a ');
+    expect(result.current.formFields.name.displayValue).toBe(' a ');
+    expect(result.current.formFields.name.normalizedValue).toBe(' a ');
   });
 });
 

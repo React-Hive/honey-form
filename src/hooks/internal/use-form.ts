@@ -531,6 +531,8 @@ export const useForm = <
 
     const formField = formFields[fieldName];
 
+    const isFieldPreviouslyErred = formField.errors.length > 0;
+
     let filteredValue: Form[typeof fieldName];
 
     if (isInteractiveField(formField.config)) {
@@ -557,6 +559,17 @@ export const useForm = <
       ...formFields,
       [fieldName]: nextFormField,
     };
+
+    if (parentField) {
+      const isFieldCurrentlyErred = nextFormFields[fieldName].errors.length > 0;
+
+      if (alwaysValidateParentField || isFieldPreviouslyErred || isFieldCurrentlyErred) {
+        // Use a timeout to avoid rendering the parent form during this field's render cycle
+        setTimeout(() => {
+          parentField.validate();
+        }, 0);
+      }
+    }
 
     formFieldsRef.current = nextFormFields;
     setFormFields(nextFormFields);

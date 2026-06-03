@@ -1,6 +1,6 @@
 {
   "name": "@react-hive/honey-form",
-  "version": "8.9.0",
+  "version": "8.10.0",
   "description": "The TS library to build the fully customized forms using React framework",
   "keywords": [
     "react",
@@ -45,7 +45,7 @@
     "react-dom": "^19.0.0"
   },
   "dependencies": {
-    "@react-hive/honey-utils": "3.31.0"
+    "@react-hive/honey-utils": "4.0.0"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",
@@ -53,20 +53,21 @@
     "@testing-library/react": "16.3.2",
     "@types/jest": "29.5.14",
     "@types/mdx": "2.0.13",
-    "@types/node": "22.19.17",
+    "@types/node": "24.12.4",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "copy-webpack-plugin": "14.0.0",
-    "eslint": "10.2.1",
+    "eslint": "10.4.1",
     "eslint-plugin-react": "7.37.5",
     "html-webpack-plugin": "5.6.7",
+    "jsdom": "29.1.1",
     "prettier": "3.8.3",
-    "ts-loader": "9.5.7",
+    "ts-loader": "9.6.0",
     "typescript": "6.0.3",
-    "typescript-eslint": "8.59.0",
-    "vitest": "4.1.2",
-    "webpack": "5.106.2",
-    "webpack-cli": "7.0.2"
+    "typescript-eslint": "8.60.1",
+    "vitest": "4.1.8",
+    "webpack": "5.107.2",
+    "webpack-cli": "7.0.3"
   },
   "browserslist": [
     "defaults",

@@ -418,7 +418,7 @@ export const createFormField = <
       ? fieldConfig.filter(invokeIfFunction(fieldConfig.defaultValue), executionContext)
       : invokeIfFunction(fieldConfig.defaultValue);
 
-  const resultValue =
+  const displayValue =
     isInteractiveField(fieldConfig) && fieldConfig.formatter
       ? fieldConfig.formatter(filteredValue, executionContext)
       : filteredValue;
@@ -448,7 +448,7 @@ export const createFormField = <
     ...fieldConfig,
   };
 
-  const fieldProps = getFormFieldProps(fieldName, resultValue, {
+  const fieldProps = getFormFieldProps(fieldName, displayValue, {
     formFieldRef,
     setFieldValue,
     fieldConfig: resultFieldConfig,
@@ -465,7 +465,7 @@ export const createFormField = <
     defaultValue: resultFieldConfig.defaultValue,
     rawValue: filteredValue,
     initialNormalizedValue: normalizedValue,
-    displayValue: resultValue,
+    displayValue,
     isDirty: false,
     isValidating: false,
     // TODO: try to fix the next error
@@ -478,7 +478,7 @@ export const createFormField = <
 
           return getFormValues(childFormFields);
           // Return field value when child forms are not mounted yet at the beginning, but the field value is set as initial value
-        }) ?? resultValue
+        }) ?? displayValue
       );
     },
     __meta__: fieldMeta,

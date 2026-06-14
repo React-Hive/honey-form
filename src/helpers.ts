@@ -26,17 +26,17 @@ import type {
   HoneyFormBaseExecutionContext,
   HoneyFormStorage,
 } from './types';
-import { __DEV__, GITHUB_PACKAGE_NAME, HONEY_FORM_ERRORS, HONEY_FORM_LS_PREFIX } from './constants';
+import { __DEV__, NPM_PACKAGE_NAME, HONEY_FORM_ERRORS, HONEY_FORM_LS_PREFIX } from './constants';
 import { localStorageCapabilities } from './init';
 
 export const genericMemo: <T>(component: T) => T = React.memo;
 
 export const warning = (message: string) => {
-  console.warn(`[${GITHUB_PACKAGE_NAME}]: ${message}`);
+  console.warn(`[${NPM_PACKAGE_NAME}]: ${message}`);
 };
 
 export const error = (message: string) => {
-  console.error(`[${GITHUB_PACKAGE_NAME}]: ${message}`);
+  console.error(`[${NPM_PACKAGE_NAME}]: ${message}`);
 };
 
 /**

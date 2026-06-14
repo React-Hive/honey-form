@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { assert } from '@react-hive/honey-utils';
 
-import { GITHUB_PACKAGE_NAME } from '../../constants';
+import { NPM_PACKAGE_NAME } from '../../constants';
 import { localStorageCapabilities } from '../../init';
 import { isFormSavedToLs, readFormValuesFromLs } from '../../helpers';
 import type {
@@ -31,14 +31,14 @@ export const useUnsubmittedForm = <Form extends HoneyFormBaseForm, FormContext>(
   const isUnsubmittedFormRestored = useRef(false);
 
   const restoreUnsubmittedForm = useCallback<HoneyFormRestoreUnsubmittedForm>(() => {
-    assert(hasUnsubmittedForm, `[${GITHUB_PACKAGE_NAME}]: Form not found in the local storage.`);
+    assert(hasUnsubmittedForm, `[${NPM_PACKAGE_NAME}]: Form not found in the local storage.`);
     assert(
       storage === 'ls',
-      `[${GITHUB_PACKAGE_NAME}]: Restoring unsubmitted form is only supported for local storage.`,
+      `[${NPM_PACKAGE_NAME}]: Restoring unsubmitted form is only supported for local storage.`,
     );
     assert(
       localStorageCapabilities.readable,
-      `[${GITHUB_PACKAGE_NAME}]: Local storage is not available.`,
+      `[${NPM_PACKAGE_NAME}]: Local storage is not available.`,
     );
 
     isUnsubmittedFormRestored.current = true;

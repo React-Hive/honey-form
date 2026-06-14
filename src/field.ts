@@ -434,9 +434,8 @@ export const createFormField = <
   const resultFieldConfig: HoneyFormFieldConfig<Form, FieldName, FormContext> = {
     required: false,
     resetOnDependencyToDefault: false,
+    mode: 'change',
     ...(isInteractiveField(fieldConfig) && {
-      // Set the default config values
-      mode: 'change',
       formatOnBlur: false,
       submitFormattedValue: false,
       trimStart: true,

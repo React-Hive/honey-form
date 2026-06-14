@@ -656,6 +656,12 @@ export interface HoneyFormPassiveFieldConfig<
    */
   type: HoneyFormPassiveFieldType;
   /**
+   * Determines how the validation process is triggered based on the specified mode.
+   *
+   * @default 'change'
+   */
+  mode?: HoneyFormFieldMode;
+  /**
    * Custom validation function.
    */
   validator?: HoneyFormPassiveFieldValidator<Form, FieldName, FormContext, FieldValue>;
@@ -674,6 +680,12 @@ export interface HoneyFormObjectFieldConfig<
    * Type identifier for the object field.
    */
   type: HoneyFormObjectFieldType;
+  /**
+   * Determines how the validation process is triggered based on the specified mode.
+   *
+   * @default 'change'
+   */
+  mode?: Exclude<HoneyFormFieldMode, 'blur'>;
   /**
    * Whether an empty array is considered a valid value for this object field.
    *
@@ -710,6 +722,12 @@ export interface HoneyFormNestedFormsFieldConfig<
    */
   type: HoneyFormNestedFormsFieldType;
   /**
+   * Determines how the validation process is triggered based on the specified mode.
+   *
+   * @default 'change'
+   */
+  mode?: Exclude<HoneyFormFieldMode, 'blur'>;
+  /**
    * Custom validator function for the nested forms field.
    */
   validator?: HoneyFormNestedFormsFieldValidator<Form, FieldName, FormContext, FieldValue>;
@@ -725,6 +743,12 @@ export interface HoneyFormPolymorphicFieldConfig<
    * Type identifier for the polymorphic field.
    */
   type: HoneyFormPolymorphicFieldType;
+  /**
+   * Determines how the validation process is triggered based on the specified mode.
+   *
+   * @default 'change'
+   */
+  mode?: Exclude<HoneyFormFieldMode, 'blur'>;
   /**
    * Custom validator function for the polymorphic field.
    */

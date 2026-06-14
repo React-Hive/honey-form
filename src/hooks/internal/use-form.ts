@@ -420,17 +420,16 @@ export const useForm = <
 
         const isFieldPreviouslyErred = formField.errors.length > 0;
         // Validation is deferred when the field's mode is `submit` (validation will only happen on form submission)
-        const isValidateOnSubmit =
-          isInteractiveField(formField.config) && formField.config.mode === 'submit';
+        const isValidateOnSubmit = formField.config.mode === 'submit';
 
-        const isValidateField = !isValidateOnSubmit && (validate || isFieldPreviouslyErred);
+        const shouldValidateField = !isValidateOnSubmit && (validate || isFieldPreviouslyErred);
 
         const nextFormFields = getNextFieldsState(fieldName, fieldValue, {
           executionContext,
           formFieldsValidationControllerRef,
           parentField,
           format,
-          validate: isValidateField,
+          validate: shouldValidateField,
           finishFieldAsyncValidation,
         });
 
@@ -465,7 +464,7 @@ export const useForm = <
 
               childForms.forEach((childForm, childFormIndex) => {
                 childForm.setFormValues(fieldValue[childFormIndex], {
-                  validate: isValidateField,
+                  validate: shouldValidateField,
                 });
               });
             }

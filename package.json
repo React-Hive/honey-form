@@ -1,6 +1,6 @@
 {
   "name": "@react-hive/honey-form",
-  "version": "8.12.0",
+  "version": "8.12.1",
   "description": "The TS library to build the fully customized forms using React framework",
   "keywords": [
     "react",
@@ -29,6 +29,7 @@
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
+      "development": "./dist/index.dev.cjs",
       "import": "./dist/index.mjs",
       "require": "./dist/index.cjs",
       "default": "./dist/index.mjs"

@@ -345,18 +345,13 @@ export const scheduleFieldValidation = <
 /**
  * Get the current values of all form fields.
  *
- * Nested forms fields are resolved using their child form values.
- *
  * @param formFields - The form fields.
  *
- * @returns The current form values, including nested child form values.
+ * @returns The values of all form fields as a form object.
  */
 export const getFormValues = <Form extends HoneyFormBaseForm, FormContext>(
   formFields: Nullable<HoneyFormFields<Form, FormContext>>,
-): Form =>
-  iterateFormFields(formFields, (_, formField) =>
-    isNestedFormsField(formField.config) ? formField.getChildFormsValues() : formField.displayValue,
-  ) as Form;
+): Form => iterateFormFields(formFields, (_, formField) => formField.displayValue) as Form;
 
 /**
  * Retrieves the values of the form fields suitable for form submission.

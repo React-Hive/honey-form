@@ -30,6 +30,7 @@ import {
   getFormValues,
   scheduleFieldValidation,
   mapFormFields,
+  iterateFormFields,
 } from './helpers';
 import type {
   Nullable,
@@ -470,15 +471,21 @@ export const createFormField = <
     // TODO: try to fix the next error
     // @ts-expect-error
     getChildFormsValues: () => {
-      return (
-        fieldMeta.childForms?.map(childForm => {
-          const childFormFields = childForm.formFieldsRef.current;
-          assert(childFormFields, HONEY_FORM_ERRORS.emptyFormFieldsRef);
+      if (!fieldMeta.childForms) {
+        // Return field value when child forms are not mounted yet at the beginning, but the field value is set as initial value
+        return displayValue;
+      }
 
-          return getFormValues(childFormFields);
-          // Return field value when child forms are not mounted yet at the beginning, but the field value is set as initial value
-        }) ?? displayValue
-      );
+      return fieldMeta.childForms.map(childForm => {
+        const childFormFields = childForm.formFieldsRef.current;
+        assert(childFormFields, HONEY_FORM_ERRORS.emptyFormFieldsRef);
+
+        return iterateFormFields(childFormFields, (_, formField) =>
+          isNestedFormsField(formField.config)
+            ? formField.getChildFormsValues()
+            : formField.displayValue,
+        ) as Form;
+      });
     },
     __meta__: fieldMeta,
     // FUNCTIONS

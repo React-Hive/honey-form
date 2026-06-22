@@ -1,0 +1,2 @@
+minimumReleaseAgeExclude:
+  - ts-loader@9.6.2

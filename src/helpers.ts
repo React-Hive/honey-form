@@ -665,7 +665,15 @@ const readFormValuesFromQs = <Form extends HoneyFormBaseForm, FormContext = unde
     return undefined;
   }
 
-  return deserializeForm(rawFormData, fieldsConfig);
+  try {
+    return deserializeForm(rawFormData, fieldsConfig);
+  } catch {
+    warning(
+      'Cannot parse form values from the Query String: the encoded data is invalid or corrupted',
+    );
+
+    return undefined;
+  }
 };
 
 const getFormLsKey = (formName: string) => `${HONEY_FORM_LS_PREFIX}${formName}`;
@@ -729,7 +737,15 @@ export const readFormValuesFromLs = <Form extends HoneyFormBaseForm, FormContext
     return undefined;
   }
 
-  return deserializeForm(rawFormData, fieldsConfig);
+  try {
+    return deserializeForm(rawFormData, fieldsConfig);
+  } catch {
+    warning(
+      'Cannot parse form values from the Local Storage: the encoded data is invalid or corrupted',
+    );
+
+    return undefined;
+  }
 };
 
 /**

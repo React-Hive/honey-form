@@ -609,6 +609,7 @@ export const useForm = <
         validate: false,
         dirty: false,
         skipOnChange: true,
+        skipResetDependentFields: true,
       });
     },
   });

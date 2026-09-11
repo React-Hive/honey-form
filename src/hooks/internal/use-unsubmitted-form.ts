@@ -44,7 +44,7 @@ export const useUnsubmittedForm = <Form extends HoneyFormBaseForm, FormContext>(
     isUnsubmittedFormRestored.current = true;
 
     onRestore(readFormValuesFromLs(fields, formName));
-  }, []);
+  }, [hasUnsubmittedForm]);
 
   useEffect(() => {
     if (readDefaultsFromStorage) {

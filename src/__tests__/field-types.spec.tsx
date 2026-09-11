@@ -393,3 +393,112 @@ describe('Object field type', () => {
     expect(result.current.formFields.category.passiveProps).toBeUndefined();
   });
 });
+
+describe('Polymorphic field type', () => {
+  type Form = {
+    payload:
+      | string
+      | number
+      | {
+          id: number;
+        };
+  };
+
+  it('should not fill any field props for polymorphic field type', () => {
+    const { result } = renderHook(() =>
+      useHoneyForm<Form>({
+        fields: {
+          payload: {
+            type: 'polymorphic',
+          },
+        },
+      }),
+    );
+
+    expect(result.current.formFields.payload.props).toBeUndefined();
+    expect(result.current.formFields.payload.passiveProps).toBeUndefined();
+  });
+
+  it('should accept values of different shapes without built-in validation', () => {
+    const { result } = renderHook(() =>
+      useHoneyForm<Form>({
+        fields: {
+          payload: {
+            type: 'polymorphic',
+          },
+        },
+      }),
+    );
+
+    act(() => result.current.formFields.payload.setValue('text'));
+
+    expect(result.current.formFields.payload.normalizedValue).toBe('text');
+    expect(result.current.formFields.payload.errors).toStrictEqual([]);
+
+    act(() => result.current.formFields.payload.setValue(42));
+
+    expect(result.current.formFields.payload.normalizedValue).toBe(42);
+    expect(result.current.formFields.payload.errors).toStrictEqual([]);
+
+    act(() => result.current.formFields.payload.setValue({ id: 1 }));
+
+    expect(result.current.formFields.payload.normalizedValue).toStrictEqual({ id: 1 });
+    expect(result.current.formValues.payload).toStrictEqual({ id: 1 });
+    expect(result.current.formSubmitValues.payload).toStrictEqual({ id: 1 });
+  });
+
+  it('should validate required polymorphic field', async () => {
+    const { result } = renderHook(() =>
+      useHoneyForm<Form>({
+        fields: {
+          payload: {
+            type: 'polymorphic',
+            required: true,
+          },
+        },
+      }),
+    );
+
+    await act(() => result.current.validateForm());
+
+    expect(result.current.formFields.payload.errors).toStrictEqual([
+      {
+        type: 'required',
+        message: 'The value is required',
+      },
+    ]);
+
+    act(() => result.current.formFields.payload.setValue({ id: 1 }));
+
+    expect(result.current.formFields.payload.errors).toStrictEqual([]);
+  });
+
+  it('should run custom validator for polymorphic field', () => {
+    const { result } = renderHook(() =>
+      useHoneyForm<Form>({
+        fields: {
+          payload: {
+            type: 'polymorphic',
+            validator: value =>
+              typeof value === 'number' && value < 0 ? 'Must be positive' : true,
+          },
+        },
+      }),
+    );
+
+    act(() => result.current.formFields.payload.setValue(-1));
+
+    expect(result.current.formFields.payload.errors).toStrictEqual([
+      {
+        type: 'invalid',
+        message: 'Must be positive',
+      },
+    ]);
+    expect(result.current.formFields.payload.normalizedValue).toBeUndefined();
+
+    act(() => result.current.formFields.payload.setValue(5));
+
+    expect(result.current.formFields.payload.errors).toStrictEqual([]);
+    expect(result.current.formFields.payload.normalizedValue).toBe(5);
+  });
+});

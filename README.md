@@ -271,7 +271,7 @@ Every entry in `formFields` has the following properties:
 12. `setValue(value, { validate, dirty, format })` - Set the value programmatically. All options default to `true`.
 13. `pushValue(value)` - Append an item to a `nestedForms` field.
 14. `removeValue(index)` - Remove an item from a `nestedForms` field by index.
-15. `resetValue()` - Reset the field to its default value and clear its errors.
+15. `resetValue({ defaultValue }?)` - Reset the field to its default value and clear its errors. Pass `defaultValue` (a value or a lazy function) to replace the field's default first; later resets, `resetForm()`, and `formDefaultValues` then use the new default. Pass `undefined` explicitly to clear it.
 16. `addError(error)` / `addErrors(errors)` - Add errors manually.
 17. `clearErrors()` - Remove all errors from the field.
 18. `validate()` - Validate the field now.

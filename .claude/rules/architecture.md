@@ -93,7 +93,11 @@ Type guards live in `helpers.ts`: `isInteractiveField`, `isPassiveField`, `isObj
 
 Field methods (`setValue`, `pushValue`, `removeValue`, `resetValue`, `addError(s)`, `clearErrors`, `validate`,
 `focus`, `getChildFormsValues`) are closures over the engine callbacks passed into `createFormField`.
-`resetValue` sets the default with `dirty: false` and does not push into child forms.
+`resetValue(options?)` writes an explicit `options.defaultValue` (even `undefined`) to `formDefaultsRef`, then calls
+`setFieldValue` with the resolved default, `dirty: false`, no child-form propagation, and the internal `defaultValue`
+option. `setFieldValue` forwards it to `getNextFieldsState`, which patches `config.defaultValue`, `defaultValue`, and
+`initialNormalizedValue` from the filtered value it already computed, right after `resetDependentFields` and before
+validation. A reset to a new default therefore costs no extra render, `getFormValues` pass, or filter run.
 
 ### Submit values vs form values
 
@@ -104,7 +108,7 @@ Field methods (`setValue`, `pushValue`, `removeValue`, `resetValue`, `addError(s
 
 ## 4. The change pipeline
 
-`setFieldValue(fieldName, value, { validate, dirty, format, shouldSetChildFormsValues })` in `use-form.ts`
+`setFieldValue(fieldName, value, { validate, dirty, format, shouldSetChildFormsValues, defaultValue })` in `use-form.ts`
 calls `getNextFieldsState` in `field.ts`, which does, in order:
 
 1. `trimStart` (interactive fields, default on) then `config.filter`.

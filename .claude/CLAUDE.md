@@ -31,7 +31,7 @@ pnpm exec prettier --check src              # formatting
 pnpm build-docs                             # experimental MDX playground -> dist-docs/
 ```
 
-Baseline (8.15.0 plus unreleased working-tree changes): 25 test files / 175 tests pass. `tsc` reports one pre-existing error in
+Baseline (8.15.0 plus unreleased working-tree changes): 25 test files / 181 tests pass. `tsc` reports one pre-existing error in
 `src/docs/index.tsx` (no type declarations for `.mdx`; `src/docs` is excluded from the library build).
 ESLint reports 42 pre-existing errors, mostly `no-explicit-any` and `ban-ts-comment`. Do not add new ones.
 Do not mass-fix old ones inside an unrelated change.

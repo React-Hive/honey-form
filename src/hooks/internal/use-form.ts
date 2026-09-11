@@ -396,8 +396,15 @@ export const useForm = <
   const setFieldValue: HoneyFormFieldSetValueInternal<Form> = (
     fieldName,
     fieldValue,
-    { validate = true, dirty = true, format = true, shouldSetChildFormsValues = true } = {},
+    options = {},
   ) => {
+    const {
+      validate = true,
+      dirty = true,
+      format = true,
+      shouldSetChildFormsValues = true,
+    } = options;
+
     const formFields = resolveFormFields();
 
     // Any new field value clears the next form states
@@ -429,6 +436,10 @@ export const useForm = <
           formFieldsValidationControllerRef,
           parentField,
           format,
+          // Apply the new default value within the same update, so `isDirty` is computed against it
+          ...('defaultValue' in options && {
+            defaultValue: options.defaultValue,
+          }),
           validate: shouldValidateField,
           finishFieldAsyncValidation,
         });

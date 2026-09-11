@@ -187,9 +187,7 @@ export interface HoneyFormFieldError {
  *   allowing for more detailed and comprehensive error handling, especially when multiple errors occur.
  */
 export type HoneyFormFieldValidationResult =
-  | boolean
-  | HoneyFormFieldErrorMessage
-  | HoneyFormFieldError[];
+  boolean | HoneyFormFieldErrorMessage | HoneyFormFieldError[];
 
 /**
  * A type representing a function that completes the asynchronous validation for a specific form field.
@@ -243,7 +241,7 @@ export type HoneyFormFieldSetValue<FieldValue> = (
 /**
  * Internal configuration options for setting a form field value.
  */
-interface HoneyFormFieldSetValueOptionsInternal extends HoneyFormFieldSetValueOptions {
+interface HoneyFormFieldSetValueOptionsInternal<FieldValue> extends HoneyFormFieldSetValueOptions {
   /**
    * Indicates whether the values for nested child forms should be set when setting the value for a parent form field.
    *
@@ -255,6 +253,12 @@ interface HoneyFormFieldSetValueOptionsInternal extends HoneyFormFieldSetValueOp
    * @default true
    */
   shouldSetChildFormsValues?: boolean;
+  /**
+   * A new default value to apply to the field as part of this update.
+   *
+   * @default undefined
+   */
+  defaultValue?: FieldValue | (() => FieldValue);
 }
 
 /**
@@ -274,7 +278,7 @@ export type HoneyFormFieldSetValueInternal<Form extends HoneyFormBaseForm> = <
 >(
   fieldName: FieldName,
   value: FieldValue,
-  options?: HoneyFormFieldSetValueOptionsInternal,
+  options?: HoneyFormFieldSetValueOptionsInternal<FieldValue>,
 ) => void;
 
 export type HoneyFormFieldPushValue<Form extends HoneyFormBaseForm> = <

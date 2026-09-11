@@ -49,6 +49,7 @@ import type {
   HoneyFormFieldSetValueInternal,
   HoneyFormFieldPushValue,
   HoneyFormFieldRemoveValue,
+  HoneyFormFieldDefaultValue,
   HoneyFormFieldAddErrors,
   HoneyFormFieldClearErrors,
   HoneyFormFieldProps,
@@ -492,12 +493,20 @@ export const createFormField = <
     setValue: (value, options) => setFieldValue(fieldName, value, options),
     pushValue: value => pushFieldValue(fieldName, value),
     removeValue: formIndex => removeFieldValue(fieldName, formIndex),
-    resetValue: () => {
+    resetValue: (options = {}) => {
+      if ('defaultValue' in options) {
+        formDefaultsRef.current[fieldName] = options.defaultValue;
+      }
+
       const defaultValue = formDefaultsRef.current[fieldName];
 
       setFieldValue(fieldName, isFunction(defaultValue) ? defaultValue() : defaultValue, {
         dirty: false,
         shouldSetChildFormsValues: false,
+        // Apply the new default value within the same update, so `isDirty` is computed against it
+        ...('defaultValue' in options && {
+          defaultValue: options.defaultValue,
+        }),
       });
     },
     addErrors: errors => addFormFieldErrors(fieldName, errors),
@@ -1530,6 +1539,14 @@ interface NextFieldsStateOptions<
    */
   format: boolean;
   /**
+   * A new default value to apply to the field as part of this update.
+   *
+   * The key presence matters: an explicit `undefined` clears the default value.
+   *
+   * @default undefined
+   */
+  defaultValue?: HoneyFormFieldDefaultValue<Form, FieldName>;
+  /**
    * Callback function to complete asynchronous validation for the field.
    *
    * This function should be called once the asynchronous validation process is finished to indicate
@@ -1557,15 +1574,17 @@ export const getNextFieldsState = <
 >(
   fieldName: FieldName,
   fieldValue: FieldValue | undefined,
-  {
+  options: NextFieldsStateOptions<ParentForm, ParentFieldName, Form, FieldName, FormContext>,
+): HoneyFormFields<Form, FormContext> => {
+  const {
     executionContext,
     formFieldsValidationControllerRef,
     parentField,
     validate,
     format,
     finishFieldAsyncValidation,
-  }: NextFieldsStateOptions<ParentForm, ParentFieldName, Form, FieldName, FormContext>,
-): HoneyFormFields<Form, FormContext> => {
+  } = options;
+
   let nextFormFields = { ...executionContext.formFields };
 
   let nextFormField = nextFormFields[fieldName];
@@ -1583,6 +1602,21 @@ export const getNextFieldsState = <
   }
 
   nextFormFields = resetDependentFields(executionContext, fieldName);
+
+  if ('defaultValue' in options) {
+    // Apply the new default value within this update, so `isDirty` is computed against it
+    nextFormField = {
+      ...nextFormField,
+      config: {
+        ...nextFormField.config,
+        defaultValue: options.defaultValue,
+      },
+      defaultValue: fieldValue,
+      initialNormalizedValue: normalizeFieldValue(nextFormField.config.type, filteredValue),
+    };
+
+    nextFormFields[fieldName] = nextFormField;
+  }
 
   if (validate) {
     nextFormField = executeFieldValidator({

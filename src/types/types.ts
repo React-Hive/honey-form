@@ -440,9 +440,32 @@ type HoneyFormFieldDependsOn<
  *   should be produced for each initialization or reset.
  * - Form-level defaults have priority over field-level `defaultValue`.
  */
-type HoneyFormFieldDefaultValue<Form extends HoneyFormBaseForm, FieldName extends keyof Form> =
-  | Form[FieldName]
-  | (() => Form[FieldName]);
+export type HoneyFormFieldDefaultValue<
+  Form extends HoneyFormBaseForm,
+  FieldName extends keyof Form,
+> = Form[FieldName] | (() => Form[FieldName]);
+
+/**
+ * Options for resetting a form field value.
+ */
+export interface HoneyFormFieldResetValueOptions<
+  Form extends HoneyFormBaseForm,
+  FieldName extends keyof Form,
+> {
+  /**
+   * A new default value for the field.
+   *
+   * When provided, it replaces the current default value before the field is reset,
+   * so the field is reset to this value and any later reset uses it as well.
+   * Can be a direct value or a lazy factory function.
+   *
+   * @remarks
+   * Pass `undefined` explicitly to clear the current default value.
+   *
+   * @default undefined
+   */
+  defaultValue?: HoneyFormFieldDefaultValue<Form, FieldName>;
+}
 
 /**
  * Represents the base configuration for a form field.
@@ -966,8 +989,10 @@ interface BaseHoneyFormField<
   readonly removeValue: (formIndex: number) => void;
   /**
    * Reset the field value to the default value and clear all errors.
+   *
+   * @param [options] - Pass `defaultValue` to replace the field's default value before resetting.
    */
-  readonly resetValue: () => void;
+  readonly resetValue: (options?: HoneyFormFieldResetValueOptions<Form, FieldName>) => void;
   /**
    * A function to add a new error to the field.
    */

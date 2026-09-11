@@ -28,7 +28,7 @@ pnpm exec vitest --watch                     # watch mode
 pnpm coverage                                # v8 coverage report (writes ./coverage, gitignored)
 ```
 
-Baseline (8.15.0 plus unreleased working-tree changes): 25 files, 175 tests, all passing, about 4 seconds.
+Baseline (8.15.0 plus unreleased working-tree changes): 25 files, 181 tests, all passing, about 4 seconds.
 
 ## Where tests live
 

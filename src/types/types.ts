@@ -991,6 +991,10 @@ interface BaseHoneyFormField<
    * Reset the field value to the default value and clear all errors.
    *
    * @param [options] - Pass `defaultValue` to replace the field's default value before resetting.
+   *
+   * @remarks
+   * The reset does not run validation, same as `resetForm`. Any in-flight asynchronous validation
+   * of the field is aborted. The field is validated again on the next change or on form validation.
    */
   readonly resetValue: (options?: HoneyFormFieldResetValueOptions<Form, FieldName>) => void;
   /**

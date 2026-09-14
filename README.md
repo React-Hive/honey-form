@@ -220,7 +220,7 @@ It can return:
 - `false` to add the `invalid` error with the default or configured message.
 - A string or React element used as the `invalid` error message.
 - An array of `{ type, message }` errors.
-- A `Promise` resolving to any of the above. While it is pending, `field.isValidating` is `true` and `field.props['aria-busy']` is set. Starting a new validation aborts the previous one through `signal`, so pass it to `fetch` or axios. Other rejections become `invalid` errors with the rejection message.
+- A `Promise` resolving to any of the above. While it is pending, `field.isValidating` is `true` and `field.props['aria-busy']` is set. Starting a new validation, or resetting the field or the form, aborts the previous one through `signal`, so pass it to `fetch` or axios; rejections named `AbortError` or `CanceledError` are ignored, and other rejections become `invalid` errors with the rejection message. A validator that resolves after being aborted still has its result applied, so return `true` when `signal.aborted` is set.
 
 `scheduleValidation(otherFieldName)` re-validates another field right after this one, which is how the built-in date range validators keep "from" and "to" fields consistent.
 
@@ -271,7 +271,7 @@ Every entry in `formFields` has the following properties:
 12. `setValue(value, { validate, dirty, format })` - Set the value programmatically. All options default to `true`.
 13. `pushValue(value)` - Append an item to a `nestedForms` field.
 14. `removeValue(index)` - Remove an item from a `nestedForms` field by index.
-15. `resetValue({ defaultValue }?)` - Reset the field to its default value and clear its errors. Pass `defaultValue` (a value or a lazy function) to replace the field's default first; later resets, `resetForm()`, and `formDefaultValues` then use the new default. Pass `undefined` explicitly to clear it.
+15. `resetValue({ defaultValue }?)` - Reset the field to its default value and clear its errors. Pass `defaultValue` (a value or a lazy function) to replace the field's default first; later resets, `resetForm()`, and `formDefaultValues` then use the new default. Pass `undefined` explicitly to clear it. The reset does not run validation (same as `resetForm()`) and aborts an in-flight async validation of the field; the field is validated again on the next change or on form validation.
 16. `addError(error)` / `addErrors(errors)` - Add errors manually.
 17. `clearErrors()` - Remove all errors from the field.
 18. `validate()` - Validate the field now.

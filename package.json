@@ -1,6 +1,6 @@
 {
   "name": "@react-hive/honey-form",
-  "version": "8.16.0",
+  "version": "8.17.0",
   "description": "The TS library to build the fully customized forms using React framework",
   "keywords": [
     "react",
@@ -17,6 +17,7 @@
   },
   "author": "Mike Aliinyk <m.aliynik@gmail.com>",
   "license": "MIT",
+  "packageManager": "pnpm@11.20.0",
   "scripts": {
     "clean": "rm -rf dist coverage",
     "build": "webpack --config webpack.config.mjs",

@@ -403,6 +403,7 @@ export const useForm = <
       dirty = true,
       format = true,
       shouldSetChildFormsValues = true,
+      reset = false,
     } = options;
 
     const formFields = resolveFormFields();
@@ -429,7 +430,8 @@ export const useForm = <
         // Validation is deferred when the field's mode is `submit` (validation will only happen on form submission)
         const isValidateOnSubmit = formField.config.mode === 'submit';
 
-        const shouldValidateField = !isValidateOnSubmit && (validate || isFieldPreviouslyErred);
+        const shouldValidateField =
+          !reset && !isValidateOnSubmit && (validate || isFieldPreviouslyErred);
 
         const nextFormFields = getNextFieldsState(fieldName, fieldValue, {
           executionContext,
@@ -442,6 +444,7 @@ export const useForm = <
           }),
           validate: shouldValidateField,
           finishFieldAsyncValidation,
+          reset,
         });
 
         if (parentField) {

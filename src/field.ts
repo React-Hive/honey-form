@@ -501,6 +501,7 @@ export const createFormField = <
       const defaultValue = formDefaultsRef.current[fieldName];
 
       setFieldValue(fieldName, isFunction(defaultValue) ? defaultValue() : defaultValue, {
+        reset: true,
         dirty: false,
         shouldSetChildFormsValues: false,
         // Apply the new default value within the same update, so `isDirty` is computed against it
@@ -927,8 +928,8 @@ const handleFieldAsyncValidationResult = <
       }
     })
     .catch((validationResult: Error) => {
-      if (validationResult.name === 'CanceledError') {
-        // Throws from axios when HTTP request is aborted using signal (AbortController)
+      if (validationResult.name === 'CanceledError' || validationResult.name === 'AbortError') {
+        // Thrown by axios (`CanceledError`) or fetch (`AbortError`) when the request is aborted via the signal
       } else {
         formField.addError({
           type: 'invalid',
@@ -1547,6 +1548,14 @@ interface NextFieldsStateOptions<
    */
   defaultValue?: HoneyFormFieldDefaultValue<Form, FieldName>;
   /**
+   * Marks the update as a reset to the default value: validation is skipped regardless of `validate`,
+   * errors are cleared, an in-flight asynchronous validation is aborted, and the normalized value
+   * is derived from the value directly.
+   *
+   * @default false
+   */
+  reset?: boolean;
+  /**
    * Callback function to complete asynchronous validation for the field.
    *
    * This function should be called once the asynchronous validation process is finished to indicate
@@ -1583,6 +1592,7 @@ export const getNextFieldsState = <
     validate,
     format,
     finishFieldAsyncValidation,
+    reset = false,
   } = options;
 
   let nextFormFields = { ...executionContext.formFields };
@@ -1618,7 +1628,20 @@ export const getNextFieldsState = <
     nextFormFields[fieldName] = nextFormField;
   }
 
-  if (validate) {
+  if (reset) {
+    // Abort an in-flight asynchronous validation, so its result cannot land on the reset field
+    formFieldsValidationControllerRef.current[fieldName]?.abort();
+
+    const errorsFreeField = getNextErrorsFreeField(nextFormField);
+
+    nextFormField = {
+      ...(nextFormField.isValidating
+        ? getNextAsyncValidatedField(errorsFreeField)
+        : errorsFreeField),
+      // Mirror the field creation: the normalized value is derived without running validation
+      normalizedValue: normalizeFieldValue(nextFormField.config.type, filteredValue),
+    };
+  } else if (validate) {
     nextFormField = executeFieldValidator({
       formFieldsValidationControllerRef,
       fieldName,
@@ -1643,9 +1666,13 @@ export const getNextFieldsState = <
     },
   });
 
+  // Compare the normalized values regardless of validation, so an invalid or not yet validated value
+  // that equals the initial one does not mark the field as dirty
   nextFormFields[fieldName] = {
     ...nextFormFields[fieldName],
-    isDirty: nextFormFields[fieldName].initialNormalizedValue !== nextFormField.normalizedValue,
+    isDirty:
+      nextFormFields[fieldName].initialNormalizedValue !==
+      normalizeFieldValue(nextFormField.config.type, filteredValue),
   };
 
   const formValues = getFormValues(nextFormFields);

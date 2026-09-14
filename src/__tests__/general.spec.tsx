@@ -306,3 +306,58 @@ describe('General tests', () => {
     expect(result.current.formFields.nameB.displayValue).toBe('mango');
   });
 });
+
+describe('Dirty state and validation', () => {
+  it('should not mark a required field as dirty when it is cleared back to its empty default', () => {
+    const { result } = renderHook(() =>
+      useHoneyForm<{ name: string }>({
+        fields: {
+          name: {
+            type: 'string',
+            required: true,
+            defaultValue: '',
+          },
+        },
+      }),
+    );
+
+    act(() => result.current.formFields.name.setValue('Apple'));
+
+    expect(result.current.formFields.name.isDirty).toBeTruthy();
+
+    act(() => result.current.formFields.name.setValue(''));
+
+    expect(result.current.formFields.name.errors).toStrictEqual([
+      {
+        type: 'required',
+        message: 'The value is required',
+      },
+    ]);
+    // The value equals the default even though it is invalid
+    expect(result.current.formFields.name.isDirty).toBeFalsy();
+  });
+
+  it('should compute dirty state for a not yet validated value', () => {
+    const { result } = renderHook(() =>
+      useHoneyForm<{ name: string }>({
+        fields: {
+          name: {
+            type: 'string',
+            mode: 'blur',
+            defaultValue: 'Apple',
+          },
+        },
+      }),
+    );
+
+    // `mode: 'blur'` defers validation, so the normalized value is not available yet
+    act(() => result.current.formFields.name.setValue('Banana', { validate: false }));
+
+    expect(result.current.formFields.name.normalizedValue).toBeUndefined();
+    expect(result.current.formFields.name.isDirty).toBeTruthy();
+
+    act(() => result.current.formFields.name.setValue('Apple', { validate: false }));
+
+    expect(result.current.formFields.name.isDirty).toBeFalsy();
+  });
+});

@@ -1,6 +1,7 @@
 import { act, renderHook } from '@testing-library/react';
 
 import { useHoneyForm } from '../hooks';
+import { defer } from '../tests.helpers';
 
 describe('Reset form', () => {
   it('should reset to initial field values', () => {
@@ -254,5 +255,128 @@ describe('Reset field value', () => {
 
     expect(result.current.formFields.name.displayValue).toBe('Cherry');
     expect(result.current.formFields.age.displayValue).toBe(30);
+  });
+});
+
+describe('Reset field value without validation', () => {
+  it('should not validate the field on reset', async () => {
+    const validator = vitest.fn(() => true);
+
+    const { result } = renderHook(() =>
+      useHoneyForm<{ name: string }>({
+        fields: {
+          name: {
+            type: 'string',
+            required: true,
+            validator,
+          },
+        },
+      }),
+    );
+
+    act(() => result.current.formFields.name.setValue(''));
+
+    expect(result.current.formFields.name.errors).toStrictEqual([
+      {
+        type: 'required',
+        message: 'The value is required',
+      },
+    ]);
+
+    validator.mockClear();
+
+    act(() => result.current.formFields.name.resetValue());
+
+    expect(validator).not.toHaveBeenCalled();
+    expect(result.current.formFields.name.displayValue).toBeUndefined();
+    expect(result.current.formFields.name.errors).toStrictEqual([]);
+    expect(result.current.formFields.name.props['aria-invalid']).toBeFalsy();
+    expect(result.current.formFields.name.isDirty).toBeFalsy();
+
+    // The form validation still applies the rules afterwards
+    await act(() => result.current.validateForm());
+
+    expect(validator).toHaveBeenCalledTimes(1);
+    expect(result.current.formFields.name.errors).toStrictEqual([
+      {
+        type: 'required',
+        message: 'The value is required',
+      },
+    ]);
+  });
+
+  it('should reset a required field to an empty default without errors or dirty state', async () => {
+    const { result } = renderHook(() =>
+      useHoneyForm<{ name: string }>({
+        fields: {
+          name: {
+            type: 'string',
+            required: true,
+            defaultValue: 'Apple',
+          },
+        },
+      }),
+    );
+
+    act(() => result.current.formFields.name.setValue('Banana'));
+
+    act(() => result.current.formFields.name.resetValue({ defaultValue: '' }));
+
+    expect(result.current.formFields.name.displayValue).toBe('');
+    expect(result.current.formFields.name.normalizedValue).toBe('');
+    expect(result.current.formFields.name.errors).toStrictEqual([]);
+    expect(result.current.formFields.name.isDirty).toBeFalsy();
+    expect(result.current.formDefaultValues.name).toBe('');
+
+    // The empty default is still rejected by the `required` rule when the form is validated
+    await act(() => result.current.validateForm());
+
+    expect(result.current.formFields.name.errors).toStrictEqual([
+      {
+        type: 'required',
+        message: 'The value is required',
+      },
+    ]);
+    // The value still equals the default, so the field is not dirty
+    expect(result.current.formFields.name.isDirty).toBeFalsy();
+  });
+
+  it('should abort an in-flight async validation on reset', async () => {
+    let capturedSignal: AbortSignal | undefined;
+
+    const { result } = renderHook(() =>
+      useHoneyForm<{ name: string }>({
+        fields: {
+          name: {
+            type: 'string',
+            defaultValue: 'Apple',
+            validator: (_, { signal }) => {
+              capturedSignal = signal;
+
+              // Validators are expected to honor the signal: an aborted run passes instead of reporting
+              return defer(() => (signal.aborted ? true : 'Too late'), 20);
+            },
+          },
+        },
+      }),
+    );
+
+    act(() => result.current.formFields.name.setValue('Banana'));
+
+    expect(result.current.formFields.name.isValidating).toBeTruthy();
+    expect(result.current.formFields.name.props['aria-busy']).toBeTruthy();
+
+    act(() => result.current.formFields.name.resetValue());
+
+    expect(capturedSignal?.aborted).toBeTruthy();
+    expect(result.current.formFields.name.isValidating).toBeFalsy();
+    expect(result.current.formFields.name.props['aria-busy']).toBeFalsy();
+    expect(result.current.formFields.name.displayValue).toBe('Apple');
+
+    // Let the aborted validation settle
+    await act(() => defer(() => undefined, 40));
+
+    expect(result.current.formFields.name.errors).toStrictEqual([]);
+    expect(result.current.formFields.name.isValidating).toBeFalsy();
   });
 });

@@ -31,7 +31,7 @@ pnpm exec prettier --check src              # formatting
 pnpm build-docs                             # experimental MDX playground -> dist-docs/
 ```
 
-Baseline (8.15.0 plus unreleased working-tree changes): 25 test files / 181 tests pass. `tsc` reports one pre-existing error in
+Baseline (8.15.0 plus unreleased working-tree changes): 25 test files / 186 tests pass. `tsc` reports one pre-existing error in
 `src/docs/index.tsx` (no type declarations for `.mdx`; `src/docs` is excluded from the library build).
 ESLint reports 42 pre-existing errors, mostly `no-explicit-any` and `ban-ts-comment`. Do not add new ones.
 Do not mass-fix old ones inside an unrelated change.
@@ -104,8 +104,11 @@ src/
 - Child field changes re-validate the parent field through `setTimeout(..., 0)`. Tests that assert on the parent
   after a child change need `waitFor`.
 - Async validators receive `signal`; a previous in-flight validation for the same field is aborted on every new
-  run. Rejections named `CanceledError` (axios) are swallowed; any other rejection becomes an `invalid` error
-  with the rejection message.
+  run and on `resetValue`/`resetForm`. An aborted run's result is still applied when it settles, so validators must
+  return `true` once `signal.aborted`. Rejections named `CanceledError` (axios) or `AbortError` (fetch) are
+  swallowed; any other rejection becomes an `invalid` error with the rejection message.
+- `resetValue()` never validates, same as `resetForm()`. `isDirty` compares normalized values independent of
+  validation, so an invalid value that equals the default is not dirty.
 - Using `storage` without `name` throws. Only root forms persist; child forms cannot pass `name`, `storage`, or
   `readDefaultsFromStorage`.
 - `src/__tests__/use-honey-form.nested-forms.tsx` is missing the `.spec` suffix, so vitest never runs it

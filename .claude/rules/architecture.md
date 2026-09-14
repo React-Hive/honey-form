@@ -87,17 +87,20 @@ Type guards live in `helpers.ts`: `isInteractiveField`, `isPassiveField`, `isObj
 | `normalizedValue` | Type-normalized value (`number` -> JS number, commas stripped). Present only when validation passed; `undefined` when `errors.length > 0` or when validation was skipped via `getNextErrorsFreeField`. | `getNextValidatedField`, `getNextErredField` |
 | `initialNormalizedValue` | Snapshot at creation, used for `isDirty`. | `createFormField` |
 | `errors` | `HoneyFormFieldError[]`, `type` in `required`, `invalid`, `min`, `max`, `minMax`, `server`. | validators, `addErrors`, `setFormErrors` |
-| `isDirty` | `initialNormalizedValue !== normalizedValue` after a change. | `getNextFieldsState` |
+| `isDirty` | `initialNormalizedValue !== normalize(filteredValue)` after a change, independent of validation state. | `getNextFieldsState` |
 | `isValidating` | True while a Promise validator is pending. | `getNextAsyncValidatingField` / `getNextAsyncValidatedField` |
 | `__meta__` | `{ formFieldsRef, validationScheduled, childForms }`. Mutable on purpose. | `createFormField`, `scheduleFieldValidation`, child-form registry |
 
 Field methods (`setValue`, `pushValue`, `removeValue`, `resetValue`, `addError(s)`, `clearErrors`, `validate`,
 `focus`, `getChildFormsValues`) are closures over the engine callbacks passed into `createFormField`.
 `resetValue(options?)` writes an explicit `options.defaultValue` (even `undefined`) to `formDefaultsRef`, then calls
-`setFieldValue` with the resolved default, `dirty: false`, no child-form propagation, and the internal `defaultValue`
-option. `setFieldValue` forwards it to `getNextFieldsState`, which patches `config.defaultValue`, `defaultValue`, and
-`initialNormalizedValue` from the filtered value it already computed, right after `resetDependentFields` and before
-validation. A reset to a new default therefore costs no extra render, `getFormValues` pass, or filter run.
+`setFieldValue` with the resolved default and the internal options `reset: true`, `dirty: false`, no child-form
+propagation, plus `defaultValue` when one was given. `getNextFieldsState` handles both: `defaultValue` patches
+`config.defaultValue`, `defaultValue`, and `initialNormalizedValue` from the filtered value it already computed;
+`reset` skips validation entirely (even when the field has errors), clears errors, aborts the field's in-flight async
+validation controller, and derives `normalizedValue` from the filtered value the way `createFormField` does. Like
+`resetForm`, a reset never surfaces validation errors; the field is validated on the next change or form validation.
+A reset costs no extra render, `getFormValues` pass, or filter run.
 
 ### Submit values vs form values
 
@@ -116,11 +119,14 @@ calls `getNextFieldsState` in `field.ts`, which does, in order:
    `(initiatorFieldName, value, ctx) => boolean`) is reset to `undefined`, or to its default when
    `resetOnDependencyToDefault` is true. Recurses through chains, guarding against cycles with
    `initiatorFieldName`.
-3. If `validate`: `executeFieldValidator` (section 5). Else `getNextErrorsFreeField`. `validate` is forced
-   true when the field already has errors, and forced false when `config.mode === 'submit'`.
+3. If `reset`: abort the field's validation controller, clear errors (`getNextErrorsFreeField`, plus
+   `getNextAsyncValidatedField` when a validation was in flight) and set `normalizedValue` to the normalized filtered
+   value. Else if `validate`: `executeFieldValidator` (section 5). Else `getNextErrorsFreeField`. `validate` is forced
+   true when the field already has errors, and forced false when `config.mode === 'submit'` or on reset.
 4. `getNextFormFieldState` - apply `formatter` (when `format` is true), refresh `props.value` /
    `passiveProps.checked`, set `rawValue` and `displayValue`.
-5. Recompute `isDirty`.
+5. Recompute `isDirty` as `initialNormalizedValue !== normalizeFieldValue(type, filteredValue)`, independent of
+   validation, so an invalid or not-yet-validated value that equals the initial one is not dirty.
 6. `processSkippableFields` - clear errors on any field whose `skip(ctx)` returns true.
 7. `processScheduledFieldsValidation` - re-validate fields flagged through `scheduleValidation` (used by the
    date-range validators to keep "from" and "to" consistent), then clear the flag.
@@ -150,7 +156,9 @@ re-validate via `setTimeout(0)` when the field's error state changed or `alwaysV
    `scheduleValidation`. Return `true`, `false`, a message (string or `ReactElement`), or
    `HoneyFormFieldError[]`. A Promise result marks the field `isValidating`, sets `aria-busy`, and resolves
    later through `field.addErrors` and `finishFieldAsyncValidation`. Each run aborts the previous controller
-   for that field.
+   for that field, as do `resetValue` and `resetForm`. An aborted run's result is still applied when it settles, so
+   validators are expected to return `true` once `signal.aborted`; rejections named `CanceledError` (axios) or
+   `AbortError` (fetch) are ignored.
 5. `getNextValidatedField` folds results into `errors`, sets `aria-invalid`, and sets `normalizedValue` only
    when there are no errors.
 

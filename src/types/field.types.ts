@@ -259,6 +259,16 @@ interface HoneyFormFieldSetValueOptionsInternal<FieldValue> extends HoneyFormFie
    * @default undefined
    */
   defaultValue?: FieldValue | (() => FieldValue);
+  /**
+   * Marks the update as a reset of the field to its default value.
+   *
+   * Validation is skipped even when the field currently has errors or `validate` is `true`,
+   * existing errors are cleared, any in-flight asynchronous validation is aborted,
+   * and the normalized value is derived from the value directly, as it is on field creation.
+   *
+   * @default false
+   */
+  reset?: boolean;
 }
 
 /**

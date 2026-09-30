@@ -27,7 +27,7 @@ paths:
 
 `.github/workflows/publish.yml` runs on every push to the `release` branch:
 
-1. `actions/checkout`, Node `24.16.0`, pnpm latest.
+1. `actions/checkout`, Node `24.21.0`, pnpm from `packageManager` in `package.json` (12.4.1).
 2. `pnpm install`.
 3. `pnpm publish --access public --no-git-checks` with `NPM_TOKEN`. npm runs the `prepublishOnly` script
    first: `CI=1 pnpm clean && pnpm test && pnpm build`. A failing test blocks the publish.
@@ -76,6 +76,7 @@ playground from `src/docs/index.tsx` into `dist-docs/`. It is experimental and n
   helpers this package needs.
 - Peers: `react` and `react-dom` `^19`, plus `@mdx-js/react` (only used by `src/docs`).
 - Dev dependencies are pinned exact except `@types/react*`.
-- pnpm 11 verifies the lockfile against supply-chain policies on install. `pnpm-workspace.yaml` carries a
+- pnpm (since 11) verifies the lockfile against supply-chain policies on install. Since 12 the lockfile also pins
+  pnpm itself (`packageManagerDependencies`), so a `packageManager` bump changes `pnpm-lock.yaml` too. `pnpm-workspace.yaml` carries a
   `minimumReleaseAgeExclude` entry for `ts-loader@9.6.2`. If `pnpm install` refuses a just-published version,
   add an exclusion there deliberately rather than disabling the check.

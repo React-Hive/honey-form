@@ -863,6 +863,20 @@ export type HoneyFormFieldsRef<Form extends HoneyFormBaseChildForm, FormContext>
   Nullable<HoneyFormFields<Form, FormContext>>
 >;
 
+export interface HoneyFormMarkChangedOptions {
+  /**
+   * Whether the change marks the form as dirty.
+   */
+  dirty: boolean;
+}
+
+/**
+ * Applies a change made in a child form to the form it is nested in, as a field value change of
+ * the form's own: clears `isFormValid` and `isFormSubmitted`, and marks the form dirty when the
+ * change does.
+ */
+export type HoneyFormMarkChanged = (options: HoneyFormMarkChangedOptions) => void;
+
 /**
  * Contextual information for child forms within a parent form.
  */
@@ -910,6 +924,11 @@ export interface HoneyFormFieldMeta<
    * Indicates if field validation is scheduled.
    */
   validationScheduled: boolean;
+  /**
+   * Applies a change made in a child form to the form the field belongs to.
+   * Called by child forms, whose values are not held by the form's own fields.
+   */
+  markFormChanged: HoneyFormMarkChanged;
   /**
    * An array of child form contexts when applicable.
    *
@@ -1305,6 +1324,7 @@ export interface InitialFormFieldsStateResolverOptions<
   pushFieldValue: HoneyFormFieldPushValue<Form>;
   removeFieldValue: HoneyFormFieldRemoveValue<Form>;
   addFormFieldErrors: HoneyFormFieldAddErrors<Form>;
+  markFormChanged: HoneyFormMarkChanged;
 }
 
 export interface FormOptions<

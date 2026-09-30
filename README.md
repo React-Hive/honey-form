@@ -294,11 +294,11 @@ The `useHoneyForm` hook returns (and the `HoneyForm` render prop receives) an ob
 9. `isFormErred` - `true` when any field has an error.
 10. `isFormDefaultsFetching` - `true` while the async `defaults` resolver is running.
 11. `isFormDefaultsFetchingErred` - `true` when the async `defaults` resolver failed.
-12. `isFormDirty` - `true` after any field changed. Becomes `false` after a successful submission or a reset.
+12. `isFormDirty` - `true` after any field changed, including a field of a child form. Becomes `false` after a successful submission or a reset.
 13. `isFormValidating` - `true` while `validateForm` or the validation step of `submitForm` is running.
-14. `isFormValid` - `true` when the last validation found no errors. Cleared when any field changes.
+14. `isFormValid` - `true` when the last validation found no errors. Cleared when any field changes, including a field of a child form.
 15. `isFormSubmitting` - `true` while `onSubmit` is running.
-16. `isFormSubmitted` - `true` after a successful submission. Cleared when any field changes.
+16. `isFormSubmitted` - `true` after a successful submission. Cleared when any field changes, including a field of a child form.
 17. `isAnyFormFieldValidating` - `true` while any field runs a Promise-based validator.
 18. `isFormSubmitAllowed` - `false` while defaults are fetching, any field is validating, or the form is validating or submitting. Bind it to the submit button's `disabled`.
 19. `hasUnsubmittedForm` - `true` when a previously saved, unsubmitted version of the form exists in `localStorage`. See [Persisting Form State](#persisting-form-state).
@@ -428,7 +428,8 @@ const Order = () => (
 
 - `ChildHoneyForm` (or the `useChildHoneyForm` hook) accepts the same options as a root form except `name`, `storage`, and `readDefaultsFromStorage`, plus `parentField`, `formIndex`, and `alwaysValidateParentField`.
 - Submitting the parent validates every mounted child form first. Submit values contain the child forms' values as an array.
-- `parentField.setValue(array)` and `setFormValues` on the parent push values down into the mounted child forms.
+- `parentField.setValue(array)` pushes values down into the mounted child forms. `setFormValues` on the parent does not reach them, so set a `nestedForms` field that has mounted child forms through its `setValue`.
+- A change in a child form is a change in every form above it, up to the root: it clears their `isFormValid` and `isFormSubmitted` and, unless made with `dirty: false`, marks them dirty. Resetting a child form clears them without marking them dirty, as a field's `resetValue` does. Values given to a child form with `setFormValues(values, { dirty: false })`, such as its defaults, leave them as they are. Each form is rendered once per change.
 - `ChildHoneyForm` renders a `<div role="form">`, so it can live inside the parent `<form>`. The render prop receives `(childFormApi, parentFormApi)`.
 - A parent-level `validator` on the `nestedForms` field receives the current child values, for example to require at least one item.
 

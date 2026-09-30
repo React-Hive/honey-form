@@ -30,8 +30,9 @@ Everything in `src/index.ts` is public, including `helpers.ts`. Renaming an expo
 `useForm<ParentForm, ParentFieldName, Form, FormContext>(options: FormOptions)` is generic over an optional
 parent so the same code serves root and child forms. Key pieces:
 
-- **State:** `formFields` (React state, the only thing that triggers renders) and `formState`
-  (`isValidating`, `isSubmitting`).
+- **State:** `formFields` (React state), `formState` (`isValidating`, `isSubmitting`), and a `rerenderForm`
+  reducer that renders the form for a change neither holds: a child form's change flipping this form's dirty,
+  valid or submitted flag (section 7).
 - **Refs mirroring state:** `formFieldsRef`, `formValuesRef`, `formSubmitValuesRef`, `formErrorsRef`,
   `isFormDirtyRef`, `isFormValidRef`, `isFormSubmittedRef`, `totalFormSubmissionsRef`,
   `formFieldsValidationControllerRef` (per-field `AbortController`), debounce timer refs.
@@ -44,7 +45,9 @@ parent so the same code serves root and child forms. Key pieces:
   `fields` config through `createFormField`, applying `formDefaultsRef` over `fieldConfig.defaultValue`.
   Child forms additionally prefer the value found in the parent field at `formIndex`.
 - **`resetForm(newDefaults?)`** merges new defaults into `formDefaultsRef`, aborts in-flight validators, and
-  re-runs the resolver. It also removes the localStorage entry when `storage === 'ls'`.
+  re-runs the resolver, setting the result to `formFieldsRef` at once so a child form's parent field is validated
+  with the reset values. A child form's reset also calls `markFormChanged({ dirty: false })` on the parent. It
+  also removes the localStorage entry when `storage === 'ls'`.
 
 Two internal wrappers sit around every change:
 
@@ -89,7 +92,7 @@ Type guards live in `helpers.ts`: `isInteractiveField`, `isPassiveField`, `isObj
 | `errors` | `HoneyFormFieldError[]`, `type` in `required`, `invalid`, `min`, `max`, `minMax`, `server`. | validators, `addErrors`, `setFormErrors` |
 | `isDirty` | `initialNormalizedValue !== normalize(filteredValue)` after a change, independent of validation state. | `getNextFieldsState` |
 | `isValidating` | True while a Promise validator is pending. | `getNextAsyncValidatingField` / `getNextAsyncValidatedField` |
-| `__meta__` | `{ formFieldsRef, validationScheduled, childForms }`. Mutable on purpose. | `createFormField`, `scheduleFieldValidation`, child-form registry |
+| `__meta__` | `{ formFieldsRef, validationScheduled, markFormChanged, childForms }`. Mutable on purpose; `markFormChanged` is the owning form's, for its child forms to call. | `createFormField`, `scheduleFieldValidation`, child-form registry |
 
 Field methods (`setValue`, `pushValue`, `removeValue`, `resetValue`, `addError(s)`, `clearErrors`, `validate`,
 `focus`, `getChildFormsValues`) are closures over the engine callbacks passed into `createFormField`.
@@ -131,9 +134,12 @@ calls `getNextFieldsState` in `field.ts`, which does, in order:
 7. `processScheduledFieldsValidation` - re-validate fields flagged through `scheduleValidation` (used by the
    date-range validators to keep "from" and "to" consistent), then clear the flag.
 
-After the pipeline, `setFieldValue` propagates array values into mounted child forms
-(`childForm.setFormValues(value[i])`, asserting lengths match) and, for child forms, asks the parent field to
-re-validate via `setTimeout(0)` when the field's error state changed or `alwaysValidateParentField` is set.
+Before the pipeline, `setFieldValue` clears `isFormValid`/`isFormSubmitted`, sets `isFormDirty` when `dirty`, and
+for a child form calls `parentField.__meta__.markFormChanged({ dirty })`. After it, `setFieldValue` propagates
+array values into mounted child forms (`childForm.setFormValues(value[i], { validate, dirty })`, asserting
+lengths match). A child form then, once `formFieldsRef` holds the new fields, re-validates the parent field
+synchronously when the field's error state changed or `alwaysValidateParentField` is set, so the parent renders in
+the same pass.
 
 `setFormValues(partial, options)` runs the same steps per field but inline in `use-form.ts` (filter,
 `resetDependentFields` unless `skipResetDependentFields`, `executeFieldValidator` unless `validate: false`,
@@ -173,7 +179,7 @@ via `mapFormFieldsAsync`) it: skips excluded or non-target fields, clears errors
 which mirrors the sync path but `await`s Promise validators and turns rejections into their message.
 `server`-type errors do not make the form invalid. With `shouldSetErrors: false` the result is computed
 without touching field state. `onAfterValidate(ctx)` fires after every run. `isFormValid` reflects the
-last run and is cleared by any subsequent `setFieldValue`.
+last run and is cleared by any subsequent `setFieldValue`, including one in a child form.
 
 ### Submit (`submitForm(handler?)`)
 
@@ -214,8 +220,15 @@ skipResetDependentFields: true })` whenever the reference changes. Callers must 
   `getFormSubmitValues` on the parent use this, so parent-level `validator`s see current child data.
 - `pushValue(item)` appends to the parent array without touching mounted children; `removeValue(index)`
   rebuilds the array from `getChildFormsValues()` minus one entry. Children re-key on their own `id`.
-- `parentField.setValue(array)` (or `setFormValues` on the parent) propagates into mounted children and
-  asserts `array.length === childForms.length`.
+- `parentField.setValue(array)` propagates into mounted children, passing its `dirty`, and asserts
+  `array.length === childForms.length`. `setFormValues` on the parent does not reach mounted children (checked at
+  8.18.0).
+- A child form's change is a change of every form above it. `markFormChanged({ dirty })` clears the form's
+  `isFormValid`/`isFormSubmitted`, marks it dirty when `dirty`, calls `rerenderForm` only when one of those flags
+  flips, and passes the change up. A child calls it from `setFieldValue` (always), from `setFormValues` only with
+  `dirty: true` (its defaults and `values` sync pass `dirty: false`), and from `resetForm` with `dirty: false`, as a
+  field's `resetValue` is. It runs within the child's update, so every form renders once per change; the render
+  counts are pinned in `components/__tests__/honey-form.nested-forms.spec.tsx`.
 - Child forms omit `name`, `storage`, `readDefaultsFromStorage`, and gain `alwaysValidateParentField`.
 - `ChildHoneyFormForm` renders `<div role="form" data-testid="child-honey-form">`, not a `<form>`, so it can
   nest inside the parent `<form>`.

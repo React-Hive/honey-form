@@ -78,7 +78,7 @@ src/
   exported type and function; the JSDoc in `src/types/` is the effective API reference.
 - Field objects are treated as immutable: functions named `getNext*` return new objects and never mutate the
   input. The one intentional exception is `field.__meta__` (`validationScheduled`, `childForms`), which is
-  shared mutable metadata.
+  shared mutable metadata. It also carries the owning form's `markFormChanged`, which child forms call.
 - Whenever form fields change inside `use-form.ts`, set both `formFieldsRef.current = next` and
   `setFormFields(next)`. Callbacks read the ref, React reads the state; they must never diverge.
 - User-facing messages go through `warning()` / `error()` in `src/helpers.ts` or `HONEY_FORM_ERRORS` in
@@ -101,8 +101,10 @@ src/
   interactive fields, `displayValue` for everything else (or when `submitFormattedValue` is true).
 - `min`/`max` mean value bounds for `type: 'number'` and length bounds for `string`, `email`, `numeric`.
   `numeric` stays a digits-only string; `number` is normalized to a JS number (thousand separators stripped).
-- Child field changes re-validate the parent field through `setTimeout(..., 0)`. Tests that assert on the parent
-  after a child change need `waitFor`.
+- A child form's change reaches every form above it within the same update: `parentField.__meta__.markFormChanged`
+  clears their `isFormValid`/`isFormSubmitted` and marks them dirty unless the change is `dirty: false`, and the
+  parent field is re-validated synchronously once the child's `formFieldsRef` holds the change. One change renders
+  each affected form once; never defer child-to-parent work to a timeout, which renders the parent a second time.
 - Async validators receive `signal`; a previous in-flight validation for the same field is aborted on every new
   run and on `resetValue`/`resetForm`. An aborted run's result is still applied when it settles, so validators must
   return `true` once `signal.aborted`. Rejections named `CanceledError` (axios) or `AbortError` (fetch) are

@@ -82,7 +82,7 @@ export interface HoneyFormApi<Form extends HoneyFormBaseForm, FormContext = unde
   readonly isFormDefaultsFetchingErred: boolean;
   /**
    * A boolean value that indicates whether any field value in the form has changed.
-   * It is `false` by default and becomes `true` when any field value is changed.
+   * It is `false` by default and becomes `true` when any field value is changed, including a field value of a child form.
    * It returns to `false` when the form is successfully submitted.
    *
    * @default false
@@ -98,6 +98,7 @@ export interface HoneyFormApi<Form extends HoneyFormBaseForm, FormContext = unde
   /**
    * A boolean value that becomes `true` when the process of form validation has successfully finished,
    *  and no errors have been detected in any of the form's fields.
+   * It resets to `false` when any field value is changed, including a field value of a child form.
    *
    * @default false
    */
@@ -110,7 +111,7 @@ export interface HoneyFormApi<Form extends HoneyFormBaseForm, FormContext = unde
   readonly isFormSubmitting: boolean;
   /**
    * A boolean value that becomes `true` when the form has been successfully submitted.
-   * It resets to `false` when any field value is changed.
+   * It resets to `false` when any field value is changed, including a field value of a child form.
    *
    * @default false
    */

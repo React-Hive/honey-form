@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useId, useMemo, useReducer, useRef, useState } from 'react';
 import { assert, invokeIfFunction } from '@react-hive/honey-utils';
 
 import { HONEY_FORM_ERRORS } from '../../constants';
@@ -58,6 +58,7 @@ import type {
   HoneyFormValidate,
   HoneyFormErrors,
   HoneyFormFieldsValidationController,
+  HoneyFormMarkChanged,
   HoneyFormBaseExecutionContext,
   HoneyFormField,
   HoneyFormServerErrors,
@@ -104,6 +105,8 @@ export const useForm = <
   const formId = useId();
 
   const [formState, setFormState] = useState<HoneyFormState>(INITIAL_FORM_STATE);
+  // Renders the form for a change its fields and state do not hold, such as a child form's change
+  const [, rerenderForm] = useReducer((renderCount: number) => renderCount + 1, 0);
 
   const formContextRef = useRef<FormContext>(formContext);
   formContextRef.current = formContext;
@@ -129,6 +132,34 @@ export const useForm = <
     assert(formFields, HONEY_FORM_ERRORS.emptyFormFieldsRef);
 
     return formFields;
+  };
+
+  /**
+   * Applies a change made in one of the child forms to this form, as a field value change of its
+   * own, and passes it on to the form this one is nested in.
+   *
+   * The change is not held by this form's fields, so the form is rendered here, and only when one of
+   * its states flips with it. It is called within the child form's update, so both forms are
+   * rendered once, together.
+   */
+  const markFormChanged: HoneyFormMarkChanged = ({ dirty }) => {
+    const isFormStateChanged =
+      isFormValidRef.current || isFormSubmittedRef.current || (dirty && !isFormDirtyRef.current);
+
+    isFormValidRef.current = false;
+    isFormSubmittedRef.current = false;
+
+    if (dirty) {
+      isFormDirtyRef.current = true;
+    }
+
+    if (isFormStateChanged) {
+      rerenderForm();
+    }
+
+    if (parentField) {
+      parentField.__meta__.markFormChanged({ dirty });
+    }
   };
 
   /**
@@ -262,6 +293,10 @@ export const useForm = <
 
       if (dirty) {
         isFormDirtyRef.current = true;
+
+        if (parentField) {
+          parentField.__meta__.markFormChanged({ dirty });
+        }
       }
 
       const nextFormFields = formChangeProcessor(
@@ -416,11 +451,17 @@ export const useForm = <
       isFormDirtyRef.current = true;
     }
 
+    if (parentField) {
+      parentField.__meta__.markFormChanged({ dirty });
+    }
+
     const executionContext: HoneyFormBaseExecutionContext<Form, FormContext> = {
       formFields,
       formContext: formContextRef.current,
       formValues: getFormValues(formFields),
     };
+
+    let shouldValidateParentField = false;
 
     const nextFormFields = formChangeProcessor(fieldName, () =>
       formFieldChangeProcessor(fieldName, () => {
@@ -450,12 +491,8 @@ export const useForm = <
         if (parentField) {
           const isFieldCurrentlyErred = nextFormFields[fieldName].errors.length > 0;
 
-          if (alwaysValidateParentField || isFieldPreviouslyErred || isFieldCurrentlyErred) {
-            // Use a timeout to avoid rendering the parent form during this field's render cycle
-            setTimeout(() => {
-              parentField.validate();
-            }, 0);
-          }
+          shouldValidateParentField =
+            alwaysValidateParentField || isFieldPreviouslyErred || isFieldCurrentlyErred;
         }
 
         if (shouldSetChildFormsValues) {
@@ -479,6 +516,8 @@ export const useForm = <
               childForms.forEach((childForm, childFormIndex) => {
                 childForm.setFormValues(fieldValue[childFormIndex], {
                   validate: shouldValidateField,
+                  // A value set without marking this form dirty leaves the child forms clean too
+                  dirty,
                 });
               });
             }
@@ -491,6 +530,12 @@ export const useForm = <
 
     formFieldsRef.current = nextFormFields;
     setFormFields(nextFormFields);
+
+    if (parentField && shouldValidateParentField) {
+      // The parent field reads this form's values from `formFieldsRef`, so it's validated after them,
+      // and within the same update, so the parent form is rendered together with this form
+      parentField.validate();
+    }
   };
 
   const clearFieldErrors: HoneyFormFieldClearErrors<Form> = fieldName => {
@@ -573,19 +618,17 @@ export const useForm = <
       [fieldName]: nextFormField,
     };
 
+    formFieldsRef.current = nextFormFields;
+    setFormFields(nextFormFields);
+
     if (parentField) {
       const isFieldCurrentlyErred = nextFormFields[fieldName].errors.length > 0;
 
       if (alwaysValidateParentField || isFieldPreviouslyErred || isFieldCurrentlyErred) {
-        // Use a timeout to avoid rendering the parent form during this field's render cycle
-        setTimeout(() => {
-          parentField.validate();
-        }, 0);
+        // Validated after the new fields are set, as in `setFieldValue`
+        parentField.validate();
       }
     }
-
-    formFieldsRef.current = nextFormFields;
-    setFormFields(nextFormFields);
   };
 
   const addFormFieldErrors = useCallback<HoneyFormFieldAddErrors<Form>>((fieldName, errors) => {
@@ -668,6 +711,7 @@ export const useForm = <
             pushFieldValue,
             removeFieldValue,
             addFormFieldErrors,
+            markFormChanged,
           },
         ),
       };
@@ -842,6 +886,7 @@ export const useForm = <
       pushFieldValue,
       removeFieldValue,
       addFormFieldErrors,
+      markFormChanged,
       formContext: formContextRef.current,
     });
 
@@ -864,9 +909,15 @@ export const useForm = <
       };
     }
 
-    setFormFields(getInitialFormFieldsState);
+    const nextFormFields = getInitialFormFieldsState();
+
+    // Set to the ref at once, so the parent field is validated with the reset values
+    formFieldsRef.current = nextFormFields;
+    setFormFields(nextFormFields);
 
     if (parentField) {
+      // Reset as a field's `resetValue` is, without marking the parent form dirty
+      parentField.__meta__.markFormChanged({ dirty: false });
       parentField.validate();
     }
 

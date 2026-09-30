@@ -45,6 +45,7 @@ const createInitialFormFields = <
   pushFieldValue,
   removeFieldValue,
   addFormFieldErrors,
+  markFormChanged,
 }: CreateInitialFormFieldsOptions<ParentForm, ParentFieldName, FormContext, ChildForm>) => {
   const formFields = mapFieldsConfig(fieldsConfig, (fieldName, fieldConfig) => {
     const executionContext: HoneyFormBaseExecutionContext<ChildForm, FormContext> = {
@@ -86,6 +87,7 @@ const createInitialFormFields = <
         pushFieldValue,
         removeFieldValue,
         addFormFieldErrors,
+        markFormChanged,
       },
     );
   });

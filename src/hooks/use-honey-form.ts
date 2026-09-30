@@ -33,6 +33,7 @@ const createInitialFormFields = <Form extends HoneyFormBaseForm, FormContext>({
   pushFieldValue,
   removeFieldValue,
   addFormFieldErrors,
+  markFormChanged,
 }: CreateInitialFormFieldsOptions<Form, FormContext>) => {
   const executionContext: HoneyFormBaseExecutionContext<Form, FormContext> = {
     formContext,
@@ -62,6 +63,7 @@ const createInitialFormFields = <Form extends HoneyFormBaseForm, FormContext>({
         pushFieldValue,
         removeFieldValue,
         addFormFieldErrors,
+        markFormChanged,
       },
     ),
   );

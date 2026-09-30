@@ -96,8 +96,10 @@ Async:
 - Promise validators: return `defer(() => result)` from `validator`, then `await waitFor(...)` on
   `errors` or `isValidating`. To test cancellation, read `signal.aborted` inside the deferred callback.
 - `submitForm` and `validateForm` are async: `await act(() => result.current.submitForm())`.
-- Field-level `config.onChange` always fires through `setTimeout`, and parent re-validation after a child
-  change also uses `setTimeout(0)`. Wrap those assertions in `waitFor`.
+- Field-level `config.onChange` always fires through `setTimeout`. Wrap those assertions in `waitFor`.
+  A child form's change reaches its parent (validation, dirty/valid/submitted flags) within the same update.
+- To assert render counts, flush deferred work first with `act(() => new Promise(resolve => setTimeout(resolve,
+  0)))`, so a render deferred to a timeout would be counted too.
 - Async defaults: `defaults: () => Promise.resolve({...})`, then `waitFor` on `isFormDefaultsFetching`
   becoming false.
 

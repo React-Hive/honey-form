@@ -54,6 +54,7 @@ import type {
   HoneyFormFieldClearErrors,
   HoneyFormFieldProps,
   HoneyFormFieldMeta,
+  HoneyFormMarkChanged,
   HoneyFormFieldFinishAsyncValidation,
   HoneyFormFieldsRef,
   HoneyFormDefaultsRef,
@@ -381,6 +382,7 @@ interface CreateFormFieldApiAccess<Form extends HoneyFormBaseForm> {
   pushFieldValue: HoneyFormFieldPushValue<Form>;
   removeFieldValue: HoneyFormFieldRemoveValue<Form>;
   addFormFieldErrors: HoneyFormFieldAddErrors<Form>;
+  markFormChanged: HoneyFormMarkChanged;
 }
 
 /**
@@ -411,6 +413,7 @@ export const createFormField = <
     pushFieldValue,
     removeFieldValue,
     addFormFieldErrors,
+    markFormChanged,
   }: CreateFormFieldApiAccess<Form>,
 ): HoneyFormField<Form, FieldName, FormContext> => {
   formDefaultsRef.current[fieldName] = fieldConfig.defaultValue;
@@ -428,6 +431,7 @@ export const createFormField = <
   const fieldMeta: HoneyFormFieldMeta<Form, FormContext> = {
     formFieldsRef,
     validationScheduled: false,
+    markFormChanged,
     childForms: undefined,
   };
 

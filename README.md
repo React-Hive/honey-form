@@ -352,6 +352,14 @@ return (
 - `readDefaultsFromStorage: true` restores the saved values automatically as form defaults instead of asking.
 - Use `serializer` / `deserializer` on a field for values that are not plain JSON.
 
+A link can open a page with its `qs` form already filled in - a list filtered from another page, say. Build the parameter with `createHoneyFormSearchParams(fields, name, values)`, which encodes the values as the form does, through each field's `serializer`. The form reads it when created with `readDefaultsFromStorage: true`; fields left out of `values` take their defaults.
+
+```typescript jsx
+const searchParams = createHoneyFormSearchParams(FILTERS_FIELDS, 'filters', { brand });
+
+<Link to={`/materials?${searchParams}`}>{brand.label}</Link>
+```
+
 Child forms cannot persist on their own; the root form stores the whole tree.
 
 ## Nested Forms

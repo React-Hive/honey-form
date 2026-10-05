@@ -676,6 +676,42 @@ const readFormValuesFromQs = <Form extends HoneyFormBaseForm, FormContext = unde
   }
 };
 
+/**
+ * Builds the query string parameter a form persisted with `storage: 'qs'` reads its values from,
+ * for a link that opens a page with that form already holding them - a list filtered from another
+ * page, say. The values are encoded exactly as the form encodes them on every change, through each
+ * field's `serializer`.
+ *
+ * @remarks
+ * The form reads the link only when it is created with `readDefaultsFromStorage: true`. Fields left
+ * out of `values` take their defaults there.
+ *
+ * @param fieldsConfig - The configuration of the form's fields.
+ * @param formName - The form's `name`, which its values are kept under in the query string.
+ * @param values - The values the form opens with.
+ *
+ * @returns Search params holding the encoded values under `formName`, to add other parameters to
+ * or to turn into a URL's query string.
+ *
+ * @example
+ * ```tsx
+ * const searchParams = createHoneyFormSearchParams(FILTERS_FIELDS, 'filters', { brand });
+ *
+ * <Link to={`/materials?${searchParams}`}>{brand.label}</Link>
+ * ```
+ */
+export const createHoneyFormSearchParams = <
+  Form extends HoneyFormBaseForm,
+  FormContext = undefined,
+>(
+  fieldsConfig: HoneyFormFieldsConfig<Form, FormContext>,
+  formName: string,
+  values: Partial<Form>,
+): URLSearchParams =>
+  new URLSearchParams({
+    [formName]: serializeForm(values as Form, fieldsConfig),
+  });
+
 const getFormLsKey = (formName: string) => `${HONEY_FORM_LS_PREFIX}${formName}`;
 
 /**

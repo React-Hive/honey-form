@@ -1,6 +1,7 @@
 import { act, renderHook, waitFor } from '@testing-library/react';
 
 import { useHoneyForm } from '../hooks';
+import { createHoneyFormSearchParams } from '../helpers';
 import { HONEY_FORM_LS_PREFIX } from '../constants';
 
 const encodeForm = (form: object) => window.btoa(encodeURI(JSON.stringify(form)));
@@ -429,6 +430,86 @@ describe('Form storage', () => {
       expect(decodeStoredForm(searchParams.get('search'))).toStrictEqual({
         query: 'honey',
       });
+    });
+
+    it('should open a form with the values a link was built with', () => {
+      const fields = {
+        query: {
+          type: 'string',
+        },
+        page: {
+          type: 'number',
+          defaultValue: 1,
+        },
+      } as const;
+
+      const searchParams = createHoneyFormSearchParams<Form>(fields, 'search', {
+        query: 'honey',
+      });
+
+      expect(decodeStoredForm(searchParams.get('search'))).toStrictEqual({
+        query: 'honey',
+      });
+
+      window.history.replaceState(null, '', `${window.location.pathname}?${searchParams}`);
+
+      const { result } = renderHook(() =>
+        useHoneyForm<Form>({
+          name: 'search',
+          storage: 'qs',
+          readDefaultsFromStorage: true,
+          fields,
+        }),
+      );
+
+      expect(result.current.formFields.query.displayValue).toBe('honey');
+      // Left out of the link, so the field's default
+      expect(result.current.formFields.page.displayValue).toBe(1);
+    });
+
+    it('should build a link through the fields serializers', () => {
+      type Brand = {
+        id: string;
+        label: string;
+      };
+
+      type FiltersForm = {
+        brand: Brand;
+      };
+
+      const brands: Brand[] = [
+        { id: 'anycubic', label: 'Anycubic' },
+        { id: 'elegoo', label: 'Elegoo' },
+      ];
+
+      const fields = {
+        brand: {
+          type: 'object',
+          serializer: (brand: Brand) => brand.id,
+          deserializer: (id: unknown) => brands.find(brand => brand.id === id),
+        },
+      } as const;
+
+      const searchParams = createHoneyFormSearchParams<FiltersForm>(fields, 'filters', {
+        brand: brands[1],
+      });
+
+      expect(decodeStoredForm(searchParams.get('filters'))).toStrictEqual({
+        brand: 'elegoo',
+      });
+
+      window.history.replaceState(null, '', `${window.location.pathname}?${searchParams}`);
+
+      const { result } = renderHook(() =>
+        useHoneyForm<FiltersForm>({
+          name: 'filters',
+          storage: 'qs',
+          readDefaultsFromStorage: true,
+          fields,
+        }),
+      );
+
+      expect(result.current.formFields.brand.displayValue).toStrictEqual(brands[1]);
     });
   });
 });

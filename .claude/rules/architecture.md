@@ -249,6 +249,9 @@ multi-level `onSubmit(formsData, { formContext })` only when every form validate
   `history.replaceState` (dev mode warns near browser URL limits); `ls` writes key `honey-form-<name>`.
 - Reading (`deserializeForm`) reverses it with per-field `config.deserializer`, ignores unknown keys, and
   returns `undefined` with a warning on corrupt data.
+- `createHoneyFormSearchParams(fieldsConfig, formName, values)` runs `serializeForm` over a partial set of
+  values and returns `URLSearchParams` holding `<name>=<blob>` - the public way to build a link that opens a
+  `qs` form pre-filled, rather than copying the encoding.
 - `readDefaultsFromStorage: true` restores automatically at init. Otherwise, for `ls` only,
   `hasUnsubmittedForm` becomes true when an entry exists and `restoreUnsubmittedForm()` loads it through
   `setFormValues`. The entry is removed on successful submit and on `resetForm`.

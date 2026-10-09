@@ -334,7 +334,9 @@ describe('Form storage', () => {
       );
 
       expect(result.current.formFields.name.displayValue).toBe('Banana');
-      expect(consoleWarnSpy).toHaveBeenCalledWith(expect.stringContaining('invalid or corrupted'));
+      expect(consoleWarnSpy).toHaveBeenCalledWith(
+        '[@react-hive/honey-form] Form "profile": Cannot parse form values from the Local Storage: the encoded data is invalid or corrupted',
+      );
 
       consoleWarnSpy.mockRestore();
     });

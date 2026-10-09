@@ -138,7 +138,7 @@ const Form = () => {
 The `useHoneyForm` hook (and the `HoneyForm` component) takes an options object with the following properties:
 
 1. `fields` - An object that defines the fields of the form. Each key is a field name and each value is a field configuration. See [Field Configuration](#field-configuration).
-2. `name` - The form name. Required when `storage` is used. It is the key under which the form values are persisted.
+2. `name` - The form name. Required when `storage` is used. It is the key under which the form values are persisted. Console warnings and errors about the form are prefixed with `[@react-hive/honey-form] Form "<name>":`.
 3. `defaults` - Default values for the form fields. Has priority over the `defaultValue` specified in the field configuration. Either a plain object (values may be lazy functions `() => value`) or an async resolver `({ formContext, signal }) => Promise<Partial<Form>>`. While an async resolver is running, `isFormDefaultsFetching` is `true`; the `signal` is aborted when the form unmounts or defaults are refetched.
 4. `readDefaultsFromStorage` - When `true`, the form reads previously persisted values from the configured `storage` on initialization and uses them as defaults. Default is `false`.
 5. `refetchDefaultsOnContextChange` - Re-run the async `defaults` resolver whenever `context` changes. Default is `true`.
@@ -305,7 +305,7 @@ The `useHoneyForm` hook returns (and the `HoneyForm` render prop receives) an ob
 20. `setFormValues(values, { validate, updateDirtyValues, dirty, clearAll, skipOnChange, skipResetDependentFields })` - Set several field values at once. Supports partial updates. `clearAll` resets the fields that are not mentioned.
 21. `setFormErrors(errors)` - Replace the errors of the given fields.
 22. `addFormField(name, config)` / `removeFormField(name)` - Add or remove a field at runtime. See [Dynamic Fields](#dynamic-fields).
-23. `addFormFieldError(name, error)` / `addFormFieldErrors(name, errors)` - Add errors to a field while keeping the existing ones.
+23. `addFormFieldError(name, error)` / `addFormFieldErrors(name, errors)` - Add errors to a field while keeping the existing ones. Errors for a field the form does not have are ignored with a console warning.
 24. `clearFormErrors()` - Clear the errors of all fields.
 25. `validateForm({ targetFields, excludeFields, shouldSetErrors })` - Validate the whole form (or a subset). Resolves to `true` when valid. Pass `shouldSetErrors: false` for a silent check that does not touch the displayed errors.
 26. `submitForm(handler?)` - Validate and submit. Uses `onSubmit` unless a handler is passed. Resolves after the handler completes.

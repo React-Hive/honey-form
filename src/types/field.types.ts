@@ -308,6 +308,9 @@ export type HoneyFormValidateField<Form extends HoneyFormBaseForm> = <FieldName 
  *
  * @param fieldName - The name of the field to which the error should be associated.
  * @param error - The error object that contains the error type and corresponding message.
+ *
+ * @remarks
+ * When the form has no field named `fieldName`, the error is ignored and a console warning is logged.
  */
 export type HoneyFormFieldAddError<Form extends HoneyFormBaseForm> = <FieldName extends keyof Form>(
   fieldName: FieldName,
@@ -323,6 +326,9 @@ export type HoneyFormFieldAddError<Form extends HoneyFormBaseForm> = <FieldName 
  *
  * @param fieldName - The name of the form field to which the errors will be added.
  * @param errors - An array of validation errors to be added to the specified form field.
+ *
+ * @remarks
+ * When the form has no field named `fieldName`, the errors are ignored and a console warning is logged.
  */
 export type HoneyFormFieldAddErrors<Form extends HoneyFormBaseForm> = <
   FieldName extends keyof Form,

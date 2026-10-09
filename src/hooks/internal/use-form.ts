@@ -397,7 +397,7 @@ export const useForm = <
       if (fieldName in nextFormFields) {
         nextFormFields[fieldName] = getNextErredField(nextFormFields[fieldName], fieldErrors);
       } else {
-        warning(`Attempted to set errors for unknown field "${fieldName.toString()}"`);
+        warning(`Attempted to set errors for unknown field "${fieldName.toString()}"`, formName);
       }
     });
 
@@ -633,14 +633,19 @@ export const useForm = <
 
   const addFormFieldErrors = useCallback<HoneyFormFieldAddErrors<Form>>((fieldName, errors) => {
     const formFields = resolveFormFields();
+
+    if (!(fieldName in formFields)) {
+      warning(`Attempted to add errors to unknown field "${fieldName.toString()}"`, formName);
+      return;
+    }
+
     const formField = formFields[fieldName];
 
     const nextFormFields: HoneyFormFields<Form, FormContext> = {
       ...formFields,
       [fieldName]: {
         ...formField,
-        // When the form can have alien field errors when the server can return non-existed form fields
-        errors: [...(formField?.errors ?? []), ...errors],
+        errors: [...formField.errors, ...errors],
       },
     };
 
@@ -685,7 +690,7 @@ export const useForm = <
     (fieldName, fieldConfig) => {
       const formFields = resolveFormFields();
       if (fieldName in formFields) {
-        warning(`Form field "${fieldName.toString()}" is already present`);
+        warning(`Form field "${fieldName.toString()}" is already present`, formName);
       }
 
       const executionContext: HoneyFormBaseExecutionContext<Form, FormContext> = {

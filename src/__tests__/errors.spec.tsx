@@ -149,6 +149,67 @@ describe('Work with errors', () => {
     expect(result.current.formFields.age.errors).toStrictEqual([]);
   });
 
+  it('should ignore errors added to an unknown field and warn', () => {
+    const consoleWarnSpy = vitest.spyOn(console, 'warn').mockImplementation(() => {});
+
+    const { result } = renderHook(() =>
+      useHoneyForm<{ name: string; age?: number }>({
+        fields: {
+          name: {
+            type: 'string',
+          },
+        },
+      }),
+    );
+
+    const formFields = result.current.formFields;
+
+    act(() =>
+      result.current.addFormFieldErrors('age', [
+        {
+          type: 'server',
+          message: 'age should be less than 55',
+        },
+      ]),
+    );
+
+    expect(consoleWarnSpy).toHaveBeenCalledWith(
+      '[@react-hive/honey-form]: Attempted to add errors to unknown field "age"',
+    );
+    expect(result.current.formFields).toBe(formFields);
+    expect(result.current.formErrors).toStrictEqual({});
+
+    consoleWarnSpy.mockRestore();
+  });
+
+  it('should show the form name in the warning when the form has a name', () => {
+    const consoleWarnSpy = vitest.spyOn(console, 'warn').mockImplementation(() => {});
+
+    const { result } = renderHook(() =>
+      useHoneyForm<{ name: string; age?: number }>({
+        name: 'profile',
+        fields: {
+          name: {
+            type: 'string',
+          },
+        },
+      }),
+    );
+
+    act(() =>
+      result.current.addFormFieldError('age', {
+        type: 'server',
+        message: 'age should be less than 55',
+      }),
+    );
+
+    expect(consoleWarnSpy).toHaveBeenCalledWith(
+      '[@react-hive/honey-form] Form "profile": Attempted to add errors to unknown field "age"',
+    );
+
+    consoleWarnSpy.mockRestore();
+  });
+
   it('should ignore server errors during submission', async () => {
     const onSubmit = vitest.fn();
 

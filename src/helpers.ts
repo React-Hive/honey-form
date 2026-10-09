@@ -31,12 +31,32 @@ import { localStorageCapabilities } from './init';
 
 export const genericMemo: <T>(component: T) => T = React.memo;
 
-export const warning = (message: string) => {
-  console.warn(`[${NPM_PACKAGE_NAME}]: ${message}`);
+const formatMessage = (message: string, formName?: string) => {
+  const source = formName ? `[${NPM_PACKAGE_NAME}] Form "${formName}"` : `[${NPM_PACKAGE_NAME}]`;
+
+  return `${source}: ${message}`;
 };
 
-export const error = (message: string) => {
-  console.error(`[${NPM_PACKAGE_NAME}]: ${message}`);
+/**
+ * Logs a warning to the console, prefixed with the package name.
+ *
+ * @param message - The warning message.
+ * @param [formName] - The name of the form the warning relates to. When set, the message is prefixed
+ *                     with `[@react-hive/honey-form] Form "<formName>":`.
+ */
+export const warning = (message: string, formName?: string) => {
+  console.warn(formatMessage(message, formName));
+};
+
+/**
+ * Logs an error to the console, prefixed with the package name.
+ *
+ * @param message - The error message.
+ * @param [formName] - The name of the form the error relates to. When set, the message is prefixed
+ *                     with `[@react-hive/honey-form] Form "<formName>":`.
+ */
+export const error = (message: string, formName?: string) => {
+  console.error(formatMessage(message, formName));
 };
 
 /**
@@ -527,7 +547,13 @@ export const replaceHistoryState = (searchParams: URLSearchParams) => {
   );
 };
 
-export const checkQueryStringLimit = (searchParams: URLSearchParams) => {
+/**
+ * Warns when the query string is longer than the current browser can reliably handle.
+ *
+ * @param searchParams - The query string parameters to check.
+ * @param [formName] - The name of the form whose values were just written, shown in the warning.
+ */
+export const checkQueryStringLimit = (searchParams: URLSearchParams, formName?: string) => {
   let queryStringLimit = 0;
 
   if (navigator.userAgent.includes('Firefox')) {
@@ -543,6 +569,7 @@ export const checkQueryStringLimit = (searchParams: URLSearchParams) => {
   if (queryStringLimit && searchParams.toString().length > queryStringLimit) {
     warning(
       `The query string exceeds the limit of ${queryStringLimit} characters. This might cause unexpected behavior or errors. Please reduce the length of the query string`,
+      formName,
     );
   }
 };
@@ -637,7 +664,7 @@ const saveFormToQs = <Form extends HoneyFormBaseForm, FormContext = undefined>(
   searchParams.set(formName, serializeForm(form, fieldsConfig));
 
   if (__DEV__) {
-    checkQueryStringLimit(searchParams);
+    checkQueryStringLimit(searchParams, formName);
   }
 
   replaceHistoryState(searchParams);
@@ -670,6 +697,7 @@ const readFormValuesFromQs = <Form extends HoneyFormBaseForm, FormContext = unde
   } catch {
     warning(
       'Cannot parse form values from the Query String: the encoded data is invalid or corrupted',
+      formName,
     );
 
     return undefined;
@@ -778,6 +806,7 @@ export const readFormValuesFromLs = <Form extends HoneyFormBaseForm, FormContext
   } catch {
     warning(
       'Cannot parse form values from the Local Storage: the encoded data is invalid or corrupted',
+      formName,
     );
 
     return undefined;
@@ -828,7 +857,7 @@ export const readFormFromStorage = <Form extends HoneyFormBaseForm, FormContext 
     if (localStorageCapabilities.readable) {
       return readFormValuesFromLs(fieldsConfig, formName);
     } else {
-      warning('Local storage is not available');
+      warning('Local storage is not available', formName);
     }
   }
 };

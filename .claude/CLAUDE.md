@@ -82,7 +82,10 @@ src/
 - Whenever form fields change inside `use-form.ts`, set both `formFieldsRef.current = next` and
   `setFormFields(next)`. Callbacks read the ref, React reads the state; they must never diverge.
 - User-facing messages go through `warning()` / `error()` in `src/helpers.ts` or `HONEY_FORM_ERRORS` in
-  `src/constants.ts`, prefixed `[@react-hive/honey-form]:`. Dev-only checks are wrapped in `if (__DEV__)`.
+  `src/constants.ts`, prefixed `[@react-hive/honey-form]:`. When a message relates to a form, pass its `formName` as
+  the second argument of `warning()` / `error()`; a named form prefixes the message with
+  `[@react-hive/honey-form] Form "<name>":` instead.
+  Dev-only checks are wrapped in `if (__DEV__)`.
 - Runtime helpers come from `@react-hive/honey-utils` (`assert`, `invokeIfFunction`, `isString`, `isNil`,
   `isNilOrEmptyString`, `noop`, `runParallel`, ...). Reach for it before writing a new utility.
 - React 19 idioms are used on purpose: `<Context value={...}>` instead of `Context.Provider`, `ref` as a normal

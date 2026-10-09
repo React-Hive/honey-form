@@ -1350,6 +1350,7 @@ export interface FormOptions<
   fields: HoneyFormFieldsConfig<Form, FormContext>;
   /**
    * The form name to use for saving and restoring not submitted form data.
+   * It is also shown in the console warnings and errors that relate to the form.
    *
    * @default undefined
    */

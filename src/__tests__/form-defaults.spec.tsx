@@ -98,6 +98,35 @@ describe('Form defaults', () => {
     expect(result.current.formDefaultValues.name).toBe('apple');
   });
 
+  it('should flag failed `Promise` defaults and log an error with the form name', async () => {
+    type Form = {
+      name: string;
+    };
+
+    const consoleErrorSpy = vitest.spyOn(console, 'error').mockImplementation(() => {});
+
+    const { result } = renderHook(() =>
+      useHoneyForm<Form>({
+        name: 'profile',
+        fields: {
+          name: {
+            type: 'string',
+          },
+        },
+        defaults: () => Promise.reject(new Error('Network error')),
+      }),
+    );
+
+    await waitFor(() => expect(result.current.isFormDefaultsFetchingErred).toBeTruthy());
+    await waitFor(() => expect(result.current.isFormDefaultsFetching).toBeFalsy());
+
+    expect(consoleErrorSpy).toHaveBeenCalledWith(
+      '[@react-hive/honey-form] Form "profile": Unable to fetch or process the form default values',
+    );
+
+    consoleErrorSpy.mockRestore();
+  });
+
   it('should abort fetching defaults when component unmounts', async () => {
     type Form = {
       name: string;

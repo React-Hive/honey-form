@@ -101,4 +101,39 @@ describe('Skip form fields', () => {
       ),
     );
   });
+
+  it('should give a field its submit value back once it is no longer skipped', async () => {
+    type Form = {
+      isCourierOffered: boolean;
+      courierPrice: number;
+    };
+
+    const { result } = renderHook(() =>
+      useHoneyForm<Form>({
+        fields: {
+          isCourierOffered: {
+            type: 'checkbox',
+            defaultValue: true,
+          },
+          courierPrice: {
+            type: 'number',
+            decimal: true,
+            skip: ({ formValues }) => !formValues.isCourierOffered,
+          },
+        },
+      }),
+    );
+
+    act(() => result.current.formFields.courierPrice.setValue(24.4));
+
+    await waitFor(() => expect(result.current.formSubmitValues.courierPrice).toBe(24.4));
+
+    act(() => result.current.formFields.isCourierOffered.setValue(false));
+
+    await waitFor(() => expect(result.current.formSubmitValues).not.toHaveProperty('courierPrice'));
+
+    act(() => result.current.formFields.isCourierOffered.setValue(true));
+
+    await waitFor(() => expect(result.current.formSubmitValues.courierPrice).toBe(24.4));
+  });
 });

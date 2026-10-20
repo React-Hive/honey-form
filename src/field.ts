@@ -1242,6 +1242,10 @@ interface ProcessSkippableFieldsOptions<
 /**
  * Checks and clears errors for fields that should be skipped based on the current field's value.
  *
+ * A skipped field keeps its normalized value: it is left out of the submit values while it is
+ * skipped, and is back in them with its value as soon as it is not, rather than waiting for its
+ * next change.
+ *
  * @param options - The options for processing skippable fields.
  */
 export const processSkippableFields = <
@@ -1260,7 +1264,12 @@ export const processSkippableFields = <
       fieldName,
     });
 
-    return shouldSkipField ? getNextErrorsFreeField(formField) : formField;
+    return shouldSkipField
+      ? {
+          ...getNextErrorsFreeField(formField),
+          normalizedValue: formField.normalizedValue,
+        }
+      : formField;
   });
 
 /**

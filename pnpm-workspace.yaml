@@ -1,2 +1,3 @@
 minimumReleaseAgeExclude:
   - ts-loader@9.6.2
+  - '@react-hive/honey-utils@5.2.0'

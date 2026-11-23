@@ -1,7 +1,17 @@
-import { useCallback, useEffect, useId, useMemo, useReducer, useRef, useState } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useId,
+  useLayoutEffect,
+  useMemo,
+  useReducer,
+  useRef,
+  useState,
+} from 'react';
 import { assert, invokeIfFunction } from '@react-hive/honey-utils';
 
 import { HONEY_FORM_ERRORS } from '../../constants';
+import { readHistoryMoveCount } from '../../init';
 import {
   createFormField,
   executeFieldValidator,
@@ -1013,6 +1023,77 @@ export const useForm = <
   //
   formFieldsRef.current = formFields;
 
+  const isFollowingHistory = storage === 'qs' && readDefaultsFromStorage;
+
+  /**
+   * Whether the history entry Back or Forward landed on holds values the form has not - read again
+   * from its query string over the defaults the form was given, as on creating the form.
+   */
+  const checkIsFormBehindHistoryEntry = () => {
+    rereadFormDefaultsFromStorage();
+
+    const serializeFormFields = (formFields: HoneyFormFields<Form, FormContext>) =>
+      createHoneyFormSearchParams(
+        fields,
+        formName,
+        getFormSubmitValues(parentField, formContextRef.current, formFields),
+      ).toString();
+
+    return (
+      serializeFormFields(getInitialFormFieldsState()) !==
+      serializeFormFields(formFieldsRef.current)
+    );
+  };
+
+  /**
+   * The history move (`readHistoryMoveCount()`) the form's values were last checked against the
+   * entry's for. They are restored to the entry's in the first render after Back or Forward, rather
+   * than in a listener of the form's own: a router's listener runs first and renders the app at
+   * once (React 19 renders a transition started in `popstate` synchronously), which would show the
+   * entry's other state - a list's page - beside the form's values of the entry being left. Not a
+   * change made in the form, so `onChange` is not called and nothing is written back.
+   */
+  const [checkedHistoryMoveCount, setCheckedHistoryMoveCount] = useState(readHistoryMoveCount);
+  const renderedHistoryMoveCountRef = useRef(checkedHistoryMoveCount);
+
+  if (isFollowingHistory && checkedHistoryMoveCount !== readHistoryMoveCount()) {
+    setCheckedHistoryMoveCount(readHistoryMoveCount());
+
+    if (checkIsFormBehindHistoryEntry()) {
+      resetForm();
+    }
+  }
+
+  useLayoutEffect(() => {
+    renderedHistoryMoveCountRef.current = checkedHistoryMoveCount;
+  });
+
+  /**
+   * Renders the form for Back and Forward where nothing else has since and its values are not the
+   * entry's - an entry holding the values the form has already, a list's next page beside its
+   * filters, leaves it without a render.
+   */
+  useEffect(() => {
+    if (!isFollowingHistory) {
+      return;
+    }
+
+    const renderForHistoryMove = () => {
+      if (
+        renderedHistoryMoveCountRef.current !== readHistoryMoveCount() &&
+        checkIsFormBehindHistoryEntry()
+      ) {
+        rerenderForm();
+      }
+    };
+
+    window.addEventListener('popstate', renderForHistoryMove);
+
+    return () => {
+      window.removeEventListener('popstate', renderForHistoryMove);
+    };
+  }, []);
+
   // Detect changes in `externalValues` and update the form values accordingly
   useEffect(() => {
     if (externalValues) {
@@ -1025,43 +1106,6 @@ export const useForm = <
       });
     }
   }, [externalValues, validateExternalValues, skipSyncDirtyFields]);
-
-  /**
-   * Back and Forward land on a history entry whose query string holds the form's values as they were
-   * in it, which a form read from the query string is restored to, as though it were created on that
-   * entry. Nothing was changed in the form, so `onChange` is not called and nothing is written back.
-   * An entry holding the values the form has already - a list's next page beside its filters - leaves
-   * the form as it is, without a render.
-   */
-  useEffect(() => {
-    if (storage !== 'qs' || !readDefaultsFromStorage) {
-      return;
-    }
-
-    const serializeFormFields = (formFields: HoneyFormFields<Form, FormContext>) =>
-      createHoneyFormSearchParams(
-        fields,
-        formName,
-        getFormSubmitValues(parentField, formContextRef.current, formFields),
-      ).toString();
-
-    const restoreFormFromHistoryEntry = () => {
-      rereadFormDefaultsFromStorage();
-
-      if (
-        serializeFormFields(getInitialFormFieldsState()) !==
-        serializeFormFields(formFieldsRef.current)
-      ) {
-        resetForm();
-      }
-    };
-
-    window.addEventListener('popstate', restoreFormFromHistoryEntry);
-
-    return () => {
-      window.removeEventListener('popstate', restoreFormFromHistoryEntry);
-    };
-  }, []);
 
   const checkIsAnyFormFieldValidating = () =>
     Object.values(formFieldsRef.current).some(

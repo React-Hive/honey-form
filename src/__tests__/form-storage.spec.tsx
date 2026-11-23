@@ -1,4 +1,6 @@
-import { act, renderHook, waitFor } from '@testing-library/react';
+import React, { useLayoutEffect, useReducer } from 'react';
+import { flushSync } from 'react-dom';
+import { act, render, renderHook, waitFor } from '@testing-library/react';
 
 import { useHoneyForm } from '../hooks';
 import { createHoneyFormSearchParams } from '../helpers';
@@ -659,6 +661,53 @@ describe('Form storage', () => {
 
         expect(renderCount).toBe(renderCountAfterChange);
         expect(result.current.formFields.query.displayValue).toBe('honey');
+      });
+
+      it('should restore the values in the first render after Back or Forward, whichever it is', () => {
+        const committedQueries: string[] = [];
+
+        let renderAsRouter = () => {};
+        let setQuery: (query: string) => void = () => {};
+
+        const Component = () => {
+          const [, rerender] = useReducer((renderCount: number) => renderCount + 1, 0);
+
+          renderAsRouter = rerender;
+
+          const { formValues, formFields } = useHoneyForm<Form>({
+            name: 'search',
+            storage: 'qs',
+            readDefaultsFromStorage: true,
+            fields,
+          });
+
+          setQuery = formFields.query.setValue;
+
+          useLayoutEffect(() => {
+            committedQueries.push(formValues.query);
+          });
+
+          return null;
+        };
+
+        // Added before the form's own listener and rendering at once, as a router's does under React 19
+        const routerListener = () => flushSync(renderAsRouter);
+
+        window.addEventListener('popstate', routerListener);
+
+        render(<Component />);
+
+        act(() => setQuery('honey'));
+
+        committedQueries.length = 0;
+
+        popHistoryEntry(
+          `?${createHoneyFormSearchParams<Form>(fields, 'search', { query: 'bee' })}`,
+        );
+
+        expect(committedQueries).toStrictEqual(['bee']);
+
+        window.removeEventListener('popstate', routerListener);
       });
 
       it('should not follow Back and Forward without `readDefaultsFromStorage`', () => {

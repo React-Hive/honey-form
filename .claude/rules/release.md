@@ -72,11 +72,15 @@ playground from `src/docs/index.tsx` into `dist-docs/`. It is experimental and n
 
 ## Dependencies
 
-- Runtime: `@react-hive/honey-utils` (pinned exact). Same author and org; upgrade in lockstep when it adds
-  helpers this package needs.
+- Runtime: `@react-hive/honey-utils` (pinned exact, 5.2.0 since 8.22.0). Same author and org; upgrade in
+  lockstep when it adds helpers this package needs. 5.0.0 changed some helpers' results (`isObject(null)` is
+  `false`); the one `isObject` call here already checks for `null` first.
 - Peers: `react` and `react-dom` `^19`, plus `@mdx-js/react` (only used by `src/docs`).
-- Dev dependencies are pinned exact except `@types/react*`.
+- Dev dependencies are pinned exact except `@types/react*`. TypeScript stays on 6 (TypeScript 7 drops the
+  compiler API ts-loader builds with) and `@types/node` on Node 24's line, the Node this package runs on.
+  `eslint-plugin-react` 7.37.5, its latest, does not list ESLint 10 as a peer - a warning, not an error.
 - pnpm (since 11) verifies the lockfile against supply-chain policies on install. Since 12 the lockfile also pins
   pnpm itself (`packageManagerDependencies`), so a `packageManager` bump changes `pnpm-lock.yaml` too. `pnpm-workspace.yaml` carries a
-  `minimumReleaseAgeExclude` entry for `ts-loader@9.6.2`. If `pnpm install` refuses a just-published version,
+  `minimumReleaseAgeExclude` entry for `ts-loader@9.6.2` and `@react-hive/honey-utils@5.2.0` (pnpm added the
+  second on upgrading to it the day after it was published). If `pnpm install` refuses a just-published version,
   add an exclusion there deliberately rather than disabling the check.

@@ -253,12 +253,19 @@ multi-level `onSubmit(formsData, { formContext })` only when every form validate
 - `createHoneyFormSearchParams(fieldsConfig, formName, values)` runs `serializeForm` over a partial set of
   values and returns `URLSearchParams` holding `<name>=<blob>` - the public way to build a link that opens a
   `qs` form pre-filled, rather than copying the encoding.
-- `readDefaultsFromStorage: true` restores automatically at init. With `qs`, a `popstate` listener in
-  `use-form.ts` also restores the form on Back and Forward: `rereadFormDefaultsFromStorage()`
-  (`use-form-defaults.ts`) puts the entry's stored values over the defaults the form was given
-  (`givenFormDefaultsRef` - the object, or what the function resolved to), and `resetForm()` applies them -
-  no `onChange`, nothing written back. Where the entry's values serialize the same as the form's (another
-  page of a list it filters), nothing is set, so the form does not render (pinned in `form-storage.spec.tsx`).
+- `readDefaultsFromStorage: true` restores automatically at init. With `qs`, the form also follows Back and
+  Forward. `init.ts` counts history moves with a `popstate` listener added on importing the package
+  (`readHistoryMoveCount()`), so before a router's. In the first render after a move, whichever component's it
+  is, `use-form.ts` sees the count moved (`checkedHistoryMoveCount`, render-phase state) and runs
+  `checkIsFormBehindHistoryEntry()`: `rereadFormDefaultsFromStorage()` (`use-form-defaults.ts`) puts the
+  entry's stored values over the defaults the form was given (`givenFormDefaultsRef` - the object, or what the
+  function resolved to), and where they serialize differently from the form's, `resetForm()` applies them in
+  that render - no `onChange`, nothing written back. A listener of the form's own only renders it
+  (`rerenderForm`) where no render has since (`renderedHistoryMoveCountRef`, set in a layout effect) and its
+  values are behind. Restoring in the listener (8.21.0) was too late: React 19 renders a transition started
+  in `popstate` at once, so a router's listener rendered the entry's other state beside the form's old values
+  first. Where the entry's values serialize the same as the form's (another page of a list it filters),
+  nothing renders. Both are pinned in `form-storage.spec.tsx`.
 - Without `readDefaultsFromStorage`, for `ls` only, `hasUnsubmittedForm` becomes true when an entry exists and
   `restoreUnsubmittedForm()` loads it through `setFormValues`. The entry is removed on successful submit and on `resetForm`.
 - `localStorageCapabilities` from `src/init.ts` guards every `ls` access.

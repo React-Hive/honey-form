@@ -246,15 +246,21 @@ multi-level `onSubmit(formsData, { formContext })` only when every form validate
 - Requires `name`. Only root forms persist (the check is `!parentField`).
 - On every change the submit values are serialized by `serializeForm`: per-field `config.serializer`,
   nested objects stringified, then `btoa(encodeURI(JSON))`. `qs` writes `?<name>=<blob>` with
-  `history.replaceState` (dev mode warns near browser URL limits); `ls` writes key `honey-form-<name>`.
+  `history.replaceState` (`replaceHistoryState`), keeping `history.state` - React Router's `key`/`idx` - and
+  the hash (dev mode warns near browser URL limits); `ls` writes key `honey-form-<name>`.
 - Reading (`deserializeForm`) reverses it with per-field `config.deserializer`, ignores unknown keys, and
   returns `undefined` with a warning on corrupt data.
 - `createHoneyFormSearchParams(fieldsConfig, formName, values)` runs `serializeForm` over a partial set of
   values and returns `URLSearchParams` holding `<name>=<blob>` - the public way to build a link that opens a
   `qs` form pre-filled, rather than copying the encoding.
-- `readDefaultsFromStorage: true` restores automatically at init. Otherwise, for `ls` only,
-  `hasUnsubmittedForm` becomes true when an entry exists and `restoreUnsubmittedForm()` loads it through
-  `setFormValues`. The entry is removed on successful submit and on `resetForm`.
+- `readDefaultsFromStorage: true` restores automatically at init. With `qs`, a `popstate` listener in
+  `use-form.ts` also restores the form on Back and Forward: `rereadFormDefaultsFromStorage()`
+  (`use-form-defaults.ts`) puts the entry's stored values over the defaults the form was given
+  (`givenFormDefaultsRef` - the object, or what the function resolved to), and `resetForm()` applies them -
+  no `onChange`, nothing written back. Where the entry's values serialize the same as the form's (another
+  page of a list it filters), nothing is set, so the form does not render (pinned in `form-storage.spec.tsx`).
+- Without `readDefaultsFromStorage`, for `ls` only, `hasUnsubmittedForm` becomes true when an entry exists and
+  `restoreUnsubmittedForm()` loads it through `setFormValues`. The entry is removed on successful submit and on `resetForm`.
 - `localStorageCapabilities` from `src/init.ts` guards every `ls` access.
 
 ## 10. Components

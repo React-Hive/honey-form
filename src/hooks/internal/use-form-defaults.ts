@@ -54,6 +54,24 @@ export const useFormDefaults = <Form extends HoneyFormBaseForm, FormContext = un
   });
 
   const formDefaultsRef = useRef<HoneyFormDefaultValues<Form>>(formDefaults);
+  /**
+   * The defaults the form was given - the object, or what the function resolved to - without the
+   * values read from storage over them.
+   */
+  const givenFormDefaultsRef = useRef<HoneyFormDefaultValues<Form>>(
+    isFunction(defaults) ? {} : { ...defaults },
+  );
+
+  /**
+   * Reads the stored values over the defaults the form was given again, as on creating the form -
+   * for the values another history entry holds in the query string.
+   */
+  const rereadFormDefaultsFromStorage = () => {
+    formDefaultsRef.current = {
+      ...givenFormDefaultsRef.current,
+      ...readFormFromStorage(storage, fields, formName),
+    };
+  };
 
   useEffect(() => {
     if (!isFunction(defaults)) {
@@ -90,6 +108,11 @@ export const useFormDefaults = <Form extends HoneyFormBaseForm, FormContext = un
             ...defaults,
           };
 
+          givenFormDefaultsRef.current = {
+            ...givenFormDefaultsRef.current,
+            ...defaults,
+          };
+
           onFetchSucceed(defaults);
         }
       })
@@ -121,6 +144,7 @@ export const useFormDefaults = <Form extends HoneyFormBaseForm, FormContext = un
 
   return {
     formDefaultsRef,
+    rereadFormDefaultsFromStorage,
     isFormDefaultsFetching,
     isFormDefaultsFetchingErred,
   };

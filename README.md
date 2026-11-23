@@ -348,7 +348,8 @@ return (
 ```
 
 - `storage: 'ls'` writes to `localStorage` under `honey-form-<name>`. The entry is removed after a successful submission or a reset. When an entry exists on mount, `hasUnsubmittedForm` becomes `true` so you can offer `restoreUnsubmittedForm()`.
-- `storage: 'qs'` writes a `<name>` parameter into the query string with `history.replaceState`, which lets users share or bookmark a pre-filled form.
+- `storage: 'qs'` writes a `<name>` parameter into the query string with `history.replaceState`, keeping the history entry's state (where a router such as React Router keeps its own) and the hash, which lets users share or bookmark a pre-filled form.
+- With `storage: 'qs'` and `readDefaultsFromStorage: true`, the form follows Back and Forward: on landing on another history entry it is restored to the values that entry holds, or to its defaults where it holds none, as though it were created there - without `onChange`, and without writing them back. An entry holding the values the form has already, such as another page of a list it filters, leaves it as it is, without a render.
 - `readDefaultsFromStorage: true` restores the saved values automatically as form defaults instead of asking.
 - Use `serializer` / `deserializer` on a field for values that are not plain JSON.
 

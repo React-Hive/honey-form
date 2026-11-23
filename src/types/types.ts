@@ -1373,7 +1373,9 @@ export interface FormOptions<
    * with default values retrieved from the configured storage (`qs` or `ls`)
    * when the form is initialized.
    *
-   * - If `true`, the form fields are filled from storage automatically.
+   * - If `true`, the form fields are filled from storage automatically. With `storage: 'qs'`, the
+   *   form also follows Back and Forward: it is restored to the values the history entry landed on
+   *   holds, without `onChange` and without writing them back.
    * - If `false`, the form does not read defaults from storage, allowing
    *   manual restoration of unsubmitted form using `restoreUnsubmittedForm`.
    *

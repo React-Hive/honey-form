@@ -513,5 +513,190 @@ describe('Form storage', () => {
 
       expect(result.current.formFields.brand.displayValue).toStrictEqual(brands[1]);
     });
+
+    it('should keep the history entry state and the hash', () => {
+      const historyState = { key: 'a1b2', idx: 2 };
+
+      window.history.replaceState(historyState, '', `${window.location.pathname}#reviews`);
+
+      const { result } = renderHook(() =>
+        useHoneyForm<Form>({
+          name: 'search',
+          storage: 'qs',
+          fields: {
+            query: {
+              type: 'string',
+            },
+            page: {
+              type: 'number',
+            },
+          },
+        }),
+      );
+
+      act(() => result.current.formFields.query.setValue('honey'));
+
+      expect(window.history.state).toStrictEqual(historyState);
+      expect(window.location.hash).toBe('#reviews');
+      expect(new URLSearchParams(window.location.search).has('search')).toBeTruthy();
+    });
+
+    describe('Back and Forward', () => {
+      const fields = {
+        query: {
+          type: 'string',
+        },
+        page: {
+          type: 'number',
+          defaultValue: 1,
+        },
+      } as const;
+
+      /**
+       * Lands on a history entry with the query string given, as Back and Forward do.
+       */
+      const popHistoryEntry = (search: string) =>
+        act(() => {
+          window.history.replaceState(
+            window.history.state,
+            '',
+            `${window.location.pathname}${search}`,
+          );
+
+          window.dispatchEvent(new PopStateEvent('popstate'));
+        });
+
+      it('should restore the values the entry holds, without `onChange` and writing them back', () => {
+        const onChange = vitest.fn();
+
+        const { result } = renderHook(() =>
+          useHoneyForm<Form>({
+            name: 'search',
+            storage: 'qs',
+            readDefaultsFromStorage: true,
+            fields,
+            onChange,
+          }),
+        );
+
+        act(() => result.current.formFields.query.setValue('honey'));
+
+        onChange.mockClear();
+
+        const entrySearchParams = createHoneyFormSearchParams<Form>(fields, 'search', {
+          query: 'bee',
+          page: 2,
+        });
+
+        entrySearchParams.set('cursor', 'c1');
+
+        popHistoryEntry(`?${entrySearchParams}`);
+
+        expect(result.current.formFields.query.displayValue).toBe('bee');
+        expect(result.current.formFields.page.displayValue).toBe(2);
+        expect(result.current.isFormDirty).toBeFalsy();
+        expect(onChange).not.toHaveBeenCalled();
+        expect(window.location.search).toBe(`?${entrySearchParams}`);
+      });
+
+      it('should restore the defaults the form was given where the entry holds no values', () => {
+        const linkSearchParams = createHoneyFormSearchParams<Form>(fields, 'search', {
+          query: 'honey',
+          page: 3,
+        });
+
+        window.history.replaceState(null, '', `${window.location.pathname}?${linkSearchParams}`);
+
+        const { result } = renderHook(() =>
+          useHoneyForm<Form>({
+            name: 'search',
+            storage: 'qs',
+            readDefaultsFromStorage: true,
+            fields,
+            defaults: {
+              query: 'bee',
+            },
+          }),
+        );
+
+        expect(result.current.formFields.query.displayValue).toBe('honey');
+
+        // The values the form was created with were read from the link, not given
+        popHistoryEntry('?cursor=c1');
+
+        expect(result.current.formFields.query.displayValue).toBe('bee');
+        expect(result.current.formFields.page.displayValue).toBe(1);
+      });
+
+      it('should not render where the entry holds the values the form has', () => {
+        let renderCount = 0;
+
+        const { result } = renderHook(() => {
+          renderCount += 1;
+
+          return useHoneyForm<Form>({
+            name: 'search',
+            storage: 'qs',
+            readDefaultsFromStorage: true,
+            fields,
+          });
+        });
+
+        // Neither the entry nor the form holds anything but the defaults
+        popHistoryEntry('?cursor=c1');
+
+        expect(renderCount).toBe(1);
+
+        act(() => result.current.formFields.query.setValue('honey'));
+
+        const renderCountAfterChange = renderCount;
+
+        const nextPageSearchParams = new URLSearchParams(window.location.search);
+
+        nextPageSearchParams.set('cursor', 'c2');
+
+        popHistoryEntry(`?${nextPageSearchParams}`);
+
+        expect(renderCount).toBe(renderCountAfterChange);
+        expect(result.current.formFields.query.displayValue).toBe('honey');
+      });
+
+      it('should not follow Back and Forward without `readDefaultsFromStorage`', () => {
+        const { result } = renderHook(() =>
+          useHoneyForm<Form>({
+            name: 'search',
+            storage: 'qs',
+            fields,
+          }),
+        );
+
+        act(() => result.current.formFields.query.setValue('honey'));
+
+        popHistoryEntry(
+          `?${createHoneyFormSearchParams<Form>(fields, 'search', { query: 'bee' })}`,
+        );
+
+        expect(result.current.formFields.query.displayValue).toBe('honey');
+      });
+
+      it('should stop following Back and Forward once unmounted', () => {
+        const removeEventListenerSpy = vitest.spyOn(window, 'removeEventListener');
+
+        const { unmount } = renderHook(() =>
+          useHoneyForm<Form>({
+            name: 'search',
+            storage: 'qs',
+            readDefaultsFromStorage: true,
+            fields,
+          }),
+        );
+
+        unmount();
+
+        expect(removeEventListenerSpy).toHaveBeenCalledWith('popstate', expect.any(Function));
+
+        removeEventListenerSpy.mockRestore();
+      });
+    });
   });
 });

@@ -539,11 +539,17 @@ export const runChildFormsValidation = async <
   return hasErrors;
 };
 
+/**
+ * Writes the query string without adding a history entry. The entry's state, which a router such as
+ * React Router keeps its own bookkeeping in, and the hash are kept.
+ *
+ * @param searchParams - The search params the URL should carry.
+ */
 export const replaceHistoryState = (searchParams: URLSearchParams) => {
   window.history.replaceState(
-    null,
+    window.history.state,
     '',
-    `${window.location.pathname}${searchParams.size > 0 ? `?${searchParams.toString()}` : ''}`,
+    `${window.location.pathname}${searchParams.size > 0 ? `?${searchParams.toString()}` : ''}${window.location.hash}`,
   );
 };
 

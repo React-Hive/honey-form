@@ -30,6 +30,7 @@ import {
   mapFormFieldsAsync,
   saveFormToStorage,
   removeFormFromLs,
+  createHoneyFormSearchParams,
 } from '../../helpers';
 import { useFormDefaults } from './use-form-defaults';
 import { useUnsubmittedForm } from './use-unsubmitted-form';
@@ -658,7 +659,12 @@ export const useForm = <
     [],
   );
 
-  const { formDefaultsRef, isFormDefaultsFetching, isFormDefaultsFetchingErred } = useFormDefaults({
+  const {
+    formDefaultsRef,
+    rereadFormDefaultsFromStorage,
+    isFormDefaultsFetching,
+    isFormDefaultsFetchingErred,
+  } = useFormDefaults({
     defaults,
     formName,
     storage,
@@ -1019,6 +1025,43 @@ export const useForm = <
       });
     }
   }, [externalValues, validateExternalValues, skipSyncDirtyFields]);
+
+  /**
+   * Back and Forward land on a history entry whose query string holds the form's values as they were
+   * in it, which a form read from the query string is restored to, as though it were created on that
+   * entry. Nothing was changed in the form, so `onChange` is not called and nothing is written back.
+   * An entry holding the values the form has already - a list's next page beside its filters - leaves
+   * the form as it is, without a render.
+   */
+  useEffect(() => {
+    if (storage !== 'qs' || !readDefaultsFromStorage) {
+      return;
+    }
+
+    const serializeFormFields = (formFields: HoneyFormFields<Form, FormContext>) =>
+      createHoneyFormSearchParams(
+        fields,
+        formName,
+        getFormSubmitValues(parentField, formContextRef.current, formFields),
+      ).toString();
+
+    const restoreFormFromHistoryEntry = () => {
+      rereadFormDefaultsFromStorage();
+
+      if (
+        serializeFormFields(getInitialFormFieldsState()) !==
+        serializeFormFields(formFieldsRef.current)
+      ) {
+        resetForm();
+      }
+    };
+
+    window.addEventListener('popstate', restoreFormFromHistoryEntry);
+
+    return () => {
+      window.removeEventListener('popstate', restoreFormFromHistoryEntry);
+    };
+  }, []);
 
   const checkIsAnyFormFieldValidating = () =>
     Object.values(formFieldsRef.current).some(
